@@ -120,19 +120,21 @@ judged the same way.
 
 ## Manual and viewer
 
-9. **The manual's parts rail is a film strip of step frames, with dock-style
-   magnification.** The current step is one large, square-ish white frame,
-   centred. Earlier steps sit above it (or to the left on a phone in portrait)
-   and later steps below (or right), as smaller frames. Before step 1 there
-   is nothing. Moving the pointer along the strip grows the frames nearest to
-   it and shrinks the rest, so a quick pass ripples. Tapping a frame jumps to
-   that step.
-   *Why:* a loose list of part images on an empty panel "kind of sucks"; the
-   strip shows where you are in the build at a glance and feels alive.
-   *How:* `components/StepStrip.tsx`. Magnification is computed from the
-   pointer against the resting layout, so sizes never chase themselves. Touch
-   doesn't magnify (no hover on phones). The strip opts out of the tap sound,
-   because picking a step already plays the landing snap (rule 1).
+9. **The manual's parts rail is a scrolling film strip; scrolling scrubs the
+   build.** One frame per step, square-ish, showing that step's pieces with
+   counts. The frame in the middle of the strip is the biggest and frames shrink
+   toward the edges (picker-wheel style). The middle frame IS the current step:
+   scrolling forward builds the model up, scrolling back takes it apart.
+   Arrows, keys and tapping a frame re-centre the strip. The tab on the rail's
+   edge drag-resizes the rail; a plain tap hides or shows it.
+   *Why:* the first version magnified frames under the hover pointer and was
+   "super buggy"; the ask became "just make it scroll and the central one is
+   biggest", then "scrolling should reverse/progress the build".
+   *How:* `components/StepStrip.tsx`. Each frame is laid out once at full size
+   and scaled with a CSS transform, so its border, bricks, counts and number
+   always grow together as one unit (never size the pieces separately). No
+   hover effects. Scroll-driven step changes must not trigger a re-centring
+   scroll, or the strip fights the user's finger.
 
 10. **The 3D show-off viewer is blue too.** Same family as the booklet page: a
     light-blue studio gradient, faint dark-blue ghost bricks, white control
@@ -148,3 +150,37 @@ judged the same way.
     *Exceptions:* the purple outline on new parts in the manual comes from the
     reference and would vanish on red bricks, so it stays. Theme cards keep
     their own background colours.
+
+## Panels
+
+12. **Panels dock; they don't float.** Side panels (like "Change it") are
+    solid, full-height sidebars attached to the screen edge (right in
+    landscape, bottom in portrait), square to the edge with a blue rule, and
+    the stage shrinks to make room. No rounded cards hovering over the content.
+    *Why:* a rounded rectangle laid on top of the 3D view read as "imposed on
+    top of the UI"; a docked sidebar feels like part of the app.
+    *How:* the stage is its own absolutely positioned box whose right (or
+    bottom) inset animates to the sidebar's size; the sidebar uses the booklet
+    callout colours (`#e4f1fc`, `#9cc5ec`).
+    Content never changes a panel's size: the width is fixed, and long
+    unbroken text (agent-tape tool calls like `chassis(length=8,...)`) wraps
+    with `overflow-wrap:anywhere` instead of widening the panel.
+
+## Agent tape
+
+13. **The agent tape is a tower of bricks, in plain words.** Each step the
+    agent takes is a brick in its actor's LDraw colour (Router blue, Designer
+    teal, Inspector red, Repair yellow, Scribe green), studs on top, landing
+    on the tower with the newest on top and a baseplate underneath. A failed
+    step sits crooked and cracked; once a later step fixes it, it greys out,
+    struck through, "Fixed further up". The step being worked on is a dashed
+    outline brick.
+    *Why:* white rounded log cards with checkmarks and milliseconds "don't
+    feel on theme"; a tower that the agent visibly builds, where a failure is a
+    brick that doesn't fit until Repair swaps it, tells the story at a glance.
+    *How:* `components/AgentTape.tsx`. Copy comes from `lib/tapeCopy.ts`, which
+    rewrites Lane B's engineer-speak ("OUT_OF_BUDGET: Needs 6x Brick 2x4 in
+    dark gray; you have 0." becomes "Not enough dark gray Brick 2x4 (need 6,
+    have 0)"; a design proposal becomes "Sketched the design" plus part chips).
+    Raw lines, timings and token counts only appear under "Show details".
+    Add a pattern to `tapeCopy` whenever Lane B adds a new tape message.
