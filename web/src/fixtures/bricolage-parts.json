@@ -1,0 +1,78 @@
+[
+ {
+  "part": "3001",
+  "name": "Brick 2x4"
+ },
+ {
+  "part": "3002",
+  "name": "Brick 2x3"
+ },
+ {
+  "part": "3003",
+  "name": "Brick 2x2"
+ },
+ {
+  "part": "3004",
+  "name": "Brick 1x2"
+ },
+ {
+  "part": "3005",
+  "name": "Brick 1x1"
+ },
+ {
+  "part": "3009",
+  "name": "Brick 1x6"
+ },
+ {
+  "part": "3010",
+  "name": "Brick 1x4"
+ },
+ {
+  "part": "3020",
+  "name": "Plate 2x4"
+ },
+ {
+  "part": "3021",
+  "name": "Plate 2x3"
+ },
+ {
+  "part": "3022",
+  "name": "Plate 2x2"
+ },
+ {
+  "part": "3023",
+  "name": "Plate 1x2"
+ },
+ {
+  "part": "3024",
+  "name": "Plate 1x1"
+ },
+ {
+  "part": "3039",
+  "name": "Slope 45 2x2"
+ },
+ {
+  "part": "3040",
+  "name": "Slope 45 2x1"
+ },
+ {
+  "part": "3068b",
+  "name": "Tile 2x2"
+ },
+ {
+  "part": "3069b",
+  "name": "Tile 1x2"
+ },
+ {
+  "part": "3795",
+  "name": "Plate 2x6"
+ },
+ {
+  "part": "3832",
+  "name": "Plate 2x10"
+ },
+ {
+  "part": "4073",
+  "name": "Round Plate 1x1"
+ }
+]

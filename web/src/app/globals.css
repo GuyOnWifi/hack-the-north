@@ -1,0 +1,186 @@
+@import "tailwindcss";
+
+/* Palette sampled from the inspiration screenshots (Inspiration Images/). */
+@theme {
+  --font-sans: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
+
+  --color-ink: #242424;
+  --color-ink-soft: #5c5c5c;
+  --color-page: #f2f2f2;
+
+  --color-yellow: #ffd502;
+  --color-yellow-rim: #dfba02;
+  --color-yellow-deep: #ccaa02;
+  --color-header-top: #f5b200;
+  --color-header-bottom: #fccd01;
+  --color-header-rim: #dcae00;
+  --color-yellow-tile: #c47c07;
+
+  --color-blue: #005ad2;
+  --color-blue-rim: #034aa9;
+  --color-blue-under: #0053c2;
+  --color-blue-icon: #2458ca;
+  --color-navy: #123181;
+
+  --color-purple: #6e13bc;
+  --color-purple-rim: #5c109d;
+  --color-highlight: #9840b0;
+
+  --color-orange: #e88b00;
+  --color-orange-title: #ff5a1f;
+  --color-brick-red: #d90000;
+  --color-arrow-green: #209040;
+
+  --color-sky-top: #90aac5;
+  --color-sky-bottom: #d3e1ef;
+  --color-dash-bg: #e7f2fe;
+  --color-dash-line: #bdcfe5;
+
+  --color-stage-top: #dadada;
+  --color-stage-bottom: #f6f6f6;
+  --color-rail: #c4c5c5;
+  --color-parts-bg: #d3d3d3;
+  --color-tile-grey: #808080;
+  --color-close-grey: #b2b2b2;
+  --color-track: #8a8b8b;
+  --color-rim-white: #cccccc;
+
+  --color-teal-top: #0e2229;
+  --color-teal-mid: #376275;
+  --color-teal-bottom: #4a7e96;
+  --color-teal-page-top: #94afb9;
+  --color-teal-page-bottom: #c6d7de;
+
+  --color-splash-top: #161616;
+  --color-splash-bottom: #3c3c3c;
+
+  --radius-tile: 14px;
+  --radius-card: 24px;
+  --radius-bucket: 44px;
+}
+
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  color-scheme: light;
+}
+
+html,
+body {
+  background: var(--color-page);
+  color: var(--color-ink);
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Chunky "brick" buttons: a solid face sitting on a darker rim that
+   compresses when pressed. */
+.chunky {
+  --rim: rgba(0, 0, 0, 0.2);
+  --lift: 5px;
+  position: relative;
+  box-shadow: 0 var(--lift) 0 var(--rim);
+  transform: translateY(0);
+  transition:
+    transform 90ms ease-out,
+    box-shadow 90ms ease-out,
+    filter 120ms;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.chunky:active:not(:disabled) {
+  transform: translateY(calc(var(--lift) - 1px));
+  box-shadow: 0 1px 0 var(--rim);
+}
+.chunky:disabled {
+  filter: grayscale(0.6) opacity(0.6);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+@keyframes float-y {
+  0%,
+  100% {
+    transform: translateY(0) rotate(var(--r, 0deg));
+  }
+  50% {
+    transform: translateY(-10px) rotate(calc(var(--r, 0deg) + 6deg));
+  }
+}
+
+@keyframes ring-pulse {
+  0% {
+    transform: scale(0.92);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1.08);
+    opacity: 0.35;
+  }
+}
+
+@keyframes hand-tap {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  40% {
+    transform: translate(-6px, 6px) scale(0.94);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: 200px 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.25) 0, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0.25) 100%);
+  background-size: 400px 100%;
+  animation: shimmer 1.2s linear infinite;
+}
+
+@keyframes tape-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

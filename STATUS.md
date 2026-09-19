@@ -69,5 +69,25 @@ dependencies and no network.
 - [ ] Parse `LDConfig.ldr` into `meta.COLOR_RGB` for exact colours (invariant #6).
 - [ ] 3D render + PDF manual live in Lane C (frontend), against `fixtures/` + the API.
 
-## Lanes A (CV), C (frontend) — owned by teammates
-Frontend can start now against `fixtures/`.
+## Lane C (frontend) - `web/`, integrated with the API
+
+See `web/README.md`. Talks to `server.py` through a Next proxy; falls back to
+`fixtures/` offline.
+- [x] All screens: splash, home, scan, scanning, inventory (confidence chips +
+      evidence panel), build ideas, designing (live SSE tape), build detail,
+      3D viewer (timeline ghosts), step-by-step manual, parts page, PDF export.
+- [x] Renders `/api/ldr` via a bundled 100 KB LDraw pack (`web/public/ldraw/`).
+- [x] Edit / try another / undo / redo; report `human` strings shown verbatim.
+- [x] Added to Lane B's server: `POST /api/inventory` (the scanned pile becomes
+      `SESSION.inv`), and `/api/ldr` now includes the `0 STEP` markers.
+
+### Found while integrating (for Lane B)
+- [ ] `/api/edit` returns an empty tape; the UI shows a one-line summary instead.
+- [ ] With a tighter bin, "a small truck" came back invalid with
+      "Two parts occupy the same space at (0, -1, 0)" (generator overlap?).
+- [ ] With a sparse bin, house/jet failed on single missing elements the
+      substitution rung didn't cover (e.g. 1x2 tan, 2x2 plate white).
+
+## Lane A (CV) - owned by a teammate
+The app's inventory screen consumes `{part, color, count, confidence, crop,
+alternatives}` per detection (see `web/src/lib/types.ts`).

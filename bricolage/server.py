@@ -5,6 +5,7 @@ stdlib only, so it runs under DEMO_SAFE with wifi off.
   POST /api/edit         {text}        -> {version, report, tape?, tree}
   POST /api/try_another  {}            -> {version, report, tree}
   POST /api/undo|redo    {}            -> {version, report, tree}
+  POST /api/inventory    {items:[{part,color,count}]} -> {ok, elements}  (empty = demo bin)
   GET  /api/state                      -> current build/report/steps
   GET  /api/ldr                        -> current model as text/plain LDraw
   GET  /                               -> a tiny self-contained dev console
@@ -69,7 +70,8 @@ class H(BaseHTTPRequestHandler):
             return self._send(200, _payload())
         if u.path == "/api/ldr":
             v = SESSION.versions.get(SESSION.head)
-            return self._send(200, to_ldr(v.build) if v else "", "text/plain")
+            # Include the sequenced 0 STEP markers (HANDOFF: "LDrawLoader reads steps natively").
+            return self._send(200, to_ldr(v.build, _payload()["steps"]) if v else "", "text/plain")
         if u.path == "/api/build_stream":
             prompt = parse_qs(u.query).get("prompt", ["build a rover"])[0]
             return self._stream_build(prompt)
@@ -114,6 +116,15 @@ class H(BaseHTTPRequestHandler):
                 SESSION.undo()
             elif self.path == "/api/redo":
                 SESSION.redo()
+            elif self.path == "/api/inventory":
+                # The scanned bin (Lane A -> UI -> here). Empty list restores the demo bin.
+                from model import Inventory
+                counts = {}
+                for item in body.get("items", []):
+                    key = (str(item["part"]), int(item["color"]))
+                    counts[key] = counts.get(key, 0) + int(item["count"])
+                SESSION.inv = Inventory(counts) if counts else rich_bin()
+                return self._send(200, {"ok": True, "elements": len(counts)})
             else:
                 return self._send(404, {"error": "not found"})
         except Exception as e:
