@@ -47,6 +47,10 @@ function Steps() {
   const [failed, setFailed] = useState(false);
   const [step, setStep] = useState(() => Math.max(0, Number(params.get("step") ?? 0) || 0));
   const [rail, setRail] = useState(true);
+  // Rail size in px once the user drags the tab (null = the default size).
+  const [railSize, setRailSize] = useState<number | null>(null);
+  const [resizing, setResizing] = useState(false);
+  const asideRef = useRef<HTMLElement>(null);
   const [hint, setHint] = useState(true);
 
   const count = model?.stepCount ?? 0;
@@ -90,11 +94,12 @@ function Steps() {
     <main className="fixed inset-0 flex select-none overflow-hidden" style={{ background: MANUAL.page, flexDirection: landscape ? "row" : "column-reverse" }}>
       {/* Parts rail */}
       <aside
-        className="relative z-20 flex shrink-0 transition-[width,height] duration-300"
+        ref={asideRef}
+        className={`relative z-20 flex shrink-0 ${resizing ? "" : "transition-[width,height] duration-300"}`}
         style={
           landscape
-            ? { width: rail ? "min(30vw, 300px)" : 0, paddingLeft: rail ? "calc(var(--safe-left) + 0px)" : 0, background: MANUAL.callout, borderRight: rail ? `3px solid ${MANUAL.line}` : undefined }
-            : { height: rail ? "calc(168px + var(--safe-bottom))" : "calc(var(--safe-bottom) + 0px)", background: MANUAL.callout, borderTop: rail ? `3px solid ${MANUAL.line}` : undefined }
+            ? { width: rail ? (railSize ?? "min(30vw, 300px)") : 0, paddingLeft: rail ? "calc(var(--safe-left) + 0px)" : 0, background: MANUAL.callout, borderRight: rail ? `3px solid ${MANUAL.line}` : undefined }
+            : { height: rail ? (railSize ?? "calc(168px + var(--safe-bottom))") : "calc(var(--safe-bottom) + 0px)", background: MANUAL.callout, borderTop: rail ? `3px solid ${MANUAL.line}` : undefined }
         }
       >
         <div className={`flex h-full w-full overflow-hidden ${landscape ? "flex-col gap-3 px-5 py-5" : "flex-row items-center pb-[var(--safe-bottom)]"}`} style={{ opacity: rail ? 1 : 0, transition: "opacity 200ms" }}>
@@ -109,10 +114,39 @@ function Steps() {
             </IconTile>
           )}
         </div>
-        {/* Drawer handle */}
+        {/* Drawer handle: drag to resize the rail, tap to hide or show it */}
         <button
-          onClick={() => setRail((r) => !r)}
-          aria-label={rail ? "Hide parts" : "Show parts"}
+          aria-label={rail ? "Resize or hide parts" : "Show parts"}
+          onPointerDown={(e) => {
+            const aside = asideRef.current;
+            if (!aside) return;
+            e.currentTarget.setPointerCapture(e.pointerId);
+            const start = { x: e.clientX, y: e.clientY };
+            const box = aside.getBoundingClientRect();
+            let moved = false;
+            const move = (ev: PointerEvent) => {
+              if (!moved && Math.hypot(ev.clientX - start.x, ev.clientY - start.y) < 5) return;
+              if (!moved) {
+                moved = true;
+                setResizing(true);
+                setRail(true);
+              }
+              const size = landscape ? ev.clientX - box.left : box.bottom - ev.clientY;
+              const max = landscape ? Math.min(window.innerWidth * 0.6, 640) : window.innerHeight * 0.6;
+              setRailSize(Math.round(Math.max(landscape ? 180 : 120, Math.min(max, size))));
+            };
+            const up = () => {
+              window.removeEventListener("pointermove", move);
+              window.removeEventListener("pointerup", up);
+              window.removeEventListener("pointercancel", up);
+              setResizing(false);
+              if (!moved) setRail((r) => !r);
+            };
+            window.addEventListener("pointermove", move);
+            window.addEventListener("pointerup", up);
+            window.addEventListener("pointercancel", up);
+          }}
+          style={{ touchAction: "none", cursor: landscape ? "ew-resize" : "ns-resize" }}
           className={`absolute z-10 grid place-items-center bg-[#a9cdef] ${landscape ? "right-[-14px] top-1/2 h-[80px] w-[14px] -translate-y-1/2 rounded-r-[10px]" : "left-1/2 top-[-14px] h-[14px] w-[80px] -translate-x-1/2 rounded-t-[10px]"}`}
         >
           <span className={`rounded-full bg-[#4f86c6] ${landscape ? "h-[40px] w-[4px]" : "h-[4px] w-[40px]"}`} />

@@ -1,23 +1,21 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { PartImage } from "@/components/three/Snapshots";
 import { stepParts, type PreparedModel } from "@/lib/ldraw";
 
-// The manual's parts rail as a film strip of step frames. The current step
-// sits large and centred; earlier steps run toward the start, later ones
-// toward the end (nothing before step 1). Moving the pointer along the strip
-// magnifies the frames nearest to it like a dock, so a quick pass ripples.
+// The manual's parts rail as a scrolling film strip of step frames, like a
+// picker wheel: whichever frame is in the middle of the strip is the biggest,
+// and frames shrink toward the edges. Scrolling scrubs the build: the frame in
+// the middle is the current step, so the model builds up or comes apart as you
+// scroll. Changing step elsewhere (arrows, keys, tapping a frame) scrolls that
+// frame to the middle. Nothing sits before step 1.
 
-const GAP = 12;
-/** Neighbouring frames at rest, relative to the focused frame. */
-const REST = 0.52;
-/** How far the pointer can grow a frame, relative to the focused frame. */
-const REACH = 0.9;
-/** Falloff of the ripple along the strip, in multiples of the focused frame. */
-const SPREAD = 0.75;
-/** Frames rendered either side of the focus (the rest are off screen anyway). */
-const WINDOW = 7;
+const GAP = 10;
+/** Layout slot per frame, relative to the biggest (centred) frame. */
+const SLOT = 0.72;
+/** Smallest a frame gets, relative to the biggest. */
+const MIN = 0.56;
 
 type Props = {
   model: PreparedModel;
@@ -30,8 +28,8 @@ type Props = {
 export function StepStrip({ model, step, onPick, axis }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const [box, setBox] = useState({ w: 0, h: 0 });
-  const [pointer, setPointer] = useState<number | null>(null);
-  const frame = useRef(0);
+  const [scroll, setScroll] = useState(0);
+  const raf = useRef(0);
 
   useEffect(() => {
     const el = ref.current;
@@ -43,84 +41,114 @@ export function StepStrip({ model, step, onPick, axis }: Props) {
 
   const steps = useMemo(() => Array.from({ length: model.stepCount }, (_, i) => stepParts(model, i)), [model]);
 
-  const along = axis === "y" ? box.h : box.w;
-  const across = axis === "y" ? box.w : box.h;
-  const focus = Math.max(0, Math.min(across - 8, along * 0.46));
+  const vertical = axis === "y";
+  const along = vertical ? box.h : box.w;
+  const across = vertical ? box.w : box.h;
+  const big = Math.max(0, Math.min(across - 10, along * 0.5));
+  const slot = big * SLOT;
+  const pitch = slot + GAP;
+  // Padding lets the first and last frames reach the middle.
+  const pad = Math.max(0, (along - slot) / 2);
 
-  // Resting layout: the focused frame centred, neighbours packed outward.
-  const first = Math.max(0, step - WINDOW);
-  const last = Math.min(steps.length - 1, step + WINDOW);
-  const rest: { i: number; size: number; centre: number }[] = [];
-  for (let i = first; i <= last; i++) rest.push({ i, size: i === step ? focus : focus * REST, centre: 0 });
-  const place = (list: typeof rest) => {
-    const f = list.findIndex((r) => r.i === step);
-    list[f].centre = along / 2;
-    for (let k = f + 1; k < list.length; k++) list[k].centre = list[k - 1].centre + list[k - 1].size / 2 + GAP + list[k].size / 2;
-    for (let k = f - 1; k >= 0; k--) list[k].centre = list[k + 1].centre - list[k + 1].size / 2 - GAP - list[k].size / 2;
-    return list;
-  };
-  place(rest);
+  // Step changes that came from the user's own scrolling must not scroll the
+  // strip back (that would fight their finger); everything else re-centres.
+  const fromScroll = useRef<number | null>(null);
+  const smooth = useRef(false);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el || !big) return;
+    if (fromScroll.current === step) {
+      fromScroll.current = null;
+      return;
+    }
+    el.dataset.settling = smooth.current ? "1" : "0";
+    el.scrollTo({ [vertical ? "top" : "left"]: step * pitch, behavior: smooth.current ? "smooth" : "auto" });
+    smooth.current = true;
+  }, [step, pitch, vertical, big]);
 
-  // Pointer ripple: grow each frame by its distance from the pointer on the
-  // resting layout (so the sizes don't chase themselves), then re-pack.
-  const frames =
-    pointer === null
-      ? rest
-      : place(
-          rest.map((r) => {
-            const d = (r.centre - pointer) / (focus * SPREAD);
-            const grown = focus * REST + (focus * REACH - focus * REST) * Math.exp(-d * d);
-            return { ...r, size: Math.min(across - 8, Math.max(r.size, r.i === step ? r.size : grown)) };
-          }),
-        );
+  const pick = useRef(onPick);
+  const current = useRef(step);
+  useEffect(() => {
+    pick.current = onPick;
+    current.current = step;
+  }, [onPick, step]);
 
-  const track = (e: React.PointerEvent) => {
-    if (e.pointerType === "touch") return;
-    const rect = ref.current!.getBoundingClientRect();
-    const at = axis === "y" ? e.clientY - rect.top : e.clientX - rect.left;
-    cancelAnimationFrame(frame.current);
-    frame.current = requestAnimationFrame(() => setPointer(at));
+  const onScroll = () => {
+    cancelAnimationFrame(raf.current);
+    raf.current = requestAnimationFrame(() => {
+      const el = ref.current;
+      if (!el || !pitch) return;
+      const at = vertical ? el.scrollTop : el.scrollLeft;
+      setScroll(at);
+      // The frame nearest the middle is the step being shown.
+      const nearest = Math.max(0, Math.min(steps.length - 1, Math.round(at / pitch)));
+      if (nearest !== current.current && !programmatic(el, current.current * pitch, vertical)) {
+        fromScroll.current = nearest;
+        pick.current(nearest);
+      }
+    });
   };
 
   return (
     <div
       ref={ref}
-      className="relative min-h-0 min-w-0 flex-1 overflow-hidden"
-      onPointerMove={track}
-      onPointerLeave={() => {
-        cancelAnimationFrame(frame.current);
-        setPointer(null);
-      }}
+      onScroll={onScroll}
+      onWheel={() => ref.current && (ref.current.dataset.settling = "0")}
+      onTouchStart={() => ref.current && (ref.current.dataset.settling = "0")}
+      className={`no-scrollbar relative min-h-0 min-w-0 flex-1 ${vertical ? "overflow-y-auto overflow-x-hidden" : "overflow-x-auto overflow-y-hidden"}`}
+      style={{ scrollSnapType: `${vertical ? "y" : "x"} proximity` }}
     >
-      {focus > 0 &&
-        frames.map(({ i, size, centre }) => {
-          const current = i === step;
-          const pos = axis === "y" ? { left: (across - size) / 2, top: centre - size / 2 } : { top: (across - size) / 2, left: centre - size / 2 };
-          return (
-            <button
-              key={i}
-              onClick={() => onPick(i)}
-              aria-label={`Step ${i + 1}`}
-              aria-current={current ? "step" : undefined}
-              className="absolute overflow-hidden rounded-[14px] transition-[left,top,width,height,opacity] duration-150 ease-out"
-              style={{
-                ...pos,
-                width: size,
-                height: size,
-                background: current ? "#ffffff" : "rgba(255,255,255,0.62)",
-                boxShadow: current ? "0 0 0 3px #4f86c6, 0 6px 14px rgba(20,60,110,0.18)" : "inset 0 0 0 2px #b5d4f0",
-                opacity: current || pointer !== null ? 1 : 0.8,
-              }}
-            >
-              <FrameContent parts={steps[i]} size={size} />
-              <span className="absolute left-[6px] top-[4px] font-[900] leading-none text-ink" style={{ fontSize: Math.max(11, size * 0.11) }}>
-                {i + 1}
-              </span>
-            </button>
-          );
-        })}
+      {big > 0 && (
+        <div className="relative" style={vertical ? { height: pad * 2 + steps.length * pitch - GAP } : { width: pad * 2 + steps.length * pitch - GAP, height: "100%" }}>
+          {steps.map((parts, i) => {
+            const centre = pad + i * pitch + slot / 2;
+            const d = (centre - (scroll + along / 2)) / pitch;
+            if (Math.abs(d) > along / pitch) return null;
+            // Biggest in the middle, easing down toward the edges.
+            const scale = MIN + (1 - MIN) * Math.exp(-d * d * 1.6);
+            const current = i === step;
+            return (
+              <button
+                key={i}
+                onClick={() => onPick(i)}
+                aria-label={`Step ${i + 1}`}
+                aria-current={current ? "step" : undefined}
+                className="absolute overflow-hidden rounded-[14px]"
+                style={{
+                  ...(vertical ? { left: across / 2, top: centre } : { left: centre, top: across / 2 }),
+                  width: big,
+                  height: big,
+                  scrollSnapAlign: "center",
+                  // Laid out once at full size and scaled as one unit, so the
+                  // frame, bricks, counts and number always grow together.
+                  transform: `translate(-50%, -50%) scale(${scale})`,
+                  zIndex: Math.round(scale * 100),
+                  background: current ? "#ffffff" : "rgba(255,255,255,0.7)",
+                  boxShadow: current ? "0 0 0 4px #4f86c6, 0 6px 14px rgba(20,60,110,0.18)" : "inset 0 0 0 3px #b5d4f0",
+                }}
+              >
+                <FrameContent parts={parts} size={big} />
+                <span className="absolute left-[9px] top-[7px] font-[900] leading-none text-ink" style={{ fontSize: Math.max(13, big * 0.11) }}>
+                  {i + 1}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
+}
+
+/**
+ * True while a re-centring scroll we started is still travelling toward its
+ * target, so passing frames on the way don't count as the user scrubbing.
+ */
+function programmatic(el: HTMLElement, target: number, vertical: boolean) {
+  const at = vertical ? el.scrollTop : el.scrollLeft;
+  const settling = el.dataset.settling === "1";
+  if (Math.abs(at - target) < 2) el.dataset.settling = "0";
+  return settling && Math.abs(at - target) >= 2;
 }
 
 /** Up to four of the step's parts, each with its "2x" count. */
