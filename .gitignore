@@ -50,3 +50,8 @@ demo/canned-rich/
 eval/results.tsv
 data/web_piles/
 eval/real_cache.json
+data/real/inventory_batch2.json
+data/real/batch2/
+data/real/table/
+data/real/table_hires/
+data/real/spread/
