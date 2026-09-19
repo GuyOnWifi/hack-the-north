@@ -21,6 +21,10 @@ type Props = {
   step?: number;
   /** Continuous turntable rotation in rad/s (display mode). */
   spin?: number;
+  /** Show a connection node on every placed brick (the physics joints). */
+  joints?: boolean;
+  /** Indices of bricks the physics couldn't hold — drawn red. */
+  broken?: number[];
   interactive?: boolean;
   shadow?: boolean;
   onLoaded?: (model: PreparedModel) => void;
@@ -72,23 +76,66 @@ class Rig {
   private dragging = false;
   private resumeAt = 0;
 
+  // joint markers: one glowing node per brick, at the seam where it connects.
+  readonly jointGroup = new THREE.Group();
+  private markers: (THREE.Mesh | null)[] = [];
+  private showJoints = false;
+  private broken = new Set<number>();
+  private readonly markerGeo = new THREE.SphereGeometry(1, 14, 14);
+  private readonly greenMat = new THREE.MeshBasicMaterial({ color: 0x2fd66f, transparent: true, opacity: 0.95 });
+  private readonly redMat = new THREE.MeshBasicMaterial({ color: 0xf83b3b });
+
   constructor(readonly model: PreparedModel) {
     this.turntable.add(model.root);
+    this.turntable.add(this.jointGroup);
     const q = new THREE.Quaternion();
     for (const p of model.parts) {
       p.object.parent!.getWorldQuaternion(q);
       this.lifts.set(p.object, new THREE.Vector3(0, DROP_LDU, 0).applyQuaternion(q.invert()));
     }
+    this.buildMarkers();
+  }
+
+  /** A node hovering at each brick's connection seam. Fail-safe: any error just
+   * leaves the joints layer empty, the model still renders. */
+  private buildMarkers() {
+    try {
+      this.model.root.updateMatrixWorld(true);
+      this.turntable.updateMatrixWorld(true);
+      const r = THREE.MathUtils.clamp(this.model.box.getSize(new THREE.Vector3()).length() * 0.004, 0.9, 1.7);
+      this.markers = this.model.parts.map((p) => {
+        const box = new THREE.Box3().setFromObject(p.object);
+        if (box.isEmpty()) return null;
+        const c = box.getCenter(new THREE.Vector3());
+        const mesh = new THREE.Mesh(this.markerGeo, this.greenMat);
+        mesh.scale.setScalar(r);
+        // a small bright node sitting on top of each brick (its stud/joint)
+        mesh.position.copy(this.turntable.worldToLocal(new THREE.Vector3(c.x, box.max.y, c.z)));
+        mesh.visible = false;
+        mesh.renderOrder = 4;
+        this.jointGroup.add(mesh);
+        return mesh;
+      });
+    } catch {
+      this.markers = [];
+    }
+  }
+
+  setJoints(on: boolean, broken: number[]) {
+    this.showJoints = on;
+    this.broken = new Set(broken);
   }
 
   apply(mode: ViewMode, step: number) {
     const fresh: PreparedModel["parts"] = [];
     this.selection.length = 0;
-    for (const p of this.model.parts) {
+    this.model.parts.forEach((p, i) => {
       p.object.position.copy(p.home);
       const future = p.step > step;
+      let placed: boolean;
       if (mode === "steps") {
-        p.object.visible = !future;
+        placed = !future;
+        p.object.visible = placed;
         this.setGhost(p.object, false);
         if (p.step === step) {
           fresh.push(p);
@@ -96,9 +143,16 @@ class Rig {
         }
       } else {
         p.object.visible = true;
-        this.setGhost(p.object, mode === "timeline" && future);
+        const ghosted = mode === "timeline" && future;
+        this.setGhost(p.object, ghosted);
+        placed = !ghosted;
       }
-    }
+      const marker = this.markers[i];
+      if (marker) {
+        marker.visible = this.showJoints && placed;
+        marker.material = this.broken.has(i) ? this.redMat : this.greenMat;
+      }
+    });
     this.drop = { start: performance.now(), parts: fresh };
   }
 
@@ -161,6 +215,9 @@ class Rig {
 
   dispose() {
     this.ghost.dispose();
+    this.markerGeo.dispose();
+    this.greenMat.dispose();
+    this.redMat.dispose();
   }
 
   /** Swap a part between its real materials and the translucent ghost. */
@@ -184,7 +241,7 @@ type SceneProps = Props & {
   rig: React.RefObject<Rig | null>;
 };
 
-function Scene({ url, mode, step = 0, spin = 0.15, shadow, onLoaded, onError, controls, rig }: SceneProps) {
+function Scene({ url, mode, step = 0, spin = 0.15, joints = false, broken, shadow, onLoaded, onError, controls, rig }: SceneProps) {
   const [loaded, setLoaded] = useState<{ turntable: THREE.Group; shadowScale: number } | null>(null);
   const camera = useThree((s) => s.camera) as THREE.PerspectiveCamera;
   const aspect = useThree((s) => s.size.width / Math.max(1, s.size.height));
@@ -210,12 +267,14 @@ function Scene({ url, mode, step = 0, spin = 0.15, shadow, onLoaded, onError, co
     };
   }, [url, rig]);
 
+  const brokenKey = (broken ?? []).join(",");
   useEffect(() => {
     const r = rig.current;
     if (!r) return;
+    r.setJoints(joints, broken ?? []);
     r.apply(mode, step);
     r.frame(mode, step, camera);
-  }, [loaded, mode, step, camera, aspect, rig]);
+  }, [loaded, mode, step, camera, aspect, rig, joints, brokenKey, broken]);
 
   useEffect(() => {
     const c = controls.current;

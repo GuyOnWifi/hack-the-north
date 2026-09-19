@@ -29,6 +29,28 @@ def _weight(h, w):
     return float(h * w)          # mass ~ footprint area, one brick tall
 
 
+def broken_bricks(items):
+    """Indices of bricks with no support beneath them — nothing below and not on
+    the ground layer. These are the joints that fail (drawn red in the UI). A
+    stabilised build returns []; a raw LLM proposal often flags a few."""
+    items = list(items)
+    if not items:
+        return []
+    occ = {}
+    for c in [c for b in items for c in cells(*b)]:
+        occ[c] = True
+    ground_z = min(z for (h, w, x, y, z) in items)
+    bad = []
+    for i, (h, w, x, y, z) in enumerate(items):
+        if z == ground_z:
+            continue
+        supported = any((x + dx, y + dy, z - 1) in occ
+                        for dx in range(h) for dy in range(w))
+        if not supported:
+            bad.append(i)
+    return bad
+
+
 def analyze(items):
     """items = [(h,w,x,y,z)]. Returns dict: {stable, margin, worst_brick}.
     margin>0 => a feasible force set exists with that much capacity to spare."""

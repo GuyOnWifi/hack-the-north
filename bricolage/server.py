@@ -46,6 +46,7 @@ def _payload(vid=None):
         import physics
         ph = physics.analyze(prov["bricks"])
         phys = {"stable": ph["stable"], "studs": ph.get("studs", 0),
+                "broken": physics.broken_bricks(prov["bricks"]),
                 "backend": "harness", "com": None, "base": [], "failures": []}
     else:
         import stability

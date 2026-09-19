@@ -67,9 +67,13 @@ export interface Physics {
   stable: boolean;
   com: [number, number] | null;
   base: [number, number][];
-  topple_margin: number;
-  sturdiness: number;
-  weakest_layer: number | null;
+  topple_margin?: number;
+  sturdiness?: number;
+  weakest_layer?: number | null;
+  /** Number of stud joints the solver checked (harness builds). */
+  studs?: number;
+  /** Indices of bricks the force/torque solver couldn't hold — drawn red. */
+  broken?: number[];
   failures: { code: string; human: string }[];
 }
 
