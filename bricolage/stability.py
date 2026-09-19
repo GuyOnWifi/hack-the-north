@@ -74,6 +74,18 @@ def _dist_point_to_hull(pt, hull):
                for i in range(len(hull)))
 
 
+def _signed_clearance(pt, hull):
+    """Positive = pt is INSIDE the hull, by its distance to the nearest edge
+    (how much room before it tips). Negative = outside by that distance."""
+    d = _dist_point_to_hull(pt, hull)
+    if d > 0:
+        return -d
+    if len(hull) < 3:
+        return 0.0                       # degenerate base (a line/point): tippy
+    return min(_seg_dist(pt, hull[i], hull[(i + 1) % len(hull)])
+               for i in range(len(hull)))
+
+
 def _d(p, q):
     return ((p[0] - q[0]) ** 2 + (p[1] - q[1]) ** 2) ** 0.5
 
@@ -116,11 +128,37 @@ def report(parts):
     com, mass = _com_xz(parts)
     base = _hull(ground_studs)
     fails = analyze(parts)
+    topple_margin = _signed_clearance(com, base)   # studs of room before it tips
+
+    # weakest joint: the cut with the smallest clutch clearance, for a callout
+    filled = {}
+    for p in parts:
+        for i in range(p.footprint()[0]):
+            for j in range(p.footprint()[1]):
+                for k in range(p.height()):
+                    filled[(p.pos[0] + i, p.pos[1] + k, p.pos[2] + j)] = p.id
+    weakest, weakest_clr = None, CLUTCH_OVERHANG_STUDS
+    for y in sorted({p.pos[1] for p in parts if p.pos[1] > ground_y}):
+        js = [(x + 0.5, z + 0.5) for (x, yy, z) in filled
+              if yy == y and (x, yy - 1, z) in filled]
+        if not js:
+            continue
+        above, _ = _com_xz([p for p in parts if p.pos[1] >= y])
+        clr = CLUTCH_OVERHANG_STUDS + _signed_clearance(above, _hull(js))
+        if clr < weakest_clr:
+            weakest_clr, weakest = clr, y
+
+    # sturdiness 0-10: a legible heuristic from the tightest margin
+    tight = min(topple_margin, weakest_clr - CLUTCH_OVERHANG_STUDS + 1.5)
+    sturdiness = 0 if fails else max(1, min(10, round(3 + tight * 2.5)))
+
     return {"stable": not fails,
             "com": [round(com[0], 2), round(com[1], 2)],
             "mass": mass,
             "base": [[round(x, 1), round(z, 1)] for x, z in base],
-            "topple_margin": round(GROUND_MARGIN_STUDS - _dist_point_to_hull(com, base), 2),
+            "topple_margin": round(topple_margin, 2),
+            "sturdiness": sturdiness,
+            "weakest_layer": weakest,
             "failures": [{"code": f.code, "human": f.human} for f in fails]}
 
 
