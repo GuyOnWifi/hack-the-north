@@ -1,15 +1,13 @@
 "use client";
 
-import { LogoMark } from "./Logo";
-
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Plus, Smile } from "lucide-react";
+import { Home, Smile } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { play } from "@/lib/sound";
 import { IsoBrick } from "./IsoBrick";
 
-/** Floating white tab pill + yellow "new build" button (IMG_1247). */
+/** Floating white tab pill (IMG_1247). Designing starts from the search bar. */
 export function TabBar() {
   const path = usePathname();
   const tabs = [
@@ -25,19 +23,6 @@ export function TabBar() {
           </Link>
         ))}
       </div>
-      <Link
-        href="/home"
-        aria-label="New build"
-        className="chunky pointer-events-auto grid h-[72px] w-[72px] place-items-center rounded-[22px]"
-        style={{ background: "#f8d648", ["--rim" as string]: "#d8b320", ["--lift" as string]: "5px" } as React.CSSProperties}
-      >
-        <div className="relative">
-          <LogoMark size={44} small />
-          <span className="absolute -right-2 -top-2 grid h-6 w-6 place-items-center rounded-full bg-[#1a1a1a]">
-            <Plus size={14} color="#fff" strokeWidth={3} />
-          </span>
-        </div>
-      </Link>
     </nav>
   );
 }
