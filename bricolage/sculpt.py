@@ -93,16 +93,29 @@ def tile_voxels(cells, tape=None):
     return parts
 
 
-def build_voxels(voxels, name="Model", tape=None, seed=0):
+def build_voxels(voxels, name="Model", tape=None, seed=0, legalize=True):
     """arbitrary target shape -> legalised, tiled, connected Build."""
     from model import Build, SubAssembly
-    cells, _ = legalize_voxels(voxels, tape)
+    cells = legalize_voxels(voxels, tape)[0] if legalize else dict(voxels)
     parts = tile_voxels(cells, tape)
     parts = [type(p)(f"p{i}", p.part, p.color, p.pos, p.rot, p.sub)
              for i, p in enumerate(parts)]
     sub = SubAssembly("hull", None, "sculpt", (), None, ())
     return Build(id="bld_sculpt", version=0, name=name, parts=tuple(parts),
                  subs=(sub,), provenance={"backend": "sculpt", "seed": seed})
+
+
+def build_voxels_naive(voxels, name="Model", seed=0):
+    """What you get if the model just PLACES what it imagined — one 1x1 plate per
+    cell, no support legalisation, no bond. This is the 'LLM places bricks'
+    baseline: overhangs float, the mass isn't connected, it can't be built. The
+    contrast with build_voxels() is the whole thesis, made visible."""
+    from model import Build, SubAssembly, Part
+    parts = [Part(f"p{i}", "3024", col, (x, y, z), 0, "hull")
+             for i, ((x, y, z), col) in enumerate(sorted(voxels.items()))]
+    sub = SubAssembly("hull", None, "sculpt-naive", (), None, ())
+    return Build(id="bld_naive", version=0, name=name, parts=tuple(parts),
+                 subs=(sub,), provenance={"backend": "naive", "seed": seed})
 
 
 def build_sculpt(noun, size=1.0, seed=0, color=4):

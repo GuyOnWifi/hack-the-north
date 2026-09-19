@@ -67,6 +67,38 @@ def build_from_prompt(prompt, inventory, seed=0, tape=None):
             "tape": tape, "fix": result, "backend": backend}
 
 
+def compare(prompt, inventory, seed=0):
+    """Run the SAME request two ways for the split-screen demo:
+      naive    — the model's imagined shape placed as-is (LLM places bricks)
+      verified — our solver legalises + verifies it
+    Returns both builds with their reports + physics, so the UI can show the
+    floating/toppling mess next to the buildable one. This is the thesis."""
+    import router, stability
+    from client import LLMClient
+    from serialize import build_json, report_json
+    import sculpt as sculpt_backend
+
+    backend, noun, size, _ = router.route(prompt)
+    verified = build_from_prompt(prompt, inventory, seed)
+
+    if backend == "sculpt":
+        voxels, name = LLMClient().propose_shape(prompt, noun, size, seed)
+        naive = sculpt_backend.build_voxels_naive(voxels, name=name, seed=seed)
+    else:
+        # compose: the naive baseline is the raw generator output with NO repair
+        from generators import expand
+        comp = LLMClient().propose_compose(prompt, inventory.summarize(), noun, size, seed)
+        naive = expand(comp, name=comp.get("name", noun), seed=seed, lenient=True)
+
+    def pack(b):
+        return {"build": build_json(b), "report": report_json(validate(b, inventory)),
+                "physics": stability.report(b.parts)}
+    return {"prompt": prompt, "naive": pack(naive),
+            "verified": {"build": build_json(verified["build"]),
+                         "report": report_json(verified["report"]),
+                         "physics": stability.report(verified["build"].parts)}}
+
+
 def _describe(node, depth=0):
     args = node.get("args", {})
     kv = ", ".join(f"{k}={v}" for k, v in args.items() if k != "seed")

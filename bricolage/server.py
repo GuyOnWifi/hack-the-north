@@ -77,6 +77,11 @@ class H(BaseHTTPRequestHandler):
         if u.path == "/api/build_stream":
             prompt = parse_qs(u.query).get("prompt", ["build a rover"])[0]
             return self._stream_build(prompt)
+        if u.path == "/api/compare":
+            # split-screen: 'LLM places bricks' (floats/topples) vs our solver
+            from pipeline import compare
+            prompt = parse_qs(u.query).get("prompt", ["build me a flower"])[0]
+            return self._send(200, compare(prompt, SESSION.inv))
         self._send(404, {"error": "not found"})
 
     def _stream_build(self, prompt):
