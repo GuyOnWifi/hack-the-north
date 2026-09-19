@@ -70,6 +70,15 @@ repair loop and to be demonstrably correct on the cases that matter (topple, can
 center-of-mass + support-polygon + clutch-moment model is exactly that — rigorous where it
 counts, and it never claims a false "stable."
 
+**It also self-repairs.** When a build topples, the agent deterministically adds a wider
+foundation until the center of mass falls back inside the support polygon — physics rejects,
+it props itself up, it stands. And I score every build a **sturdiness 0–10** (how far the
+COM sits from the tipping edge) with a "weakest point" callout, so the physics is a number
+the judge can see, not a claim.
+
+> "It's a 7 out of 10 for sturdiness — the center of mass is well inside the base. Watch me
+> ask for a tall narrow tower: 4 out of 10, and here's the weakest joint."
+
 ---
 
 ## Decision: a solver legalizes arbitrary shapes (so it's not 6 templates)
@@ -203,3 +212,26 @@ it, it tells you honestly what's missing instead of hallucinating.
 
 **"What's the hard part?"** Legalizing an arbitrary shape into stable, connected geometry
 from a finite multiset of parts. It's NP-hard, and it's the part the model never touches.
+
+---
+
+## What's actually built (so I can speak to it honestly)
+
+The whole stack runs end-to-end and is verified: `python bricolage/tests.py` → 33 checks
+green, `next build` compiles clean, and a build through the app returns a valid,
+physics-stable model with a live agent tape. Highlights I can point a judge at:
+
+- The **agent tape** streams every decision live (router → designer → inspector → repair →
+  scribe) — the exhibit for the agentic prize.
+- **`/api/compare`** returns the same request built two ways for the split-screen: "LLM
+  places bricks" (floating, disconnected) vs. our verified build.
+- **Physics** rejects a connected-but-leaning build, self-repairs a toppling one, and scores
+  sturdiness — all deterministic, all visible.
+- The real **`claude -p`** designs live (no API key) — I've watched it make a mistake
+  (attach a part with no socket) and the system catch it and keep going.
+- Colours are exact (baked from the real LDraw `LDConfig.ldr`); the manual exports to a
+  real LDraw file that opens in Studio.
+
+**One-liner if I only get a sentence:** "You dump your bricks, ask for anything, and it
+invents a model that uses only what you own and proves — with real statics — that it won't
+fall over, then hands you the manual."
