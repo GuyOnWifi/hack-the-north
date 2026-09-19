@@ -5,6 +5,7 @@ Attachment points are frozen; children reattach by socket name.
 """
 from __future__ import annotations
 import copy
+import re
 from dataclasses import replace
 
 from generators import expand
@@ -20,9 +21,9 @@ def parse_edit(text, build):
     """Parse an edit into an op dict, or None if nothing recognisable."""
     t = text.lower()
 
-    # recolour: any colour word -> repaint the shape
+    # recolour: any colour word (whole word, so "rendered" != "red")
     for word, code in NAME_TO_CODE.items():
-        if word in t:
+        if re.search(rf"\b{word}\b", t):
             return {"kind": "recolor", "color": code, "word": word}
 
     # resize: a delta word, targeting a generator by name (compose builds)

@@ -252,12 +252,32 @@ class AttachError(Exception):
 
 
 def _run_gen(node, seed):
+    """Run a generator from LLM-chosen args, SANITISED: unknown kwargs dropped,
+    numeric args coerced (a string 'long' or a bad value falls back to the
+    default), and any failure surfaced as AttachError so the lenient/fallback
+    machinery absorbs it. Malformed model output must degrade, never crash."""
+    import inspect
     name = node["gen"]
     if name not in GENERATORS:
         raise AttachError(f"unknown generator {name!r}")
-    args = dict(node.get("args", {}))
+    fn = GENERATORS[name]
+    params = inspect.signature(fn).parameters
+    args = {}
+    for k, v in dict(node.get("args", {})).items():
+        if k not in params:
+            continue                       # drop kwargs this generator doesn't take
+        default = params[k].default
+        if isinstance(default, int) and not isinstance(default, bool) and not isinstance(v, bool):
+            try:
+                v = int(v)
+            except (TypeError, ValueError):
+                continue                   # unusable number -> use the default
+        args[k] = v
     args["seed"] = args.get("seed", seed)
-    return GENERATORS[name](**args)
+    try:
+        return fn(**args)
+    except Exception as e:                  # never let a bad arg crash the pipeline
+        raise AttachError(f"{name} rejected args {args}: {e}")
 
 
 def expand(composition, build_id="bld_demo", name="model", seed=0, lenient=False):

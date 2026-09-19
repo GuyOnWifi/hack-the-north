@@ -72,6 +72,9 @@ def fix(build, inventory, budget, tape, client=None):
         tape.emit("inspector", "verify", "build is valid on first try",
                   status="ok", ms=40)
         return FixResult(build, report, hits, 0, 0)
+    # track the best build seen (fewest errors) — a rung can regress, and we
+    # must never hand back something worse than we already had.
+    best_build, best_report = build, report
 
     while attempts < budget.max_attempts and not report.ok:
         attempts += 1
@@ -149,11 +152,17 @@ def fix(build, inventory, budget, tape, client=None):
         if after < before:
             hits[applied_rung] += (before - after)
             closed += (before - after)
+        if report.ok or len(report.errors) < len(best_report.errors):
+            best_build, best_report = build, report
+        if report.ok:
+            break
 
+    # return the BEST build we ever produced, not the last (a late rung can regress)
+    build, report = best_build, best_report
     degraded = not report.ok
     if degraded:
         tape.emit("inspector", "degrade",
-                  f"budget spent; returning best build with {len(report.errors)} "
+                  f"budget spent; returning the best build with {len(report.errors)} "
                   f"honest issue(s) rather than spinning", status="warn", ms=20)
     else:
         tape.emit("inspector", "verify", "all issues resolved — build stands up",

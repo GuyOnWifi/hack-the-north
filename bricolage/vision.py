@@ -17,15 +17,18 @@ from sculpt import build_voxels
 
 
 def available():
-    return os.environ.get("PROVIDER", "mock") in ("claude_cli", "claude-cli", "cli")
+    from client import provider          # respects DEMO_SAFE (offline kill-switch)
+    return provider() in ("claude_cli", "claude-cli", "cli")
 
 
-def _critique(image_path, prompt):
-    """Show the render to the model. Returns {looks_right, critique, grid}."""
+def _critique(image_path, prompt, note=""):
+    """Show the render to the model. Returns {looks_right, critique, grid}.
+    `note` carries the previous round's complaint so the model fixes THAT."""
     from client import _first_json
+    hint = f" You previously noted: \"{note}\". Fix that specifically." if note else ""
     ask = (f"@{image_path}\n"
            f"This is a top-down render of LEGO pixel art meant to be: "
-           f"\"{prompt}\". Study it. Does it clearly read as that? Reply with ONE "
+           f"\"{prompt}\".{hint} Study it. Does it clearly read as that? Reply with ONE "
            "JSON object, no prose:\n"
            '{"looks_right": true|false, "critique": "<=12 words on what is wrong", '
            '"grid": ["row","row", ...] }\n'
@@ -58,21 +61,23 @@ def refine(build, voxels, prompt, tape, render_dir, rounds=2, seed=0):
     from sculpt import parse_mask
     from validate import validate
     best = build
+    note = ""
     for i in range(rounds):
         img = os.path.join(render_dir, f"look_{i}.png")
         render_build(best, img, view="top")   # plan view reads the picture clearly
         tape.emit("designer", "look", f"rendering and looking at my '{prompt}'…",
                   ms=1500, tokens=900)
-        verdict = _critique(img, prompt)
+        verdict = _critique(img, prompt, note)
         if not verdict:
             break
         if verdict["looks_right"] or not verdict.get("grid"):
             tape.emit("inspector", "vision",
                       f"looks right: {verdict['critique'] or 'matches the request'}",
                       status="ok", ms=1200)
-            break
+            return best                     # confirmed by a look — done
         tape.emit("inspector", "vision", f"not yet: {verdict['critique']}",
                   status="warn", ms=1200)
+        note = verdict["critique"]
         try:
             voxels = parse_mask(verdict["grid"])
             if not voxels:
@@ -83,9 +88,21 @@ def refine(build, voxels, prompt, tape, render_dir, rounds=2, seed=0):
                 tape.emit("repair", "reject-revision",
                           "that redraw wouldn't hold together — keeping the "
                           "previous version", status="warn", ms=8)
-                continue
+                break                       # don't re-ask the same question cold
             best = candidate
             tape.emit("designer", "revise", "redrew it from what I saw", ms=400)
         except Exception:
             break
+    # ensure the build we return was actually LOOKED at (the last round may have
+    # revised without a confirming look).
+    if best is not build:
+        img = os.path.join(render_dir, "look_final.png")
+        render_build(best, img, view="top")
+        v = _critique(img, prompt, note)
+        if v:
+            ok = v.get("looks_right")
+            tape.emit("inspector", "vision",
+                      ("looks right: " if ok else "shipping best effort — ")
+                      + (v.get("critique") or ""),
+                      status="ok" if ok else "warn", ms=1200)
     return best

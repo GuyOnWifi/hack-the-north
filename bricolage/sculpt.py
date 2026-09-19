@@ -23,14 +23,15 @@ SHAPES = {
 SUPPORT = 71   # light gray for auto-generated support columns
 
 
-def parse_mask(rows):
+def parse_mask(rows, cap=24):
     """A 2D colour pixel-art grid (list of equal-length strings, palette chars)
     -> a flat mosaic of voxels {(x,0,z): colour}. This is the sculpt shape now:
-    a picture laid flat, which reads clearly and colours naturally."""
+    a picture laid flat, which reads clearly and colours naturally. `cap` bounds
+    the grid so a runaway model response can't tile thousands of parts."""
     from meta import MASK_PALETTE
     v = {}
-    for z, row in enumerate(rows):
-        for x, ch in enumerate(str(row)):
+    for z, row in enumerate(list(rows)[:cap]):
+        for x, ch in enumerate(str(row)[:cap]):
             c = MASK_PALETTE.get(ch.lower())
             if c is not None:
                 v[(x, 0, z)] = c

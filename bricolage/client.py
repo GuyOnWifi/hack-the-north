@@ -51,21 +51,33 @@ def provider():
 
 def _first_json(text):
     """Extract the first balanced {...} object from CLI output (tolerates
-    surrounding prose or a ```json fence)."""
+    surrounding prose or a ```json fence). Ignores braces inside strings."""
     import json
-    depth = start = 0
+    depth = 0
+    start = None
+    instr = esc = False
     for i, ch in enumerate(text):
-        if ch == "{":
+        if instr:
+            if esc:
+                esc = False
+            elif ch == "\\":
+                esc = True
+            elif ch == '"':
+                instr = False
+            continue
+        if ch == '"':
+            instr = True
+        elif ch == "{":
             if depth == 0:
                 start = i
             depth += 1
-        elif ch == "}":
+        elif ch == "}" and depth > 0:
             depth -= 1
-            if depth == 0:
+            if depth == 0 and start is not None:
                 try:
                     return json.loads(text[start:i + 1])
                 except json.JSONDecodeError:
-                    start = 0
+                    start = None
     return None
 
 

@@ -29,13 +29,15 @@ def route(prompt):
     for w in words:
         if w in SIZE:
             size = SIZE[w]
-    for w in words:
-        if w in COMPOSE_NOUNS:
-            return "compose", w, size, f"'{w}' is a structural object -> compose"
-    for w in words:
-        if w in SCULPT_NOUNS:
-            return "sculpt", w, size, f"'{w}' is an organic shape -> sculpt"
-    # Unknown request: it's a freeform object ("a moon", "a dragon"). Let the
-    # designer IMAGINE it as a shape (sculpt) rather than defaulting to a vehicle.
-    noun = next((w for w in words if len(w) > 2 and w not in STOPWORDS), "blob")
+    # Head-noun heuristic: the LAST recognised noun wins, so "robot dog" -> dog
+    # (sculpt), "house cat" -> cat, but "desk rover" -> rover (compose).
+    ci = max((i for i, w in enumerate(words) if w in COMPOSE_NOUNS), default=-1)
+    si = max((i for i, w in enumerate(words) if w in SCULPT_NOUNS), default=-1)
+    if ci >= 0 and ci >= si:
+        return "compose", words[ci], size, f"'{words[ci]}' is a structural object -> compose"
+    if si >= 0:
+        return "sculpt", words[si], size, f"'{words[si]}' is an organic shape -> sculpt"
+    # Unknown request: a freeform object ("a moon", "a dragon"). Let the designer
+    # IMAGINE it as a shape (sculpt); take the last content word as the subject.
+    noun = next((w for w in reversed(words) if len(w) > 2 and w not in STOPWORDS), "blob")
     return "sculpt", noun, size, f"no structural keyword -> freeform shape '{noun}' -> sculpt"
