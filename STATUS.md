@@ -30,6 +30,11 @@ dependencies and no network.
 - [x] Honest-rejection path: impossible bin degrades to a truthful message.
 - [x] Fixtures for the frontend: `fixtures/{build,report,steps}.json`,
       `model.ldr`, `tape.sse`.
+- [x] **Version tree** (`session.py`): build/edit/try-another/undo/redo, ops
+      recorded, `replay()` byte-identical. **16/16 tests pass.**
+- [x] **`claude -p` provider** (`PROVIDER=claude_cli`): uses the authenticated
+      CLI as the designer, no API key; falls back to mock on any failure.
+- [x] Cabin walls rebuilt from staggered 1x2 bricks (fewer parts, real bond).
 
 ### Decisions locked this session (mirror into CONTEXT.md §8)
 - One-shot compose (LLM emits the whole tree; incremental only for edits).
@@ -41,11 +46,13 @@ dependencies and no network.
   (correctly) rejected as disconnected.
 
 ### Not done / next
-- [ ] Wire real Opus in `client._anthropic` (code is there, needs a key + test).
-- [ ] Version tree (undo/redo/try-another) — the pieces exist (immutable Build +
-      recorded op); needs a container to hold the tree.
-- [ ] SSE endpoint to stream the tape to the frontend live.
+- [ ] SSE endpoint to stream the tape to the frontend live (tape + session exist).
+- [ ] `scripts/build_part_meta.py`: parse real LDraw `.dat` to auto-generate +
+      verify the metadata table (needs the 80MB parts library on disk). This is
+      the one place an LDraw *reader* earns a dependency; the writer stays hand-rolled.
 - [ ] Richer generators (roof pitch, real wing sweep) once the core is trusted.
+- [ ] Keep the LLM's valid sub-parts on a partial socket rejection instead of
+      whole-composition fallback to the mock.
 
 ## Lanes A (CV), C (frontend) — owned by teammates
 Frontend can start now against `fixtures/`.

@@ -119,20 +119,41 @@ def chassis(length=8, width=4, color=72, seed=0):
     return SubResult(parts, sock, mount=None)
 
 
+def _seg(length, stagger):
+    """1D run of 1x2 bricks (+1x1 filler), seams shifted when `stagger`."""
+    out, pos = [], 0
+    if stagger and length >= 3:
+        out.append((1, 0)); pos = 1              # offset the first seam
+    while pos < length:
+        if length - pos >= 2:
+            out.append((2, pos)); pos += 2
+        else:
+            out.append((1, pos)); pos += 1
+    return out
+
+
 def cabin(style="closed", width=4, depth=3, height=2, color=15, seed=0):
-    """A box that sits on a deck. style: open (walls, no roof) | closed | cab."""
-    parts, n = [], 0
-    walls_h = height  # in bricks
-    for b in range(walls_h):
-        y = b * 3
-        # front & back walls (along x), left & right (along z)
-        for x in range(width):
-            parts.append(Part(f"c.{n}", "3005", color, (x, y, 0))); n += 1
-            parts.append(Part(f"c.{n}", "3005", color, (x, y, depth - 1))); n += 1
-        for z in range(1, depth - 1):
-            parts.append(Part(f"c.{n}", "3005", color, (0, y, z))); n += 1
-            parts.append(Part(f"c.{n}", "3005", color, (width - 1, y, z))); n += 1
-    top = walls_h * 3
+    """A box that sits on a deck. style: open (walls, no roof) | closed | cab.
+    Walls are 1x2 bricks (staggered per course) so they bond and don't burn a
+    huge pile of 1x1s."""
+    parts, n = [], [0]
+
+    def run_x(z, y, stag):                        # wall along x (1x2 laid flat)
+        for size, ox in _seg(width, stag):
+            part, rot = ("3004", 90) if size == 2 else ("3005", 0)
+            parts.append(Part(f"c.{n[0]}", part, color, (ox, y, z), rot, "root")); n[0] += 1
+
+    def run_z(x, y, stag):                        # wall along z (1x2 upright)
+        for size, oz in _seg(depth - 2, stag):
+            part = "3004" if size == 2 else "3005"
+            parts.append(Part(f"c.{n[0]}", part, color, (x, y, 1 + oz), 0, "root")); n[0] += 1
+
+    for b in range(height):
+        y, stag = b * 3, (b + seed) % 2 == 1
+        run_x(0, y, stag); run_x(depth - 1, y, stag)
+        if depth > 2:
+            run_z(0, y, stag); run_z(width - 1, y, stag)
+    top = height * 3
     if style in ("closed", "cab"):
         # a spanning plate top bridges the wall columns into one connected mass
         parts += tile_box(width, depth, top, color, seed, True, "root", phase=1)

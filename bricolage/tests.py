@@ -122,12 +122,41 @@ def test_substitution_fires():
           used_sub and res["report"].ok)
 
 
+def test_version_tree():
+    from demo import rich_bin
+    from session import Session
+    s = Session(rich_bin())
+    s.build("build a rover"); s.edit("make the chassis longer")
+    head_before = s.head
+    sib = s.try_another()                       # sibling of head, same parent
+    check("VERSION: try_another makes a sibling (same parent)",
+          sib.parent == s.versions[head_before].parent and sib.id != head_before)
+    s.undo()
+    check("VERSION: undo moves head to parent", s.head == sib.parent)
+    s.redo()
+    check("VERSION: redo returns to the child", s.head == sib.id)
+
+
+def test_replay_identical():
+    from demo import rich_bin
+    from session import Session
+    s = Session(rich_bin())
+    s.build("build a truck"); s.edit("make the chassis longer")
+    s.edit("make the cabin taller")
+    orig = to_ldr(s.versions[s.head].build)
+    replay = to_ldr(s.replay())
+    check("VERSION: replay of the op chain is byte-identical (DoD #2)",
+          orig == replay)
+
+
 def main():
     print("\n\x1b[1mvalidator — the law\x1b[0m")
     test_good(); test_overlap(); test_floating(); test_disconnected()
     print("\n\x1b[1minvariants\x1b[0m")
     test_no_floats_in_model(); test_determinism(); test_ldraw_roundtrip()
     test_insertion_sweep()
+    print("\n\x1b[1mversion tree\x1b[0m")
+    test_version_tree(); test_replay_identical()
     print("\n\x1b[1mend-to-end\x1b[0m")
     test_golden(); test_substitution_fires()
     print(f"\n  \x1b[1m{_n[1]}/{_n[0]} checks passed\x1b[0m\n")

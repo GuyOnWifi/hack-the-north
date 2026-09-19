@@ -13,11 +13,7 @@ import json
 
 from model import Inventory
 from pipeline import build_from_prompt
-from edit import parse_edit, apply_edit
-from generators import expand
-from validate import validate
 from ldraw import to_ldr
-from sequence import sequence
 
 BAR = "\x1b[90m" + "─" * 74 + "\x1b[0m"
 def h(t): print(f"\n{BAR}\n\x1b[1m{t}\x1b[0m\n{BAR}")
@@ -100,28 +96,33 @@ def main():
     inv3 = Inventory({("3069b", 15): 6, ("3024", 15): 4})   # a few tiles + 1x1 plates
     show(build_from_prompt("build a huge castle", inv3), inv3)
 
-    h("4 · THE EDIT LOOP  —  'make the chassis longer'")
-    inv = rich_bin()
-    res = build_from_prompt("build a rover", inv)
-    b0 = res["build"]
-    print(f"  before: {b0.name} v{b0.version}, {len(b0.parts)} parts, "
-          f"chassis length={_chassis_len(b0)}")
-    ed = parse_edit("make the chassis longer", b0)
-    b1 = apply_edit(b0, *ed, seed=0)
-    r1 = validate(b1, inv)
-    print(f"  edit:   '{'make the chassis longer'}'  -> {ed}")
-    print(f"  after:  v{b1.version}, {len(b1.parts)} parts, "
-          f"chassis length={_chassis_len(b1)}  valid={'✓' if r1.ok else '✗'}")
-    print(f"  \x1b[32m  the cabin + both axle_pairs reattached automatically — "
-          f"nobody re-specified a coordinate.\x1b[0m")
+    h("4 · THE EDIT LOOP + VERSION TREE  —  edit by talking, undo for free")
+    from session import Session
+    s = Session(rich_bin())
+    v1 = s.build("build a rover")
+    print(f"  build 'a rover'      -> {v1.id}: {len(v1.build.parts)} parts, "
+          f"chassis length={_chassis_len(v1.build)}")
+    v2 = s.edit("make the chassis longer")
+    print(f"  'chassis longer'     -> {v2.id}: chassis length={_chassis_len(v2.build)} "
+          f"(cabin + wheels reattached by socket name — no coordinates respecified)")
+    v3 = s.edit("make the cabin taller")
+    print(f"  'cabin taller'       -> {v3.id}: {len(v3.build.parts)} parts")
+    v4 = s.try_another()
+    print(f"  'try another'        -> {v4.id}: sibling of {v3.id}, new seed "
+          f"(different tiling, same request)")
+    print("\n  \x1b[1mversion tree:\x1b[0m")
+    print(s.tree_ascii())
+    s.undo(); print(f"\n  undo -> head at {s.head};  ", end="")
+    s.redo(); print(f"redo -> head at {s.head}")
 
-    h("5 · DETERMINISM  —  replay the recorded op reproduces byte-for-byte")
-    comp = b0.provenance["composition"]
-    replay = expand(comp, name=b0.name, seed=0)
-    a = to_ldr(b0); c = to_ldr(replay)
-    print(f"  original op -> {len(a)} bytes of LDraw")
-    print(f"  replay(op)  -> {len(c)} bytes of LDraw")
-    print(f"  identical:  {'✓ yes — undo/redo/try-another all fall out of this' if a==c else '✗ NO'}")
+    h("5 · DETERMINISM  —  replay the op chain reproduces byte-for-byte")
+    s.head = v3.id
+    a = to_ldr(s.versions[v3.id].build)
+    c = to_ldr(s.replay())
+    print(f"  op chain: build('a rover') -> chassis+2 -> cabin+1")
+    print(f"  original    -> {len(a)} bytes of LDraw")
+    print(f"  replay(ops) -> {len(c)} bytes of LDraw")
+    print(f"  identical:  {'✓ yes — undo/redo/try-another are one mechanism' if a==c else '✗ NO'}")
 
     h("6 · SCULPT BACKEND  —  'build a heart'  (voxel path)")
     inv = rich_bin()

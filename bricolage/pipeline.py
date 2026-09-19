@@ -26,15 +26,19 @@ def build_from_prompt(prompt, inventory, seed=0):
         build = sculpt_backend.build_sculpt(noun, size, seed)
     else:
         comp = client.propose_compose(prompt, inventory.summarize(), noun, size, seed)
-        root = comp["root"]
-        summary = _describe(root)
-        tape.emit("designer", "propose", summary, ms=1900, tokens=2400)
+        tape.emit("designer", "propose", _describe(comp["root"]), ms=1900, tokens=2400)
         try:
             build = expand(comp, name=comp.get("name", noun), seed=seed)
         except AttachError as e:
-            tape.emit("inspector", "reject", f"composition invalid: {e}",
-                      status="fail", ms=5)
-            raise
+            # a live model can emit an invalid tree — the inspector catches it
+            # pre-geometry; degrade to the deterministic mock rather than crash
+            tape.emit("inspector", "reject",
+                      f"composition invalid ({e}); falling back to a known-good "
+                      f"template", status="warn", ms=5)
+            from proposer import synthesize
+            comp = synthesize(noun, size, seed)
+            tape.emit("designer", "propose", _describe(comp["root"]), ms=200, tokens=0)
+            build = expand(comp, name=comp.get("name", noun), seed=seed)
 
     budget = Budget(seed=seed)
     result = fix(build, inventory, budget, tape, client)
