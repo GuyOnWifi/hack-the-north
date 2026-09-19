@@ -167,7 +167,7 @@ def build(prompt, name=None, tape=None, seed=0):
         kept = _stabilize(bricks.lint(_normalize(_propose_mock(prompt)))[0], tape)
     res = physics.analyze(kept)
     tape.emit("inspector", "physics",
-              f"force-balance check: {'stands up' if res['stable'] else 'still leaning'} "
+              f"force + torque check: {'stands up' if res['stable'] else 'would topple'} "
               f"({res.get('studs', 0)} stud joints)",
               status="ok" if res["stable"] else "warn", ms=45)
 
