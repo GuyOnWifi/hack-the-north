@@ -116,11 +116,18 @@ def test_golden():
 
 
 def test_substitution_fires():
+    # Prompts go to the design harness now, which skips the inventory ladder;
+    # the ladder still repairs edits, so drive it directly with a rover.
     from demo import adversarial_bin
-    res = build_from_prompt("build a rover", adversarial_bin(), seed=0)
-    used_sub = res["fix"].rung_hits.get(2, 0) > 0
+    from generators import expand
+    from proposer import synthesize
+    from repair import Budget, fix
+    from tape import Tape
+    rover = expand(synthesize("rover", 1.0, 0), name="rover", seed=0)
+    res = fix(rover, adversarial_bin(), Budget(seed=0), Tape())
+    used_sub = res.rung_hits.get(2, 0) > 0
     check("REPAIR: adversarial bin (no 2x4s) forces the substitution rung",
-          used_sub and res["report"].ok)
+          used_sub and res.report.ok)
 
 
 def test_generator_ids_unique():

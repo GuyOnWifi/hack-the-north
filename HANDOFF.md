@@ -1,22 +1,16 @@
 # Handoff — Lane B → UI
 
 Everything the UI needs to integrate. Lane B (build system) is done and tested
-(`python bricolage/tests.py` → 33/33). Pure Python, **zero dependencies**.
+(`PROVIDER=mock uv run --project brickify python bricolage/tests.py` → 33/33).
 
-## Run the full demo stack (verified working end-to-end)
+## Run the full demo stack
 
-Two terminals:
 ```bash
-# 1) backend (add PROVIDER=claude_cli for the real LLM designer, no API key)
-python bricolage/server.py                      # http://localhost:8017
-
-# 2) frontend (proxies /bricolage/* -> the backend)
-cd web && npm install && npm run build && BRICOLAGE_URL=http://127.0.0.1:8017 npm start
-# open http://localhost:3000
+./run.sh          # builds the web app if needed, starts API (:8017) + app (:3000)
 ```
-Verified on 2026-09-19: `next build` compiles clean (15 routes); a build through
-the proxy returns a valid, physics-stable flower with a live tape; `/api/compare`
-(the split-screen) is reachable. The app is "Brickbook".
+The designer is pipeline C (`brickify/`, see `docs/PIPELINES.md`): it needs
+`uv`, the `claude` CLI and `codex login`. `ENGINE=a ./run.sh` runs the archived
+layer builder instead; `PROVIDER=mock ./run.sh` is offline and instant.
 
 ## Fastest path: the live API
 

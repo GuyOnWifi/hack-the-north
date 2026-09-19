@@ -228,7 +228,8 @@ judged the same way.
 
 ## Beyond the UI
 
-- **brickify/** (idea -> real LEGO model: distill, concept image, brief,
-  build, critique) has its own rules in `brickify/AGENTS.md` and setup in
-  `brickify/README.md`. Its core principle: models decide what to build; code
-  places every brick.
+- **brickify/** is the app's designer (pipeline C: idea -> distill -> concept
+  image -> brief -> real LEGO parts -> critique). It has its own rules in
+  `brickify/AGENTS.md` and setup in `brickify/README.md`; the earlier
+  pipelines A and B are compared in `docs/PIPELINES.md`. Core principle: models
+  decide what to build; code places every brick.

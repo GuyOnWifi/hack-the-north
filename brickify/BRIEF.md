@@ -14,6 +14,16 @@ Design like a LEGO designer, not a 3D scanner:
 - Build separate sub-assemblies (head, wings, tail, legs, props) and join them
   with connectors, especially hinges for angles. That is what makes it read as
   a real set.
+- Match the concept's proportions, measured in studs, before anything else.
+  Stylised animals have oversized heads: a head that is only as wide as the
+  body reads as a column, not a character. If the concept's head is wider than
+  its body, make the head's grid wider (2-4 studs more) and let it overhang.
+- Signature parts must be big enough to read from across a room: floppy ears
+  that hang, not stubs; a tail you can see from the front.
+- Faces are round parts on the surface, never coloured cells in the grid: eyes
+  and noses are `98138` round tiles (or `6141` round plates) on a side stud
+  (`87087`) facing forward, so they stand proud of the face. Square colour
+  blocks in a grid read as goggles or sunglasses.
 
 ## Grid conventions (every body)
 

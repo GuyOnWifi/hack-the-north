@@ -78,3 +78,44 @@ def check_world(parts, detail: bool = False) -> dict:
     if detail:
         out["pairs"] = real
     return out
+
+
+def stands(parts) -> dict:
+    """Will it stand on a table? Centre of mass (every part weighted by its
+    body volume) must fall inside the footprint of the parts touching the
+    ground, with a little margin. Returns {stable, margin, direction} where
+    margin is in studs (negative = how far outside the base the weight sits)."""
+    if not parts:
+        return {"stable": False, "margin": 0.0, "direction": None}
+    cache: dict[str, np.ndarray] = {}
+    world = []
+    for p in parts:
+        s = cache.setdefault(p.pid, _samples(p.pid))
+        world.append((p.M @ s.T).T[:, :3])
+    pts = np.concatenate(world)
+    ground = pts[:, 1].max()  # LDraw: +y is down
+    com = pts[:, [0, 2]].mean(axis=0)
+    base = np.concatenate([w[w[:, 1] > ground - kit.PLATE, :][:, [0, 2]] for w in world if (w[:, 1] > ground - kit.PLATE).any()])
+    margin, direction = _inside(com, base)
+    # studs grip, so weight right on the edge still stands; only weight clearly
+    # past the base tips it over
+    return {"stable": margin > -0.25, "margin": round(margin, 2), "direction": direction}
+
+
+def _inside(point: np.ndarray, cloud: np.ndarray) -> tuple[float, str | None]:
+    """Signed distance in studs from `point` to the edge of the convex hull of
+    `cloud` (x/z, LDU): positive inside. Also names the side it leans toward."""
+    from scipy.spatial import ConvexHull, QhullError
+
+    try:
+        hull = ConvexHull(cloud)
+    except (QhullError, ValueError):  # a single row of studs: degenerate base
+        lo, hi = cloud.min(axis=0), cloud.max(axis=0)
+        d = np.minimum(point - lo, hi - point).min()
+        return float(d / kit.STUD), None
+    # hull.equations: n . x + c <= 0 inside; distance to each edge is -(n.x + c)
+    dist = -(hull.equations[:, :2] @ point + hull.equations[:, 2])
+    worst = int(np.argmin(dist))
+    n = hull.equations[worst, :2]
+    side = ("+x" if n[0] > 0 else "-x") if abs(n[0]) >= abs(n[1]) else ("+z" if n[1] > 0 else "-z")
+    return float(dist[worst] / kit.STUD), side

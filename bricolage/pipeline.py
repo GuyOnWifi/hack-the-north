@@ -13,12 +13,26 @@ from sequence import sequence, Unbuildable
 from tape import Tape
 from validate import validate
 
+# Which design engine builds from a prompt: "c" = brickify (pipeline C, the
+# default), "a" = the multi-agent layer builder (agents.py, archived as A).
+# Offline modes (PROVIDER=mock for tests, DEMO_SAFE=1 for dead wifi) never call
+# a model, so they stay on A's deterministic mock path.
+_OFFLINE = os.environ.get("PROVIDER") == "mock" or os.environ.get("DEMO_SAFE") == "1"
+ENGINE = os.environ.get("ENGINE", "a" if _OFFLINE else "c").lower()
+
 
 def build_from_prompt(prompt, inventory, seed=0, tape=None, recipe=None):
     """ONE path: the LEGO LLM harness. Every prompt is designed by the LLM in the
     3D brick grammar, then lint + force/torque physics checked. No hardcoded
     template designs, no canned fallbacks — it's real model output or nothing."""
     tape = tape or Tape()
+    if recipe is not None and recipe.get("backend") == "brickify":
+        import engine_c
+        return _finish_c(engine_c.from_recipe(recipe), tape)
+    if ENGINE == "c" and recipe is None:
+        import engine_c
+        _, noun, _, _ = router.route(prompt)
+        return _finish_c(engine_c.build(prompt, name=noun.title(), tape=tape), tape)
     import agents
 
     if recipe is not None:
@@ -35,6 +49,18 @@ def build_from_prompt(prompt, inventory, seed=0, tape=None, recipe=None):
               "color": build.parts[0].color if build.parts else 71,
               "bricks": build.provenance.get("bricks", [])}
     return _finish_harness(build, recipe, tape)
+
+
+def _finish_c(build, tape):
+    """Pipeline C builds carry their own steps, report and stability."""
+    import engine_c
+    from repair import FixResult
+    steps = engine_c.steps(build)
+    tape.emit("scribe", "sequence", f"ordered {steps['n_steps']} build steps", status="ok", ms=5)
+    report = engine_c.report(build)
+    return {"build": build, "report": report, "steps": steps, "tape": tape,
+            "fix": FixResult(build, report, __import__("collections").Counter(), 0, 0),
+            "backend": "brickify", "recipe": engine_c.recipe(build)}
 
 
 def _finish_harness(build, recipe, tape):
@@ -90,6 +116,9 @@ def compare(prompt, inventory, seed=0):
     # so the split-screen compares two renderings of one design, not two samples.
     verified = build_from_prompt(prompt, inventory, seed)
     recipe = verified["recipe"]
+    if recipe["backend"] == "brickify":
+        # C never lets a model place bricks, so there is no naive layout to show
+        raise ValueError("the naive-vs-verified split screen needs ENGINE=a")
     if recipe["backend"] == "harness":
         # naive = the model's raw proposal placed as-is (pre-lint, pre-physics),
         # so it can float/collide; verified = the same design legalised.

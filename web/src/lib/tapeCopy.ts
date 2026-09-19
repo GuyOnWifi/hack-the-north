@@ -38,9 +38,83 @@ const sentence = (s: string) => {
   return t.charAt(0).toUpperCase() + t.slice(1);
 };
 
+/** Pipeline C names sub-assemblies like "earL" / "wingR" / "body". */
+function bodyName(n: string) {
+  const side = n.match(/^(.+?)([LR])$/);
+  const base = (side ? side[1] : n).replace(/([a-z])([A-Z])/g, "$1 $2").toLowerCase();
+  return side ? `${side[2] === "L" ? "left" : "right"} ${base}` : base;
+}
+
+const plural = (n: string, word: string) => `${n} ${word}${n === "1" ? "" : "s"}`;
+
+/** Lines from pipeline C (brickify/brickify/pipeline.py). */
+function pipelineC(e: TapeEvent, t: string): TapeCopy | null {
+  let m: RegExpMatchArray | null;
+  switch (e.actor) {
+    case "router":
+      if ((m = t.match(/^'([^']+)': distill, concept.*x(\d+) max$/))) return { text: `Designing "${m[1]}": concept art, a brick plan, then up to ${m[2]} builds` };
+      return null;
+    case "planner":
+      if ((m = t.match(/^making '([^']+)' buildable/))) return { text: `Working out how "${m[1]}" can be built in bricks` };
+      if ((m = t.match(/^concept: (.*?)(?: \(changed: .*\))?$/))) return { text: `The plan: ${m[1]}` };
+      return null;
+    case "designer":
+      if (/^drawing the concept/.test(t)) return { text: "Drawing the concept art" };
+      if (/^concept ready/.test(t)) return { text: "The concept art is ready" };
+      if (/^turning the concept/.test(t)) return { text: "Drawing it from the side and the back" };
+      if ((m = t.match(/^got (\d+) extra view/))) return { text: m[1] === "0" ? "Couldn't draw the other sides, so going from the front" : "Got the side and back views" };
+      if (/^reading the concept and writing/.test(t)) return { text: "Turning the art into a brick plan" };
+      if ((m = t.match(/^brief written: (\d+) sub-assemblies/))) return { text: `Brick plan ready: ${plural(m[1], "section")}` };
+      if ((m = t.match(/^changing it: (.*)$/))) return { text: `Changing it: ${m[1]}` };
+      if (/^image generation failed/.test(t)) return { text: "Couldn't draw the concept art" };
+      return null;
+    case "inspector": {
+      if (/would tip over/.test(t)) return { text: "It would tip over, so the base needs to grow" };
+      const hits = [...t.matchAll(/in body '([^']+)' collides with \S+ in body '([^']+)'/g)];
+      if (hits.length) {
+        const pairs = [...new Set(hits.map((h) => [bodyName(h[1]), bodyName(h[2])].sort().join(" and ")))];
+        return pairs.length > 1 ? { text: `Pieces overlap in ${pairs.length} places`, parts: pairs } : { text: `Pieces overlap where the ${pairs[0]} meet` };
+      }
+      if (/could not be built/.test(t)) return { text: "That plan didn't make sense to the builder" };
+      if (/still unbuildable/.test(t)) return { text: "Couldn't turn the plan into bricks" };
+      if (/couldn't build that change/.test(t)) return { text: "Couldn't build that change, so keeping the last model" };
+      return null;
+    }
+    case "repair":
+      if (/revised the brief/.test(t)) return { text: "Reworked the plan so every brick fits" };
+      return null;
+    case "builder":
+      if ((m = t.match(/^round (\d+): (\d+) parts, (\d+) collisions, (stands|tips.*)$/))) {
+        const notes = [
+          m[3] === "0" ? "" : `${plural(m[3], "piece")} still overlapping`,
+          m[4] === "stands" ? "stands up" : "it would tip over",
+        ].filter(Boolean);
+        return { text: `Built version ${Number(m[1]) + 1}: ${plural(m[2], "brick")}, ${notes.join(", ")}` };
+      }
+      return null;
+    case "critic":
+      if (/^comparing the renders/.test(t)) return { text: "Comparing the build with the concept art" };
+      if ((m = t.match(/^score ([\d.]+)\/10: (.*)$/))) {
+        const first = m[2].split(";")[0].trim();
+        return { text: `Scored it ${m[1]}/10${first ? `. Next: ${first.charAt(0).toLowerCase()}${first.slice(1)}` : ""}` };
+      }
+      if (/^critique failed/.test(t)) return { text: "Couldn't review it, so keeping the best so far" };
+      return null;
+    case "scribe":
+      if ((m = t.match(/^best: round (\d+) scored ([\d.]+|None)\/10 \((\d+) parts\)/)))
+        return { text: m[2] === "None" ? `Picked version ${Number(m[1]) + 1} (${plural(m[3], "brick")})` : `Picked version ${Number(m[1]) + 1}: ${Number(m[2])}/10, ${plural(m[3], "brick")}` };
+      if (/^no buildable model/.test(t)) return { text: "Nothing buildable came out of this one" };
+      return null;
+  }
+  return null;
+}
+
 export function tapeCopy(e: TapeEvent): TapeCopy {
   const t = e.text.trim();
   let m: RegExpMatchArray | null;
+
+  const c = pipelineC(e, t);
+  if (c) return c;
 
   if (e.actor === "router") {
     if ((m = t.match(/^'([^']+)' is a structural object/))) return { text: `Planning a ${m[1]} out of bricks` };

@@ -1,25 +1,15 @@
 "use client";
 
 import { useEffect, useEffectEvent, useState } from "react";
-import { parseSse, type TapeActor, type TapeEvent } from "@/lib/bricolage";
+import { parseSse, type TapeEvent } from "@/lib/bricolage";
 import { tapeCopy } from "@/lib/tapeCopy";
+import { ACTOR_BRICK as ACTOR } from "@/lib/actors";
 
 // The agent tape as a tower of bricks: every step the agent takes is a brick
 // in that actor's colour, landing on top of the last, on a baseplate. A step
 // that fails sits crooked and cracked; once a later step fixes it, it greys
 // out. Plain words up front; timings and raw lines live behind "details".
 
-// Actor colours are real LDraw colours so the tower looks like actual bricks.
-const ACTOR: Record<TapeActor, { brick: string; ink: string; label: string }> = {
-  router: { brick: "#0055bf", ink: "#ffffff", label: "Router" },
-  planner: { brick: "#4b0082", ink: "#ffffff", label: "Planner" },
-  designer: { brick: "#00838f", ink: "#ffffff", label: "Designer" },
-  builder: { brick: "#1e5aa8", ink: "#ffffff", label: "Builder" },
-  critic: { brick: "#923978", ink: "#ffffff", label: "Critic" },
-  inspector: { brick: "#c91a09", ink: "#ffffff", label: "Inspector" },
-  repair: { brick: "#f2cd37", ink: "#1a1a1a", label: "Repair" },
-  scribe: { brick: "#237841", ink: "#ffffff", label: "Scribe" },
-};
 
 const STUD = { w: 20, h: 7 };
 

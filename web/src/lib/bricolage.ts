@@ -126,14 +126,18 @@ export class ApiError extends Error {
   }
 }
 
-const post = (path: string, body: unknown = {}) => request<Payload>(path, { method: "POST", body: JSON.stringify(body) });
+const post = (path: string, body: unknown = {}, timeoutMs?: number) => request<Payload>(path, { method: "POST", body: JSON.stringify(body) }, timeoutMs);
+
+// Pipeline C revises a brief for an edit (1-3 min) and redesigns from scratch
+// for "try another" (6-10 min), so those calls get room to finish.
+const DESIGN_TIMEOUT = 15 * 60 * 1000;
 
 export const bricolage = {
   state: () => request<Payload>("/state"),
   ldr: () => request<string>("/ldr"),
   build: (prompt: string) => post("/build", { prompt }),
-  edit: (text: string) => post("/edit", { text }),
-  tryAnother: () => post("/try_another"),
+  edit: (text: string) => post("/edit", { text }, DESIGN_TIMEOUT),
+  tryAnother: () => post("/try_another", {}, DESIGN_TIMEOUT),
   undo: () => post("/undo"),
   redo: () => post("/redo"),
   setInventory: (items: { part: string; color: number; count: number }[]) => request<{ ok: boolean; elements: number }>("/inventory", { method: "POST", body: JSON.stringify({ items }) }),

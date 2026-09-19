@@ -234,3 +234,11 @@ body {
     opacity: 0.45;
   }
 }
+
+/* A step brick in the feed: lands, holds while you read it, then clears. */
+@keyframes step-brick {
+  0% { opacity: 0; transform: translateX(28px) translateY(-6px); }
+  4% { opacity: 1; transform: translateX(0) translateY(0); }
+  80% { opacity: 1; transform: translateX(0) translateY(0); }
+  100% { opacity: 0; transform: translateY(-8px); }
+}

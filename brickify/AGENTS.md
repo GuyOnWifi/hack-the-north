@@ -33,8 +33,25 @@ blobs and overlapping pieces. Don't reintroduce that.
    `cd web && LDRAW_DIR=~/ldraw node scripts/build-ldraw-pack.mjs` (needs the
    LDraw library). Otherwise the renderer 404s on the new parts.
 6. **Measure, don't eyeball.** Judge changes by running the pipeline on the
-   same ideas and comparing `runs/<name>/result.json` scores, and by looking at
-   the renders in `runs/<name>/views-rN/`.
+   same ideas and comparing `runs/<run>/result.json` scores, and by looking at
+   the renders in `runs/<run>/views-rN/`.
+7. **The app speaks through the tape.** Every `tape.emit` line shows up on the
+   create screen, rewritten into plain words by `web/src/lib/tapeCopy.ts`
+   (`pipelineC`). When you add or change a message, add or update its pattern
+   there, or the user sees engineer-speak.
+8. **The app contract lives in `bricolage/engine_c.py`.** Runs must keep
+   writing `result.json` with `run`, `round`, `ldr` and `brief`, and `rN.ldr` /
+   `brief-N.json` per round: the app rebuilds versions from them (undo, replay)
+   without calling a model. Failures raise; never return a stand-in model.
+
+9. **Secrets live in `.env.local`, never in the repo.** `pipeline.py` loads it
+   on import. Don't print a key, commit one, or put one in a run log.
+
+## Lineage
+
+This is pipeline C: B's kernel-first loop plus the best of A (the layer
+builder). What came from where, and how to run A and B side by side:
+`docs/PIPELINES.md`.
 
 ## Known gaps (the critic keeps asking for these)
 

@@ -45,7 +45,7 @@ export const ChunkyButton = forwardRef<HTMLButtonElement, ButtonProps>(function 
   );
 });
 
-type TileTone = "white" | "glass" | "glass-light" | "dark" | "yellow";
+type TileTone = "white" | "glass" | "glass-light" | "dark" | "yellow" | "ai";
 
 const TILE: Record<TileTone, { bg: string; ink: string; rim?: string }> = {
   white: { bg: "#ffffff", ink: "#1a1a1a", rim: "#cccccc" },
@@ -53,6 +53,7 @@ const TILE: Record<TileTone, { bg: string; ink: string; rim?: string }> = {
   "glass-light": { bg: "rgba(0,0,0,0.2)", ink: "#ffffff" },
   dark: { bg: "rgba(0,0,0,0.55)", ink: "#ffffff" },
   yellow: { bg: "rgba(160,90,0,0.45)", ink: "#ffffff" },
+  ai: { bg: "#e3000b", ink: "#ffffff", rim: "#b30009" },
 };
 
 type TileProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {

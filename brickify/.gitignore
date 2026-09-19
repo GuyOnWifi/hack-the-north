@@ -7,3 +7,5 @@ meshes/
 concepts/*
 !concepts/hummingbird-gemini.png
 !concepts/dog-umbrella-gemini.png
+.env.local
+.env

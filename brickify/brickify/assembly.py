@@ -226,10 +226,16 @@ def to_ldr(parts: list[PartOut], name: str) -> str:
     by_body: dict[str, list[PartOut]] = {}
     for p in parts:
         by_body.setdefault(p.body, []).append(p)
+    # booklet order: sub-assembly by sub-assembly, one step per layer, bottom up
     for body, ps in by_body.items():
         ps.sort(key=lambda p: -p.M[1, 3])
+        layer = None
         for p in ps:
             m = p.M
+            here = round(m[1, 3] / kit.PLATE)
+            if layer is not None and here != layer:
+                lines.append("0 STEP")
+            layer = here
             r = " ".join(f"{v:.6g}" for v in m[:3, :3].reshape(-1))
             lines.append(f"1 {p.colour} {m[0, 3]:.4g} {m[1, 3]:.4g} {m[2, 3]:.4g} {r} {p.pid}.dat")
         lines.append("0 STEP")

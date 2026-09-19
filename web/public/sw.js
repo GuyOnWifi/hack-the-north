@@ -1,6 +1,6 @@
 // Cache-first for immutable assets (models, part images, Next static chunks),
 // network-first with cache fallback for pages, so a visited app works offline.
-const VERSION = "v2";
+const VERSION = "v3";
 const ASSETS = `assets-${VERSION}`;
 const PAGES = `pages-${VERSION}`;
 const PRECACHE = ["/", "/home", "/models/car.mpd", "/models/radar-truck.mpd", "/models/lunar.mpd"];
@@ -15,6 +15,17 @@ self.addEventListener("activate", (event) => {
       .keys()
       .then((keys) => Promise.all(keys.filter((k) => !k.endsWith(VERSION)).map((k) => caches.delete(k))))
       .then(() => self.clients.claim()),
+  );
+});
+
+// A step notification taps back into the app: focus the open tab, or open one.
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
+      const open = clients.find((c) => "focus" in c);
+      return open ? open.focus() : self.clients.openWindow("/");
+    }),
   );
 });
 

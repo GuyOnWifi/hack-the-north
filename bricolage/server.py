@@ -11,7 +11,8 @@ stdlib only, so it runs under DEMO_SAFE with wifi off.
   GET  /                               -> a tiny self-contained dev console
 
 Run:  python bricolage/server.py   (then open http://localhost:8017)
-Env:  PROVIDER=claude_cli  to use the real designer;  PORT to change the port.
+Env:  ENGINE=c (default: pipeline C, brickify) or ENGINE=a (the layer builder);
+      PROVIDER=mock for offline tests (implies ENGINE=a);  PORT to change the port.
 """
 from __future__ import annotations
 import json
@@ -23,6 +24,7 @@ from model import Inventory
 from session import Session
 from serialize import build_json, report_json
 from ldraw import to_ldr
+import engine_c
 
 # IMAGINE mode by default (unlimited bricks, any request). Posting a scanned
 # inventory switches to SOLVE mode (design within a real, finite bin).
@@ -35,14 +37,20 @@ def _payload(vid=None):
         return {"version": None, "tree": SESSION.tree_ascii()}
     from sequence import sequence, Unbuildable
     steps = None
-    if v.report.ok:
+    if engine_c.is_c(v.build):
+        steps = engine_c.steps(v.build)
+    elif v.report.ok:
         try:
             steps = sequence(v.build)
         except Unbuildable:
             pass
-    tape = v.tape.events if v.tape else []
+    # geometry events carry whole LDraw models for the live preview; the
+    # finished version's tape is the story, and the model has its own endpoint
+    tape = [e for e in v.tape.events if e.get("kind") != "geometry"] if v.tape else []
     prov = v.build.provenance
-    if prov.get("backend") == "harness" and prov.get("bricks"):
+    if engine_c.is_c(v.build):
+        phys = engine_c.physics(v.build)
+    elif prov.get("backend") == "harness" and prov.get("bricks"):
         import physics
         ph = physics.analyze(prov["bricks"])
         phys = {"stable": physics.stands(prov["bricks"]), "studs": ph.get("studs", 0),
@@ -83,6 +91,8 @@ class H(BaseHTTPRequestHandler):
             return self._send(200, _payload())
         if u.path == "/api/ldr":
             v = SESSION.versions.get(SESSION.head)
+            if v and engine_c.is_c(v.build):  # pipeline C writes its own LDraw, steps included
+                return self._send(200, v.build.provenance["ldr"], "text/plain")
             # Include the sequenced 0 STEP markers (HANDOFF: "LDrawLoader reads steps natively").
             return self._send(200, to_ldr(v.build, _payload()["steps"]) if v else "", "text/plain")
         if u.path == "/api/build_stream":

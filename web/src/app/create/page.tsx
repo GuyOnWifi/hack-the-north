@@ -1,17 +1,20 @@
 "use client";
 
-import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { Play, X } from "lucide-react";
-import { FloatingBricks, PlateProgress } from "@/components/ui/chrome";
-import { ChunkyButton, IconTile } from "@/components/ui/controls";
+import { GhostBricks, PlateProgress } from "@/components/ui/chrome";
+import { BrickChip, ChunkyButton, IconTile } from "@/components/ui/controls";
+import { BrickGlyph } from "@/components/ui/IsoBrick";
 import { AgentTape } from "@/components/AgentTape";
+import { StepBell } from "@/components/StepBell";
 import { BrickLoader, LogoLockup } from "@/components/ui/Logo";
 import { designBuild, getSteers, steer, tryAnother, useLive } from "@/lib/live";
 import { LIVE_ID } from "@/lib/useBuild";
 import { useAssembly } from "@/lib/useAssembly";
+import { useLandscape } from "@/lib/useOrientation";
+import { tapeCopy } from "@/lib/tapeCopy";
 
 const ModelView = dynamic(() => import("@/components/three/ModelView").then((m) => m.ModelView), { ssr: false });
 
@@ -23,14 +26,18 @@ export default function CreatePage() {
   );
 }
 
-const EXPECTED_EVENTS = 6;
+const EXPECTED_EVENTS = 16; // roughly what one design run emits
+const RAIL_W = 400;
+const RAIL_H = "46%";
 
-// Designing (IMG_1230 studio): the agent tape streams in live while Lane B
-// routes, designs, inspects, repairs and sequences; then we open the build.
+// Designing: the same full studio as the viewer (rule 10) with the model
+// floating in it, while the agent tape docks along the edge (rule 12) and the
+// design builds itself brick by brick in front of you.
 function Create() {
   const params = useSearchParams();
   const prompt = params.get("prompt")?.trim() || "build a rover";
   const live = useLive();
+  const landscape = useLandscape();
   const started = useRef<string | null>(null);
 
   useEffect(() => {
@@ -39,31 +46,25 @@ function Create() {
     designBuild(prompt);
   }, [prompt]);
 
-  const valid = live.payload?.report?.ok !== false;       // renderable / openable
-  const stable = live.payload?.physics?.stable !== false;  // physically stands?
+  const valid = live.payload?.report?.ok !== false; // renderable / openable
+  const stable = live.payload?.physics?.stable !== false; // physically stands?
+  const overlaps = !!live.payload?.report?.warnings?.some((w) => w.code === "OVERLAP");
 
   const events = live.prompt === prompt ? live.tape : [];
   const done = live.status === "ready" && live.prompt === prompt;
-  // show the real model when done; while working, show the speculative draft so
-  // bricks are on screen in seconds instead of at the end.
+  // show the finished model when it lands; while working, show the newest
+  // round the designer has built so far
   const isDraft = !done && !!live.partialUrl && live.prompt === prompt;
   const modelUrl = done ? live.modelUrl : isDraft ? live.partialUrl : null;
-  // the newest thing the designer "said", shown over the loading skeleton
-  const lastThink = [...events].reverse().find((e) => e.text)?.text ?? "designing in 3D…";
-  const showSkeleton = !modelUrl && live.status !== "error" && live.prompt === prompt;
-
-  // once the model resolves, stream it together brick-by-brick on this screen
-  const assembly = useAssembly(modelUrl);
-  const { steps: mSteps, step: astep, assembling } = assembly;
+  const lastEvent = [...events].reverse().find((e) => e.text);
+  const lastThink = lastEvent ? tapeCopy(lastEvent).text : "Reading your idea…";
   const failed = live.status === "error" && live.prompt === prompt;
   const progress = done ? 1 : Math.min(0.92, events.length / EXPECTED_EVENTS);
 
-  // show the physics: connection nodes at every joint the solver checked.
-  // off by default (clean model); the toggle reveals the joint layer.
-  const [showJoints, setShowJoints] = useState(false);
-  const physicsJointCount = live.payload?.physics?.studs ?? 0;
+  const assembly = useAssembly(modelUrl);
+  const { steps: mSteps, step: astep, assembling } = assembly;
 
-  // stop-and-steer: correct the build in natural language while it streams
+  // stop-and-steer: correct the build in plain language while it streams
   const [steerText, setSteerText] = useState("");
   const [steers, setSteers] = useState<string[]>([]);
   const submitSteer = () => {
@@ -75,156 +76,154 @@ function Create() {
   };
 
   return (
-    <main className="fixed inset-0 flex flex-col items-center overflow-y-auto" style={{ background: "linear-gradient(180deg,#6e6e6e 0%,#838383 50%,#959595 100%)" }}>
-      <FloatingBricks tone="grey" />
-      <div className="absolute left-5 top-5 z-10" style={{ marginTop: "calc(var(--safe-top) + 14px)" }}>
-        <LogoLockup size={26} ink="#ffffff" />
-      </div>
-      <div className="absolute right-5 top-5 z-10" style={{ marginTop: "var(--safe-top)" }}>
-        <IconTile tone="glass-light" label="Cancel" href="/builds" size={60}>
-          <X size={32} strokeWidth={2.6} />
-        </IconTile>
-      </div>
+    <main className="fixed inset-0 select-none overflow-hidden" style={{ background: "#e4f1fc" }}>
+      {/* the stage gives up its space to the docked tape, never sits under it */}
+      <div
+        className="absolute left-0 top-0 overflow-hidden transition-[right,bottom] duration-300 ease-out"
+        style={{ right: landscape ? RAIL_W : 0, bottom: landscape ? 0 : RAIL_H, background: "linear-gradient(180deg,#8dbbe7 0%,#acd0f0 42%,#c9e2f6 100%)" }}
+      >
+        <GhostBricks seed={73} cols={5} rows={3} scale={1.5} color="#123a8c" opacity={0.1} skip={0.25} />
 
-      <div className="relative z-10 flex w-full max-w-[520px] flex-col px-5" style={{ paddingTop: "calc(var(--safe-top) + 96px)" }}>
-        <p className="text-center text-[15px] font-bold uppercase tracking-wide text-white/70">{done ? (valid ? "Designed" : "Almost") : "Designing"}</p>
-        <h1 className="mt-1 text-center text-[28px] font-[900] leading-tight tracking-[-0.02em] text-white">&ldquo;{prompt}&rdquo;</h1>
-        {live.source === "fixture" && live.prompt === prompt && <p className="mt-2 text-center text-[14px] font-semibold text-white/80">The builder is offline, so this is the saved sample.</p>}
-
-        {/* the model streams itself together, brick by brick, right here */}
-        {modelUrl && (
-          <div className="relative mt-5 h-[268px] shrink-0 overflow-hidden rounded-[24px]" style={{ background: "linear-gradient(180deg,#0b1c22 0%,#376275 100%)", animation: "tape-in 300ms ease-out" }}>
-            <ModelView url={modelUrl} mode={assembling ? "timeline" : "display"} step={astep} spin={assembling ? 0 : 0.15} joints={showJoints} broken={live.payload?.physics?.broken} shadow onLoaded={(m) => assembly.start(m.stepCount)} onError={() => {}} />
-            {/* joints toggle — see the physics: a node at every connection the
-                solver checked, red where it couldn't hold. */}
-            <button
-              onClick={() => setShowJoints((v) => !v)}
-              className={`pointer-events-auto absolute left-3 top-3 flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-bold backdrop-blur active:scale-95 ${showJoints ? "bg-[#2fd66f] text-ink" : "bg-black/45 text-white"}`}
-            >
-              <span className="text-[14px] leading-none">◉</span> {physicsJointCount ? `${physicsJointCount} joints` : "joints"}
-            </button>
-            {isDraft && (
-              <span className="absolute right-3 top-3 rounded-full bg-[#3bb34a] px-3 py-1 text-[12px] font-bold text-white shadow">◍ building layer-by-layer…</span>
-            )}
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-between px-3 pb-2.5">
-              {assembling ? (
-                <span className="rounded-full bg-black/45 px-3 py-1 text-[13px] font-semibold text-white backdrop-blur">{isDraft ? "building" : "assembling"} · brick {Math.min(astep, mSteps ?? 0)}/{mSteps ?? "…"}</span>
-              ) : (
-                <button onClick={assembly.replay} className="pointer-events-auto flex items-center gap-1 rounded-full bg-white/90 px-3 py-1 text-[13px] font-bold text-ink active:scale-95">
-                  <Play size={14} fill="#1a1a1a" /> replay
-                </button>
-              )}
-              {!stable && <span className="rounded-full bg-[#e02436] px-3 py-1 text-[13px] font-bold text-white shadow">⚠ won&apos;t stand</span>}
-            </div>
-            {!stable && <div className="pointer-events-none absolute inset-2 rounded-[18px] ring-2 ring-[#e02436]/70" style={{ animation: "pulse 1.4s ease-in-out infinite" }} />}
-          </div>
-        )}
-
-        {/* loading skeleton — fills the render while the LLM designs, so the
-            area is never blank. Ghost bricks materialise; NOT a real design. */}
-        {showSkeleton && (
-          <div className="relative mt-5 h-[268px] shrink-0 overflow-hidden rounded-[24px]" style={{ background: "linear-gradient(180deg,#0b1c22 0%,#376275 100%)", animation: "tape-in 300ms ease-out" }}>
-            <div className="absolute inset-0 flex items-center justify-center" style={{ perspective: "600px" }}>
-              <div className="grid grid-cols-4 gap-2.5" style={{ transform: "rotateX(58deg) rotateZ(45deg)" }}>
-                {Array.from({ length: 16 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="h-10 w-10 rounded-[5px] border border-white/15 bg-white/10"
-                    style={{ animation: "pulse 1.5s ease-in-out infinite", animationDelay: `${((i % 4) + Math.floor(i / 4)) * 0.13}s` }}
-                  />
-                ))}
-              </div>
-            </div>
-            <div className="absolute left-3 top-3 rounded-full bg-black/40 px-3 py-1 text-[12px] font-bold text-white/90 backdrop-blur">◐ designing in 3D…</div>
-            <div className="absolute inset-x-0 bottom-0 flex items-center gap-2 px-3 pb-3">
-              <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-[#2fd66f]" />
-              <span className="truncate text-[13px] font-semibold text-white/90">{lastThink}</span>
+        {modelUrl ? (
+          <ModelView url={modelUrl} mode={assembling ? "timeline" : "display"} step={astep} spin={assembling ? 0 : 0.15} shadow onLoaded={(m) => assembly.start(m.stepCount)} onError={() => {}} />
+        ) : (
+          <div className="pointer-events-none absolute inset-0 grid place-items-center px-8">
+            <div className="flex flex-col items-center gap-4 text-center">
+              {!failed && <BrickLoader size={64} label="Designing your model…" />}
+              <p className="max-w-[420px] text-[17px] font-[800] leading-snug text-ink">{lastThink}</p>
             </div>
           </div>
         )}
 
-        {/* stop-and-steer — sits right under the render so you always steer the
-            thing you're looking at, mid-build or after. */}
-        <div className="mt-4 shrink-0">
-          {steers.length > 0 && (
-            <div className="mb-2 flex flex-wrap gap-1.5">
-              {steers.map((s, i) => (
-                <span key={i} className="rounded-full bg-purple/85 px-2.5 py-1 text-[12px] font-semibold text-white backdrop-blur">
-                  ↳ {s}
-                </span>
-              ))}
-            </div>
-          )}
-          <div className="flex items-center gap-2 rounded-[18px] bg-white p-1.5 pl-4 shadow-[0_10px_30px_rgba(0,0,0,0.3)] ring-2 ring-purple/40">
-            <input
-              value={steerText}
-              onChange={(e) => setSteerText(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && submitSteer()}
-              placeholder="Steer it — “not a 2d flower, a 3d one”"
-              className="min-w-0 flex-1 bg-transparent text-[15px] font-semibold text-ink outline-none placeholder:text-ink-soft/70"
-            />
-            <button
-              onClick={submitSteer}
-              disabled={!steerText.trim()}
-              className="shrink-0 rounded-[13px] bg-purple px-5 py-2 text-[15px] font-[800] text-white active:scale-95 disabled:opacity-40"
-            >
-              Steer
-            </button>
-          </div>
+        <div className="absolute left-0 top-0 flex items-center gap-3 p-5" style={{ paddingLeft: "calc(var(--safe-left) + 20px)", paddingTop: "calc(var(--safe-top) + 16px)" }}>
+          <LogoLockup size={24} />
         </div>
 
-        <div className="no-scrollbar mt-4 min-h-[240px] rounded-[24px] bg-[#eef0f2]/90 p-3 shadow-[0_18px_40px_rgba(0,0,0,0.25)]">
+        <div className="absolute right-0 top-0 flex items-center gap-2 p-5" style={{ paddingRight: "calc(var(--safe-right) + 12px)", paddingTop: "calc(var(--safe-top) + 12px)" }}>
+          <StepBell />
+          <IconTile tone="white" label="Cancel" href="/builds" size={56}>
+            <X size={30} strokeWidth={2.6} />
+          </IconTile>
+        </div>
+
+        {/* what it is and how it's going, along the bottom of the stage */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col gap-3 px-6 pb-5" style={{ paddingBottom: "calc(var(--safe-bottom) + 18px)" }}>
+          <div className="flex flex-wrap items-end gap-2">
+            {modelUrl &&
+              (assembling ? (
+                <BrickChip size="sm">
+                  Brick {Math.min(astep, mSteps ?? 0)} of {mSteps ?? "…"}
+                </BrickChip>
+              ) : (
+                <BrickChip size="sm" className="pointer-events-auto" onClick={assembly.replay}>
+                  <Play size={12} fill="#1a1a1a" /> Replay
+                </BrickChip>
+              ))}
+            {isDraft && (
+              <BrickChip size="sm" bg="#237841" ink="#ffffff">
+                Still improving it
+              </BrickChip>
+            )}
+            {modelUrl && !stable && (
+              <BrickChip size="sm" bg="#e3000b" ink="#ffffff">
+                Won&apos;t stand up
+              </BrickChip>
+            )}
+            {modelUrl && done && overlaps && (
+              <BrickChip size="sm" bg="#e3000b" ink="#ffffff">
+                Some pieces overlap
+              </BrickChip>
+            )}
+          </div>
+          <div className="flex items-end justify-between gap-4">
+            <div className="min-w-0">
+              <p className="text-[13px] font-[800] uppercase tracking-[0.1em] text-ink-soft">{done ? (valid ? "Designed" : "Almost") : "Designing"}</p>
+              <h1 className="truncate text-[26px] font-[900] leading-tight tracking-[-0.02em] text-ink">&ldquo;{prompt}&rdquo;</h1>
+            </div>
+            <div className="shrink-0 pb-1">
+              <PlateProgress value={progress} count={14} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* the agent tape, docked: the harness talking while it works */}
+      <aside
+        className="absolute z-40 flex min-w-0 flex-col overflow-hidden"
+        style={
+          landscape
+            ? { top: 0, right: 0, bottom: 0, width: RAIL_W, background: "#e4f1fc", borderLeft: "3px solid #9cc5ec", paddingTop: "var(--safe-top)", paddingRight: "var(--safe-right)" }
+            : { left: 0, right: 0, bottom: 0, height: RAIL_H, background: "#e4f1fc", borderTop: "3px solid #9cc5ec" }
+        }
+      >
+        <header className="flex items-center justify-between gap-2 px-5 pb-2 pt-4">
+          <span className="text-[19px] font-[800] text-ink">{done ? "How it was built" : "Building it"}</span>
+          {!done && <span className="h-2.5 w-2.5 animate-pulse rounded-[2px] bg-ai" />}
+        </header>
+
+        <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto px-5 pb-2">
           {failed ? (
-            <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
-              <p className="text-[19px] font-[800] text-ink">The builder didn&apos;t answer</p>
+            <div className="flex flex-col items-center justify-center gap-3 py-6 text-center">
+              <p className="text-[17px] font-[800] text-ink">The builder didn&apos;t answer</p>
               <p className="text-[15px] text-ink-soft">{live.error}</p>
-              <div className="mt-2 flex w-full gap-3">
-                <ChunkyButton variant="white" href="/builds">
-                  Back
-                </ChunkyButton>
-                <ChunkyButton variant="blue" onClick={() => designBuild(prompt)}>
-                  Try again
-                </ChunkyButton>
-              </div>
+              <ChunkyButton variant="blue" onClick={() => designBuild(prompt)}>
+                Try again
+              </ChunkyButton>
             </div>
           ) : events.length === 0 ? (
-            <div className="flex h-full items-center justify-center gap-2 text-[15px] font-semibold text-ink-soft">
-              <BrickLoader size={48} label="Reading your bricks…" />
+            <div className="grid h-full place-items-center">
+              <BrickLoader size={44} label="Reading your idea…" />
             </div>
           ) : (
             <AgentTape events={events} live={!done} />
           )}
         </div>
-        {done && !valid && (
-          <div className="mt-4 rounded-[20px] bg-white p-4" style={{ animation: "tape-in 260ms ease-out" }}>
-            <p className="text-[17px] font-[800] text-ink">That design doesn&apos;t fit your bricks yet</p>
+
+        <div className="shrink-0 border-t-2 border-[#9cc5ec] px-5 pb-4 pt-3" style={{ paddingBottom: landscape ? "calc(var(--safe-bottom) + 16px)" : "calc(var(--safe-bottom) + 12px)" }}>
+          {steers.length > 0 && (
+            <div className="mb-2 flex flex-wrap gap-1.5">
+              {steers.map((s, i) => (
+                <BrickChip key={i} size="sm" bg="#e3000b" ink="#ffffff">
+                  {s}
+                </BrickChip>
+              ))}
+            </div>
+          )}
+          {failed ? null : done && valid ? (
+            <div className="flex gap-3">
+              <ChunkyButton variant="white" className="!text-[16px]" onClick={() => tryAnother().catch(() => {})}>
+                Try another
+              </ChunkyButton>
+              <ChunkyButton variant="yellow" className="!text-[16px]" href={`/build/${LIVE_ID}`} icon={<BrickGlyph size={30} />}>
+                Open it
+              </ChunkyButton>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 rounded-[16px] bg-white p-1.5 pl-4 ring-2 ring-ai/40">
+              <input
+                value={steerText}
+                onChange={(e) => setSteerText(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && submitSteer()}
+                placeholder="Steer it: “make the ears floppier”"
+                className="min-w-0 flex-1 bg-transparent text-[15px] font-semibold text-ink outline-none placeholder:text-ink-soft/70"
+              />
+              <button onClick={submitSteer} disabled={!steerText.trim()} className="shrink-0 rounded-[12px] bg-ai px-4 py-2 text-[15px] font-[800] text-white active:scale-95 disabled:opacity-40">
+                Steer
+              </button>
+            </div>
+          )}
+          {done && !valid && (
             <ul className="mt-2 flex flex-col gap-1.5">
               {live.payload?.report?.errors.map((e, i) => (
-                <li key={i} className="rounded-[12px] bg-[#fde8ea] px-3 py-2 text-[14px] font-semibold text-[#9b1020]">
+                <li key={i} className="rounded-[10px] bg-[#fde8ea] px-3 py-2 text-[14px] font-semibold text-[#9b1020]">
                   {e.human}
                 </li>
               ))}
             </ul>
-            <div className="mt-4 flex gap-3">
-              <ChunkyButton variant="white" href="/builds" className="!text-[16px]">
-                New idea
-              </ChunkyButton>
-              <ChunkyButton variant="blue" className="!text-[16px]" onClick={() => tryAnother().catch(() => {})}>
-                Try another
-              </ChunkyButton>
-            </div>
-          </div>
-        )}
-        {done && valid && (
-          <Link href={`/build/${LIVE_ID}`} className="mt-4 text-center text-[16px] font-bold text-white underline-offset-4 hover:underline">
-            Open the build
-          </Link>
-        )}
-      </div>
-
-      <div className="relative z-10 pt-6" style={{ paddingBottom: "calc(var(--safe-bottom) + 30px)" }}>
-        <PlateProgress value={progress} count={14} />
-      </div>
+          )}
+          {live.source === "fixture" && live.prompt === prompt && <p className="mt-2 text-center text-[13px] font-semibold text-ink-soft">The builder is offline, so this is the saved sample.</p>}
+        </div>
+      </aside>
     </main>
   );
 }

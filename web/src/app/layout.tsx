@@ -3,6 +3,7 @@ import { Figtree } from "next/font/google";
 import { APP_NAME, APP_TAGLINE } from "@/lib/brand";
 import { ServiceWorker } from "@/components/ServiceWorker";
 import { SoundProvider } from "@/components/SoundProvider";
+import { StepFeed } from "@/components/StepFeed";
 import "./globals.css";
 
 const figtree = Figtree({
@@ -36,6 +37,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className={`${figtree.variable} h-full antialiased`}>
       <body className="min-h-dvh">
         {children}
+        <StepFeed />
         <ServiceWorker />
         <SoundProvider />
       </body>

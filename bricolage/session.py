@@ -12,6 +12,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from pipeline import build_from_prompt
+import engine_c
 from edit import apply_edit, parse_edit, describe as _describe_edit
 from validate import validate
 from repair import Budget, fix
@@ -69,8 +70,14 @@ class Session:
         result = fix(nb, self.inv, Budget(seed=seed), tape)
         return result.build, result.report, tape
 
-    def edit(self, text, seed=0):
+    def edit(self, text, seed=0, tape=None):
         cur = self.versions[self.head]
+        if engine_c.is_c(cur.build):
+            # pipeline C edits in plain language: it revises the model's brief
+            tape = tape or Tape()
+            nb = engine_c.edit(cur.build, text, tape)
+            return self._commit(self.head, {"kind": "edit_c", "text": text, "recipe": engine_c.recipe(nb)},
+                                nb, engine_c.report(nb), tape)
         op = parse_edit(text, cur.build)
         if not op:
             return cur
@@ -87,6 +94,12 @@ class Session:
             res = build_from_prompt(op["prompt"], self.inv, op["seed"])  # fresh sample
             op["recipe"] = res["recipe"]                                 # its own recipe
             return self._commit(cur.parent, op, res["build"], res["report"], res["tape"])
+        elif op["kind"] == "edit_c":  # ask for the same change again on the parent
+            base = self.versions[cur.parent].build
+            tape = Tape()
+            nb = engine_c.edit(base, op["text"], tape)
+            op["recipe"] = engine_c.recipe(nb)
+            return self._commit(cur.parent, op, nb, engine_c.report(nb), tape)
         else:  # edit — re-apply against the parent's build
             base = self.versions[cur.parent].build
             nb, rep, tape = self._run_edit(base, op["edit"], op["seed"])
@@ -118,6 +131,9 @@ class Session:
         for op in chain:
             if op["kind"] == "build":
                 fresh.build(op["prompt"], op["seed"], recipe=op.get("recipe"))
+            elif op["kind"] == "edit_c":
+                nb = engine_c.from_recipe(op["recipe"])
+                fresh._commit(fresh.head, op, nb, engine_c.report(nb))
             else:
                 fresh.edit_direct(op)
         return fresh.versions[fresh.head].build
