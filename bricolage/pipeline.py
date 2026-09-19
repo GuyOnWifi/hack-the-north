@@ -19,7 +19,7 @@ def build_from_prompt(prompt, inventory, seed=0, tape=None, recipe=None):
     3D brick grammar, then lint + force/torque physics checked. No hardcoded
     template designs, no canned fallbacks — it's real model output or nothing."""
     tape = tape or Tape()
-    import harness
+    import agents
 
     if recipe is not None:
         # DETERMINISTIC REPLAY from the recorded bricks — no router, no model.
@@ -30,7 +30,7 @@ def build_from_prompt(prompt, inventory, seed=0, tape=None, recipe=None):
 
     _, noun, _, reason = router.route(prompt)
     tape.emit("router", "route", f"{reason}  (backend=sculpt)", ms=2)
-    build = harness.build(prompt, name=noun.title(), tape=tape, seed=seed)
+    build = agents.build(prompt, name=noun.title(), tape=tape, seed=seed)
     recipe = {"backend": "harness", "name": build.name,
               "color": build.parts[0].color if build.parts else 71,
               "bricks": build.provenance.get("bricks", [])}
