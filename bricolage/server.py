@@ -41,12 +41,19 @@ def _payload(vid=None):
         except Unbuildable:
             pass
     tape = v.tape.events if v.tape else []
-    import stability
+    prov = v.build.provenance
+    if prov.get("backend") == "harness" and prov.get("bricks"):
+        import physics
+        ph = physics.analyze(prov["bricks"])
+        phys = {"stable": ph["stable"], "studs": ph.get("studs", 0),
+                "backend": "harness", "com": None, "base": [], "failures": []}
+    else:
+        import stability
+        phys = stability.report(v.build.parts)
     return {"version": v.id, "name": v.build.name,
             "build": build_json(v.build), "report": report_json(v.report),
             "steps": steps, "tape": tape, "tree": SESSION.tree_ascii(),
-            "physics": stability.report(v.build.parts),   # COM + support polygon to draw
-            "head": SESSION.head}
+            "physics": phys, "head": SESSION.head}
 
 
 class H(BaseHTTPRequestHandler):

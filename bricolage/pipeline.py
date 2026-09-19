@@ -22,7 +22,11 @@ def build_from_prompt(prompt, inventory, seed=0, tape=None, recipe=None):
         # router, no model, no vision. expand/fix are deterministic, so same
         # recipe + seed + inventory => byte-identical build.
         backend = recipe["backend"]
-        if backend == "sculpt":
+        if backend == "harness":
+            import bricks as bricks_mod
+            build = bricks_mod.to_build(recipe["bricks"], name=recipe["name"],
+                                        color=recipe.get("color", 71))
+        elif backend == "sculpt":
             build = sculpt_backend.build_voxels(recipe["voxels"], name=recipe["name"],
                                                 tape=tape, seed=seed)
         else:
@@ -36,23 +40,16 @@ def build_from_prompt(prompt, inventory, seed=0, tape=None, recipe=None):
     client = LLMClient(tape)
 
     if backend == "sculpt":
-        tape.emit("designer", "imagine",
-                  f"sketching '{prompt}' as a voxel shape…", ms=1400, tokens=1800)
-        voxels, model_name = client.propose_shape(prompt, noun, size, seed)
-        tape.emit("designer", "propose",
-                  f"proposed a {len(voxels)}-cell shape across "
-                  f"{len({y for _, y, _ in voxels})} layers", ms=200)
-        build = sculpt_backend.build_voxels(voxels, name=model_name, tape=tape, seed=seed)
-        # vision-in-the-loop: render it, look at it, correct it (real LLM only)
-        import vision
-        if vision.available():
-            import tempfile
-            rd = os.path.join(tempfile.gettempdir(), "bricolage_renders")
-            os.makedirs(rd, exist_ok=True)
-            build = vision.refine(build, voxels, prompt, tape, rd, rounds=1, seed=seed)
-        # record the FINAL mosaic (post-vision) so replay skips the model
-        recipe = {"backend": "sculpt", "name": model_name,
-                  "voxels": dict(build.provenance.get("voxels", voxels))}
+        # the LEGO LLM harness: prompt the model in 3D brick grammar, lint +
+        # real physics-check every placement. Validation is lint + force-balance
+        # physics (done inside harness.build), NOT the compose validator — a 3D
+        # wall of 1x1s is fine even though it lacks horizontal bond.
+        import harness, physics
+        build = harness.build(prompt, name=noun.title(), tape=tape, seed=seed)
+        recipe = {"backend": "harness", "name": build.name,
+                  "color": build.parts[0].color if build.parts else 71,
+                  "bricks": build.provenance.get("bricks", [])}
+        return _finish_harness(build, recipe, tape)
     else:
         comp = client.propose_compose(prompt, inventory.summarize(), noun, size, seed)
         tape.emit("designer", "propose", _describe(comp["root"]), ms=1900, tokens=2400)
@@ -77,6 +74,23 @@ def build_from_prompt(prompt, inventory, seed=0, tape=None, recipe=None):
 
     result = fix(build, inventory, Budget(seed=seed), tape, client)
     return _finish(result, backend, recipe, tape)
+
+
+def _finish_harness(build, recipe, tape):
+    """Harness builds validate via lint + force-balance physics (already run),
+    then sequence. Returns the standard pipeline result."""
+    import physics
+    from repair import FixResult
+    from validate import Report
+    ph = physics.analyze(recipe.get("bricks", []))
+    report = Report(ok=ph["stable"],
+                    errors=[] if ph["stable"] else
+                    [{"code": "UNSTABLE", "parts": [],
+                      "human": "the design won't stand — some bricks aren't held"}],
+                    warnings=[], stats={"parts": len(build.parts),
+                                        "studs_used": sum(p.footprint()[0] * p.footprint()[1] for p in build.parts),
+                                        "subs": 1})
+    return _finish(FixResult(build, report, __import__("collections").Counter(), 0, 0), "harness", recipe, tape)
 
 
 def _finish(result, backend, recipe, tape):
