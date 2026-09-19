@@ -21,6 +21,18 @@ DEMO_SAFE=1 python bricolage/server.py           # force offline mock (wifi-dead
 | POST | `/api/undo` / `/api/redo` | `{}` | moves the version-tree head |
 | GET  | `/api/state` | — | current payload |
 | GET  | `/api/ldr` | — | current model as **LDraw text** (feed three.js `LDrawLoader`) |
+| GET  | `/api/compare?prompt=...` | — | **split-screen**: `{naive, verified}`, each `{build, report, physics}` — render side by side |
+
+### New: physics + split-screen (the wow views)
+- **Every payload now has `physics`**: `{stable, com:[x,z], base:[[x,z]...], topple_margin, failures[]}`.
+  Draw the **centre-of-mass dot** at `com` and the **support polygon** through `base`
+  (on the ground plane). Green when `stable`, red + show `failures[].human` when not.
+- **`/api/compare`** returns the same request built two ways: `naive` ("LLM places
+  bricks" — floating, disconnected, its `report.errors` full) vs `verified` (our
+  solver — clean). Render both models side by side; it's the "not a GPT wrapper"
+  money shot. On `build me a flower`, naive has ~12 floating parts; verified is valid.
+- Colours: `physics`/`build` use LDraw colour codes; exact sRGB is in
+  `bricolage/meta.py` `COLOR_RGB` (baked from the real `LDConfig.ldr`).
 
 ## The data shapes (also frozen as files in `fixtures/`)
 
