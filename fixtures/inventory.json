@@ -1,0 +1,577 @@
+{
+  "session_id": "ses_fixture",
+  "items": [
+    {
+      "id": "inv_001",
+      "part": "3001",
+      "name": "brick 2x4",
+      "color": 4,
+      "qty": 8,
+      "source": "photo",
+      "confidence": {
+        "part": 0.94,
+        "color": 0.88
+      },
+      "status": "confirmed",
+      "evidence": {
+        "crop_url": "https://example.invalid/crops/001.png",
+        "alternatives": []
+      }
+    },
+    {
+      "id": "inv_002",
+      "part": "3001",
+      "name": "brick 2x4",
+      "color": 15,
+      "qty": 6,
+      "source": "photo",
+      "confidence": {
+        "part": 0.94,
+        "color": 0.88
+      },
+      "status": "confirmed",
+      "evidence": {
+        "crop_url": "https://example.invalid/crops/002.png",
+        "alternatives": []
+      }
+    },
+    {
+      "id": "inv_003",
+      "part": "3001",
+      "name": "brick 2x4",
+      "color": 0,
+      "qty": 4,
+      "source": "typed",
+      "confidence": {
+        "part": 0.94,
+        "color": 0.88
+      },
+      "status": "confirmed"
+    },
+    {
+      "id": "inv_004",
+      "part": "3003",
+      "name": "brick 2x2",
+      "color": 4,
+      "qty": 10,
+      "source": "photo",
+      "confidence": {
+        "part": 0.62,
+        "color": 0.88
+      },
+      "status": "needs_review",
+      "evidence": {
+        "crop_url": "https://example.invalid/crops/004.png",
+        "alternatives": [
+          {
+            "part": "3001",
+            "name": "brick 2x4",
+            "score": 0.41
+          },
+          {
+            "part": "3002",
+            "name": "brick 2x3",
+            "score": 0.22
+          }
+        ]
+      }
+    },
+    {
+      "id": "inv_005",
+      "part": "3003",
+      "name": "brick 2x2",
+      "color": 15,
+      "qty": 6,
+      "source": "photo",
+      "confidence": {
+        "part": 0.62,
+        "color": 0.88
+      },
+      "status": "needs_review",
+      "evidence": {
+        "crop_url": "https://example.invalid/crops/005.png",
+        "alternatives": [
+          {
+            "part": "3001",
+            "name": "brick 2x4",
+            "score": 0.41
+          },
+          {
+            "part": "3002",
+            "name": "brick 2x3",
+            "score": 0.22
+          }
+        ]
+      }
+    },
+    {
+      "id": "inv_006",
+      "part": "3002",
+      "name": "brick 2x3",
+      "color": 4,
+      "qty": 4,
+      "source": "typed",
+      "confidence": {
+        "part": 0.94,
+        "color": 0.88
+      },
+      "status": "confirmed"
+    },
+    {
+      "id": "inv_007",
+      "part": "2456",
+      "name": "brick 2x6",
+      "color": 15,
+      "qty": 3,
+      "source": "photo",
+      "confidence": {
+        "part": 0.94,
+        "color": 0.88
+      },
+      "status": "confirmed",
+      "evidence": {
+        "crop_url": "https://example.invalid/crops/007.png",
+        "alternatives": []
+      }
+    },
+    {
+      "id": "inv_008",
+      "part": "3007",
+      "name": "brick 2x8",
+      "color": 0,
+      "qty": 2,
+      "source": "photo",
+      "confidence": {
+        "part": 0.94,
+        "color": 0.88
+      },
+      "status": "confirmed",
+      "evidence": {
+        "crop_url": "https://example.invalid/crops/008.png",
+        "alternatives": []
+      }
+    },
+    {
+      "id": "inv_009",
+      "part": "3006",
+      "name": "brick 2x10",
+      "color": 4,
+      "qty": 1,
+      "source": "typed",
+      "confidence": {
+        "part": 0.94,
+        "color": 0.88
+      },
+      "status": "confirmed"
+    },
+    {
+      "id": "inv_010",
+      "part": "3004",
+      "name": "brick 1x2",
+      "color": 4,
+      "qty": 12,
+      "source": "photo",
+      "confidence": {
+        "part": 0.94,
+        "color": 0.88
+      },
+      "status": "confirmed",
+      "evidence": {
+        "crop_url": "https://example.invalid/crops/010.png",
+        "alternatives": []
+      }
+    },
+    {
+      "id": "inv_011",
+      "part": "3004",
+      "name": "brick 1x2",
+      "color": 15,
+      "qty": 9,
+      "source": "photo",
+      "confidence": {
+        "part": 0.94,
+        "color": 0.88
+      },
+      "status": "confirmed",
+      "evidence": {
+        "crop_url": "https://example.invalid/crops/011.png",
+        "alternatives": []
+      }
+    },
+    {
+      "id": "inv_012",
+      "part": "3005",
+      "name": "brick 1x1",
+      "color": 4,
+      "qty": 14,
+      "source": "typed",
+      "confidence": {
+        "part": 0.94,
+        "color": 0.88
+      },
+      "status": "confirmed"
+    },
+    {
+      "id": "inv_013",
+      "part": "3005",
+      "name": "brick 1x1",
+      "color": 0,
+      "qty": 8,
+      "source": "photo",
+      "confidence": {
+        "part": 0.94,
+        "color": 0.88
+      },
+      "status": "confirmed",
+      "evidence": {
+        "crop_url": "https://example.invalid/crops/013.png",
+        "alternatives": []
+      }
+    },
+    {
+      "id": "inv_014",
+      "part": "3010",
+      "name": "brick 1x4",
+      "color": 4,
+      "qty": 6,
+      "source": "photo",
+      "confidence": {
+        "part": 0.94,
+        "color": 0.88
+      },
+      "status": "confirmed",
+      "evidence": {
+        "crop_url": "https://example.invalid/crops/014.png",
+        "alternatives": []
+      }
+    },
+    {
+      "id": "inv_015",
+      "part": "3622",
+      "name": "brick 1x3",
+      "color": 15,
+      "qty": 5,
+      "source": "typed",
+      "confidence": {
+        "part": 0.94,
+        "color": 0.88
+      },
+      "status": "confirmed"
+    },
+    {
+      "id": "inv_016",
+      "part": "3009",
+      "name": "brick 1x6",
+      "color": 0,
+      "qty": 3,
+      "source": "photo",
+      "confidence": {
+        "part": 0.94,
+        "color": 0.88
+      },
+      "status": "confirmed",
+      "evidence": {
+        "crop_url": "https://example.invalid/crops/016.png",
+        "alternatives": []
+      }
+    },
+    {
+      "id": "inv_017",
+      "part": "3008",
+      "name": "brick 1x8",
+      "color": 4,
+      "qty": 2,
+      "source": "photo",
+      "confidence": {
+        "part": 0.94,
+        "color": 0.88
+      },
+      "status": "confirmed",
+      "evidence": {
+        "crop_url": "https://example.invalid/crops/017.png",
+        "alternatives": []
+      }
+    },
+    {
+      "id": "inv_018",
+      "part": "3020",
+      "name": "plate 2x4",
+      "color": 15,
+      "qty": 7,
+      "source": "typed",
+      "confidence": {
+        "part": 0.94,
+        "color": 0.88
+      },
+      "status": "confirmed"
+    },
+    {
+      "id": "inv_019",
+      "part": "3022",
+      "name": "plate 2x2",
+      "color": 4,
+      "qty": 9,
+      "source": "photo",
+      "confidence": {
+        "part": 0.94,
+        "color": 0.88
+      },
+      "status": "confirmed",
+      "evidence": {
+        "crop_url": "https://example.invalid/crops/019.png",
+        "alternatives": []
+      }
+    },
+    {
+      "id": "inv_020",
+      "part": "3021",
+      "name": "plate 2x3",
+      "color": 0,
+      "qty": 4,
+      "source": "photo",
+      "confidence": {
+        "part": 0.94,
+        "color": 0.88
+      },
+      "status": "confirmed",
+      "evidence": {
+        "crop_url": "https://example.invalid/crops/020.png",
+        "alternatives": []
+      }
+    },
+    {
+      "id": "inv_021",
+      "part": "3795",
+      "name": "plate 2x6",
+      "color": 15,
+      "qty": 3,
+      "source": "typed",
+      "confidence": {
+        "part": 0.94,
+        "color": 0.88
+      },
+      "status": "confirmed"
+    },
+    {
+      "id": "inv_022",
+      "part": "3034",
+      "name": "plate 2x8",
+      "color": 4,
+      "qty": 2,
+      "source": "photo",
+      "confidence": {
+        "part": 0.94,
+        "color": 0.88
+      },
+      "status": "confirmed",
+      "evidence": {
+        "crop_url": "https://example.invalid/crops/022.png",
+        "alternatives": []
+      }
+    },
+    {
+      "id": "inv_023",
+      "part": "3023b",
+      "name": "plate 1x2",
+      "color": 4,
+      "qty": 15,
+      "source": "photo",
+      "confidence": {
+        "part": 0.58,
+        "color": 0.88
+      },
+      "status": "needs_review",
+      "evidence": {
+        "crop_url": "https://example.invalid/crops/023.png",
+        "alternatives": [
+          {
+            "part": "3069b",
+            "name": "tile 1x2",
+            "score": 0.44
+          },
+          {
+            "part": "3024",
+            "name": "plate 1x1",
+            "score": 0.19
+          }
+        ]
+      }
+    },
+    {
+      "id": "inv_024",
+      "part": "3023b",
+      "name": "plate 1x2",
+      "color": 15,
+      "qty": 11,
+      "source": "typed",
+      "confidence": {
+        "part": 0.58,
+        "color": 0.88
+      },
+      "status": "needs_review"
+    },
+    {
+      "id": "inv_025",
+      "part": "3024",
+      "name": "plate 1x1",
+      "color": 4,
+      "qty": 18,
+      "source": "photo",
+      "confidence": {
+        "part": 0.94,
+        "color": 0.88
+      },
+      "status": "confirmed",
+      "evidence": {
+        "crop_url": "https://example.invalid/crops/025.png",
+        "alternatives": []
+      }
+    },
+    {
+      "id": "inv_026",
+      "part": "3024",
+      "name": "plate 1x1",
+      "color": 0,
+      "qty": 10,
+      "source": "photo",
+      "confidence": {
+        "part": 0.94,
+        "color": 0.88
+      },
+      "status": "confirmed",
+      "evidence": {
+        "crop_url": "https://example.invalid/crops/026.png",
+        "alternatives": []
+      }
+    },
+    {
+      "id": "inv_027",
+      "part": "3623",
+      "name": "plate 1x3",
+      "color": 15,
+      "qty": 6,
+      "source": "typed",
+      "confidence": {
+        "part": 0.94,
+        "color": 0.88
+      },
+      "status": "confirmed"
+    },
+    {
+      "id": "inv_028",
+      "part": "3710",
+      "name": "plate 1x4",
+      "color": 4,
+      "qty": 5,
+      "source": "photo",
+      "confidence": {
+        "part": 0.94,
+        "color": 0.88
+      },
+      "status": "confirmed",
+      "evidence": {
+        "crop_url": "https://example.invalid/crops/028.png",
+        "alternatives": []
+      }
+    },
+    {
+      "id": "inv_029",
+      "part": "3666",
+      "name": "plate 1x6",
+      "color": 0,
+      "qty": 3,
+      "source": "photo",
+      "confidence": {
+        "part": 0.94,
+        "color": 0.88
+      },
+      "status": "confirmed",
+      "evidence": {
+        "crop_url": "https://example.invalid/crops/029.png",
+        "alternatives": []
+      }
+    },
+    {
+      "id": "inv_030",
+      "part": "3460",
+      "name": "plate 1x8",
+      "color": 15,
+      "qty": 2,
+      "source": "typed",
+      "confidence": {
+        "part": 0.94,
+        "color": 0.88
+      },
+      "status": "confirmed"
+    },
+    {
+      "id": "inv_031",
+      "part": "3069b",
+      "name": "tile 1x2 with groove",
+      "color": 4,
+      "qty": 6,
+      "source": "photo",
+      "confidence": {
+        "part": 0.94,
+        "color": 0.88
+      },
+      "status": "confirmed",
+      "evidence": {
+        "crop_url": "https://example.invalid/crops/031.png",
+        "alternatives": []
+      }
+    },
+    {
+      "id": "inv_032",
+      "part": "3070b",
+      "name": "tile 1x1 with groove",
+      "color": 15,
+      "qty": 8,
+      "source": "photo",
+      "confidence": {
+        "part": 0.94,
+        "color": 0.88
+      },
+      "status": "confirmed",
+      "evidence": {
+        "crop_url": "https://example.invalid/crops/032.png",
+        "alternatives": []
+      }
+    },
+    {
+      "id": "inv_033",
+      "part": "2431",
+      "name": "tile 1x4 with groove",
+      "color": 0,
+      "qty": 4,
+      "source": "typed",
+      "confidence": {
+        "part": 0.94,
+        "color": 0.88
+      },
+      "status": "confirmed"
+    },
+    {
+      "id": "inv_034",
+      "part": "3068b",
+      "name": "tile 2x2 with groove",
+      "color": 4,
+      "qty": 3,
+      "source": "photo",
+      "confidence": {
+        "part": 0.94,
+        "color": 0.88
+      },
+      "status": "confirmed",
+      "evidence": {
+        "crop_url": "https://example.invalid/crops/034.png",
+        "alternatives": []
+      }
+    }
+  ],
+  "totals": {
+    "pieces": 219,
+    "distinct": 34,
+    "unknown": 2
+  }
+}

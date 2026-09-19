@@ -1,0 +1,8 @@
+{"t": 0, "actor": "cataloguer", "kind": "ingest", "text": "34 distinct parts, 2 need review", "status": "ok", "ms": 820}
+{"t": 820, "actor": "designer", "kind": "propose", "text": "chassis(10,4) + cabin(4,4,open)", "status": "ok", "ms": 1900, "tokens": 2400}
+{"t": 2720, "actor": "inspector", "kind": "validate", "text": "OUT_OF_BUDGET: needs 4x brick 2x4 in colour 4; you have 1", "status": "fail", "ms": 3}
+{"t": 2723, "actor": "repair", "kind": "rung0", "text": "substituted 3x (brick 2x4 -> 2x brick 2x2)", "status": "ok", "ms": 1}
+{"t": 2724, "actor": "inspector", "kind": "validate", "text": "WEAK_BOND: chassis seams stack", "status": "warn", "ms": 3}
+{"t": 2727, "actor": "repair", "kind": "rung1", "text": "re-tiled course 1 with an offset origin", "status": "ok", "ms": 2}
+{"t": 2729, "actor": "inspector", "kind": "validate", "text": "valid - 21 parts, 22 joins", "status": "ok", "ms": 3}
+{"t": 2732, "actor": "scribe", "kind": "sequence", "text": "6 steps", "status": "ok", "ms": 2200}

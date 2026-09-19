@@ -2,3 +2,51 @@ __pycache__/
 *.pyc
 .env
 *.local
+
+# --- CV lane (added on merge; the entries above came from main) ---
+.venv/
+.pytest_cache/
+*.pdf
+
+# Large downloads fetched by scripts, never committed
+data/ldraw/
+data/omr/
+data/rebrickable/
+data/library.csv
+data/*.sqlite
+data/models/
+data/brickognize_cache/
+
+# Third-party datasets. data/external is NOT redistributable: the Brickognize test set is
+# CC BY-NC-ND 2.0 (non-commercial, no derivatives) -- evaluate against it locally, never
+# commit or re-publish it.
+data/external/
+
+# Real photos: keep the folder structure, not the JPEGs
+data/real/**/*.jpg
+data/real/**/*.jpeg
+data/real/**/*.png
+
+# Generated artefacts -- all regenerable, none belong in git.
+# (Note: .gitignore has no trailing comments; a pattern line is the whole line.)
+data/test/
+data/real/crops/
+data/real/sheets/
+data/real/manual/
+data/real/manual_hires/
+data/real/debug/
+data/real/debug_hires/
+data/real/inventory.json
+data/real/inventory_all.json
+data/real/inventory_table.json
+data/real/inventory_hires.json
+data/real/inventory_retry.json
+data/real/collection.json
+data/real/crop_labels.json
+data/real/crops_index.json
+data/real/*.ldr
+demo/canned/
+demo/canned-rich/
+eval/results.tsv
+data/web_piles/
+eval/real_cache.json

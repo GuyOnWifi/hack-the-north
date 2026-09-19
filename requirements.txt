@@ -1,0 +1,32 @@
+# Python 3.10+ (developed and tested on 3.14).
+
+# Core build system
+bricknet>=0.1.0            # MIT -- connector table for 14,603 LDraw parts
+
+# CV lane
+opencv-python-headless>=4.9
+numpy>=1.26
+pillow>=10.0
+requests>=2.31
+
+# API lane
+fastapi>=0.115
+uvicorn[standard]>=0.30
+
+# Tests
+pytest>=8.0
+httpx>=0.27              # fastapi.testclient needs it
+
+# Optional, only if the real-photo eval says OpenCV segmentation is not good enough:
+#   pip install "git+https://github.com/facebookresearch/sam2.git"   # Apache-2.0
+
+# Added per lane as they come online:
+#   anthropic              -- the designer
+#   ortools                -- inventory-constrained tiling
+
+# Optional, render lane -- the PDF manual. NOT required: render/pdf.py falls back to headless
+# Chrome (already on every laptop) and then to self-contained HTML, so the manual ships either
+# way. WeasyPrint needs the cairo/pango/gdk-pixbuf SYSTEM libraries, not just the wheel:
+#   macOS:  brew install pango libffi && pip install weasyprint
+#   Debian: apt install libpango-1.0-0 libpangoft2-1.0-0 && pip install weasyprint
+#   weasyprint>=61
