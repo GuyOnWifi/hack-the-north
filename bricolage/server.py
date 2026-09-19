@@ -123,6 +123,14 @@ class H(BaseHTTPRequestHandler):
             self.wfile.flush()
         except (BrokenPipeError, ConnectionResetError):
             pass
+        except Exception as e:
+            # never leave the stream hanging: emit a terminal error frame so the
+            # frontend can show a failure instead of spinning forever.
+            try:
+                self.wfile.write(f"data: {json.dumps({'event': 'error', 'error': str(e)})}\n\n".encode())
+                self.wfile.flush()
+            except (BrokenPipeError, ConnectionResetError):
+                pass
 
     def do_POST(self):
         n = int(self.headers.get("Content-Length", 0))

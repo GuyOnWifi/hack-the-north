@@ -61,24 +61,41 @@ def analyze(items):
                 elif z == ground_z:
                     studs.append((i, None, pt, True))
 
-    # --- (1) force balance: can every brick's weight reach the ground through
-    # the stud/ground contacts, within each contact's capacity? Per-stud forces
-    # (fx,fy shear-bounded, fz = compression free / tension up to clutch). ---
+    # Full static equilibrium per brick: FORCE (3) + TORQUE (3) balance = 6 rows.
+    # A structure stands iff there EXISTS a set of per-stud contact forces that
+    # holds every brick in equilibrium under gravity within each joint's limits.
+    # Gravity acts at the centroid, so its moment about the centroid is zero and
+    # only the b Fz-row carries the weight; every torque row balances to zero.
+    # This is what lets over-cantilevering fail: holding a brick that juts past
+    # its support demands tension on the far studs beyond the clutch limit, so
+    # the moment rows become infeasible — the physically correct failure mode.
     ns = len(studs)
     nvars = 3 * ns
-    A = np.zeros((3 * n, nvars))
-    b = np.zeros(3 * n)
+    A = np.zeros((6 * n, nvars))
+    b = np.zeros(6 * n)
     for i in range(n):
-        b[3 * i + 2] = weight[i]
+        b[6 * i + 2] = weight[i]
+
+    def add_contact(bi, base, pt, sign):
+        """Force sign*f at point pt acts on brick bi: add its force + moment
+        (about bi's centroid) contributions to that brick's 6 equilibrium rows."""
+        A[6 * bi + 0, base + 0] += sign
+        A[6 * bi + 1, base + 1] += sign
+        A[6 * bi + 2, base + 2] += sign
+        rx = pt[0] - centroid[bi][0]; ry = pt[1] - centroid[bi][1]; rz = pt[2] - centroid[bi][2]
+        # tau = r x (sign*f):  tx=ry*fz-rz*fy, ty=rz*fx-rx*fz, tz=rx*fy-ry*fx
+        A[6 * bi + 3, base + 1] += sign * (-rz); A[6 * bi + 3, base + 2] += sign * ry
+        A[6 * bi + 4, base + 0] += sign * rz;    A[6 * bi + 4, base + 2] += sign * (-rx)
+        A[6 * bi + 5, base + 0] += sign * (-ry); A[6 * bi + 5, base + 1] += sign * rx
 
     bounds, Aub, bub = [], [], []
     for k, (up, low, pt, is_ground) in enumerate(studs):
         base = 3 * k
-        A[3 * up + 0, base + 0] += 1; A[3 * up + 1, base + 1] += 1; A[3 * up + 2, base + 2] += 1
+        add_contact(up, base, pt, +1.0)          # force on the upper brick
         if low is not None:
-            A[3 * low + 0, base + 0] -= 1; A[3 * low + 1, base + 1] -= 1; A[3 * low + 2, base + 2] -= 1
+            add_contact(low, base, pt, -1.0)     # equal & opposite on the lower
         if is_ground:
-            bounds += [(None, None), (None, None), (0, None)]
+            bounds += [(None, None), (None, None), (0, None)]   # ground pushes up only
             for ax in (0, 1):
                 r1 = np.zeros(nvars); r1[base + ax] = 1; r1[base + 2] = -GROUND_FRICTION
                 Aub.append(r1); bub.append(0.0)
@@ -86,66 +103,13 @@ def analyze(items):
                 Aub.append(r2); bub.append(0.0)
         else:
             bounds += [(-CLUTCH_SHEAR, CLUTCH_SHEAR), (-CLUTCH_SHEAR, CLUTCH_SHEAR),
-                       (-CLUTCH_TENSION, None)]
+                       (-CLUTCH_TENSION, None)]   # clutch: tension capped, compression free
     try:
         res = linprog(np.zeros(nvars), A_ub=np.array(Aub) if Aub else None,
                       b_ub=np.array(bub) if bub else None,
                       A_eq=A, b_eq=b, bounds=bounds, method="highs")
         supported = bool(res.success)
     except Exception:
-        supported = True
-
-    # A separate COM-over-base tipping test is deliberately NOT used: LEGO clutch
-    # holds cantilevers down, so real overhanging-but-stable models (a third of
-    # the dataset) would be wrongly rejected. Instead, over-cantilevering shows
-    # up above as INFEASIBLE force balance — the required stud tension exceeds the
-    # clutch limit — which is the physically correct failure mode.
+        supported = False                        # fail closed: a solver error is not a pass
     return {"stable": supported, "supported": supported, "studs": ns, "bricks": n}
 
-
-def _com_outside(com, pts, margin=1.2):
-    """True if COM is more than `margin` studs outside the convex hull of pts."""
-    if len(pts) < 3:
-        # degenerate base: use bounding box
-        xs = [p[0] for p in pts]; ys = [p[1] for p in pts]
-        return not (min(xs) - margin <= com[0] <= max(xs) + margin and
-                    min(ys) - margin <= com[1] <= max(ys) + margin)
-    hull = _hull(pts)
-    return _dist_to_hull(com, hull) > margin
-
-
-def _hull(pts):
-    pts = sorted(set(pts))
-    if len(pts) <= 2:
-        return pts
-
-    def cross(o, a, b):
-        return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
-    lo = []
-    for p in pts:
-        while len(lo) >= 2 and cross(lo[-2], lo[-1], p) <= 0:
-            lo.pop()
-        lo.append(p)
-    up = []
-    for p in reversed(pts):
-        while len(up) >= 2 and cross(up[-2], up[-1], p) <= 0:
-            up.pop()
-        up.append(p)
-    return lo[:-1] + up[:-1]
-
-
-def _dist_to_hull(p, hull):
-    inside = True
-    for i in range(len(hull)):
-        a, b = hull[i], hull[(i + 1) % len(hull)]
-        if (b[0] - a[0]) * (p[1] - a[1]) - (b[1] - a[1]) * (p[0] - a[0]) < 0:
-            inside = False
-    if inside:
-        return 0.0
-    best = 1e9
-    for i in range(len(hull)):
-        a, b = hull[i], hull[(i + 1) % len(hull)]
-        dx, dy = b[0] - a[0], b[1] - a[1]
-        t = 0 if dx == dy == 0 else max(0, min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / (dx * dx + dy * dy)))
-        best = min(best, ((p[0] - a[0] - t * dx) ** 2 + (p[1] - a[1] - t * dy) ** 2) ** 0.5)
-    return best

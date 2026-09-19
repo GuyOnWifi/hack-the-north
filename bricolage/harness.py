@@ -49,6 +49,26 @@ def _propose_claude(prompt):
     return bricks.parse(out.stdout)
 
 
+def _propose(prompt, tape=None):
+    """Get a brick proposal, degrading gracefully: real LLM if available, else
+    the offline 3D fallback. A failed/empty LLM call never propagates — it falls
+    back so the stream always finishes with a real structure."""
+    if available():
+        try:
+            items = _propose_claude(prompt)
+            if items:
+                return items
+            if tape:
+                tape.emit("designer", "propose", "model returned no bricks — "
+                          "using the offline 3D fallback", status="warn", ms=2)
+        except Exception as e:
+            if tape:
+                tape.emit("designer", "propose", f"designer call failed "
+                          f"({type(e).__name__}) — using the offline 3D fallback",
+                          status="warn", ms=2)
+    return _propose_mock(prompt)
+
+
 def _propose_mock(prompt):
     """Offline 3D fallback: a small hollow house (walls + pitched-ish roof) so
     the harness still yields a real 3D structure with no model."""
@@ -67,6 +87,18 @@ def _propose_mock(prompt):
             for y in range(inset, W - inset):
                 if x in (inset, W - 1 - inset) or y in (inset, W - 1 - inset):
                     items.append((1, 1, x, y, z))
+    return items
+
+
+def _normalize(items):
+    """Drop the model onto the plate: shift z so the lowest layer is 0. The LLM
+    (and the few-shot examples) sometimes start at z>0, which would otherwise
+    render/export floating above the baseplate while physics calls it grounded."""
+    if not items:
+        return items
+    zmin = min(z for (h, w, x, y, z) in items)
+    if zmin:
+        items = [(h, w, x, y, z - zmin) for (h, w, x, y, z) in items]
     return items
 
 
@@ -114,7 +146,7 @@ def build(prompt, name=None, tape=None, seed=0):
     tape = tape or Tape()
     tape.emit("designer", "think", f"planning a 3D build for '{prompt}'…",
               ms=1600, tokens=2000)
-    items = _propose_claude(prompt) if available() else _propose_mock(prompt)
+    items = _normalize(_propose(prompt, tape))
     tape.emit("designer", "propose", f"proposed {len(items)} bricks in 3D", ms=300)
 
     kept, issues = bricks.lint(items)
@@ -126,6 +158,13 @@ def build(prompt, name=None, tape=None, seed=0):
                   status="warn", ms=2)
 
     kept = _stabilize(kept, tape)
+    # junk guard: if almost nothing survived lint+physics, the proposal was
+    # garbage (apology text, all-collisions). Rebuild from the solid fallback so
+    # the user never gets an "ok" 2-brick blob.
+    if len(kept) < 6:
+        tape.emit("inspector", "reject", f"only {len(kept)} brick(s) held up — "
+                  f"rebuilding from a solid fallback", status="warn", ms=3)
+        kept = _stabilize(bricks.lint(_normalize(_propose_mock(prompt)))[0], tape)
     res = physics.analyze(kept)
     tape.emit("inspector", "physics",
               f"force-balance check: {'stands up' if res['stable'] else 'still leaning'} "

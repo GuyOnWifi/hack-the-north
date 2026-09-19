@@ -23,9 +23,13 @@ def build_from_prompt(prompt, inventory, seed=0, tape=None, recipe=None):
         # recipe + seed + inventory => byte-identical build.
         backend = recipe["backend"]
         if backend == "harness":
+            # harness builds validate via lint + force/torque physics (already
+            # baked into the recorded bricks), NOT the compose validator — go
+            # straight to the harness finish so replay is byte-identical.
             import bricks as bricks_mod
             build = bricks_mod.to_build(recipe["bricks"], name=recipe["name"],
                                         color=recipe.get("color", 71))
+            return _finish_harness(build, recipe, tape)
         elif backend == "sculpt":
             build = sculpt_backend.build_voxels(recipe["voxels"], name=recipe["name"],
                                                 tape=tape, seed=seed)
@@ -125,7 +129,13 @@ def compare(prompt, inventory, seed=0):
     # so the split-screen compares two renderings of one design, not two samples.
     verified = build_from_prompt(prompt, inventory, seed)
     recipe = verified["recipe"]
-    if recipe["backend"] == "sculpt":
+    if recipe["backend"] == "harness":
+        # naive = the model's raw proposal placed as-is (pre-lint, pre-physics),
+        # so it can float/collide; verified = the same design legalised.
+        import bricks as bricks_mod
+        raw = recipe.get("raw_bricks") or recipe.get("bricks", [])
+        naive = bricks_mod.to_build(raw, name=recipe["name"], color=recipe.get("color", 71))
+    elif recipe["backend"] == "sculpt":
         naive = sculpt_backend.build_voxels_naive(recipe["voxels"], name=recipe["name"], seed=seed)
     else:
         from generators import expand

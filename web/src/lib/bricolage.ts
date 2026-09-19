@@ -139,6 +139,7 @@ export const bricolage = {
       es.onmessage = (m) => {
         const data = JSON.parse(m.data);
         if (data.event === "done") done(() => resolve(data as Payload));
+        else if (data.event === "error") done(() => reject(new ApiError(data.error ?? "The builder hit an error")));
         else onEvent(data as TapeEvent);
       };
       es.onerror = () => done(() => reject(new ApiError("Lost connection to the builder")));
