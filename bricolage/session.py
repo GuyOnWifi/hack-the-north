@@ -49,9 +49,11 @@ class Session:
         return v
 
     # ---- operations ----------------------------------------------------
-    def build(self, prompt, seed=0, tape=None):
-        res = build_from_prompt(prompt, self.inv, seed, tape=tape)
-        return self._commit(None, {"kind": "build", "prompt": prompt, "seed": seed},
+    def build(self, prompt, seed=0, tape=None, recipe=None):
+        res = build_from_prompt(prompt, self.inv, seed, tape=tape, recipe=recipe)
+        # record the resolved LLM proposal so replay reproduces it without the model
+        return self._commit(None, {"kind": "build", "prompt": prompt, "seed": seed,
+                                   "recipe": res["recipe"]},
                             res["build"], res["report"], res["tape"])
 
     def _run_edit(self, base_build, op, seed):
@@ -80,7 +82,8 @@ class Session:
         op = dict(cur.op)
         op["seed"] = op.get("seed", 0) + 1
         if op["kind"] == "build":
-            res = build_from_prompt(op["prompt"], self.inv, op["seed"])
+            res = build_from_prompt(op["prompt"], self.inv, op["seed"])  # fresh sample
+            op["recipe"] = res["recipe"]                                 # its own recipe
             return self._commit(cur.parent, op, res["build"], res["report"], res["tape"])
         else:  # edit — re-apply against the parent's build
             base = self.versions[cur.parent].build
@@ -112,7 +115,7 @@ class Session:
         fresh = Session(self.inv)
         for op in chain:
             if op["kind"] == "build":
-                fresh.build(op["prompt"], op["seed"])
+                fresh.build(op["prompt"], op["seed"], recipe=op.get("recipe"))
             else:
                 fresh.edit_direct(op)
         return fresh.versions[fresh.head].build

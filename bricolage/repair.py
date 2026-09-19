@@ -133,17 +133,17 @@ def fix(build, inventory, budget, tape, client=None):
                           "rung 1: regenerated with a new seam offset", ms=10)
 
         if applied_rung is None:
-            # rung 3/4 — escalate to the model (mock). Only reached when the
-            # deterministic rungs cannot help.
+            # rung 3 — aggressive deterministic shrink (last resort before we
+            # degrade). Honest: no model call here, so the whole repair loop is
+            # deterministic and replay stays byte-identical.
             comp = build.provenance.get("composition")
-            if comp and client and client.calls < budget.max_llm_calls:
-                shrunk = _shrink_composition(_shrink_composition(comp))
+            shrunk = comp and _shrink_composition(_shrink_composition(comp))
+            if shrunk and shrunk != comp:
                 build = expand(shrunk, build_id=build.id, name=build.name,
                                seed=budget.seed, lenient=True)
-                applied_rung = 4
-                tape.emit("designer", "re-propose",
-                          "rung 4: model re-proposed a smaller build",
-                          status="warn", ms=1900, tokens=2200)
+                applied_rung = 3
+                tape.emit("repair", "shrink-hard",
+                          "rung 3: shrank the design aggressively to fit", ms=14)
             else:
                 break  # nothing more to try -> degrade
 

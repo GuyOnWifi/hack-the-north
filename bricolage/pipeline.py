@@ -14,11 +14,25 @@ from tape import Tape
 from validate import validate
 
 
-def build_from_prompt(prompt, inventory, seed=0, tape=None):
+def build_from_prompt(prompt, inventory, seed=0, tape=None, recipe=None):
     tape = tape or Tape()
+
+    if recipe is not None:
+        # DETERMINISTIC REPLAY: rebuild from the recorded LLM proposal — no
+        # router, no model, no vision. expand/fix are deterministic, so same
+        # recipe + seed + inventory => byte-identical build.
+        backend = recipe["backend"]
+        if backend == "sculpt":
+            build = sculpt_backend.build_voxels(recipe["voxels"], name=recipe["name"],
+                                                tape=tape, seed=seed)
+        else:
+            build = expand(recipe["composition"], name=recipe["name"],
+                           seed=seed, lenient=True)
+        result = fix(build, inventory, Budget(seed=seed), tape)
+        return _finish(result, backend, recipe, tape)
+
     backend, noun, size, reason = router.route(prompt)
     tape.emit("router", "route", f"{reason}  (backend={backend})", ms=2)
-
     client = LLMClient(tape)
 
     if backend == "sculpt":
@@ -36,6 +50,9 @@ def build_from_prompt(prompt, inventory, seed=0, tape=None):
             rd = os.path.join(tempfile.gettempdir(), "bricolage_renders")
             os.makedirs(rd, exist_ok=True)
             build = vision.refine(build, voxels, prompt, tape, rd, rounds=2, seed=seed)
+        # record the FINAL mosaic (post-vision) so replay skips the model
+        recipe = {"backend": "sculpt", "name": model_name,
+                  "voxels": dict(build.provenance.get("voxels", voxels))}
     else:
         comp = client.propose_compose(prompt, inventory.summarize(), noun, size, seed)
         tape.emit("designer", "propose", _describe(comp["root"]), ms=1900, tokens=2400)
@@ -55,9 +72,14 @@ def build_from_prompt(prompt, inventory, seed=0, tape=None):
             comp = synthesize(noun, size, seed)
             tape.emit("designer", "propose", _describe(comp["root"]), ms=200, tokens=0)
             build = expand(comp, name=comp.get("name", noun), seed=seed)
+        recipe = {"backend": "compose", "name": comp.get("name", noun),
+                  "composition": comp}
 
-    budget = Budget(seed=seed)
-    result = fix(build, inventory, budget, tape, client)
+    result = fix(build, inventory, Budget(seed=seed), tape, client)
+    return _finish(result, backend, recipe, tape)
+
+
+def _finish(result, backend, recipe, tape):
     build, report = result.build, result.report
 
     steps = None
@@ -72,7 +94,7 @@ def build_from_prompt(prompt, inventory, seed=0, tape=None):
                       status="fail", ms=30)
 
     return {"build": build, "report": report, "steps": steps,
-            "tape": tape, "fix": result, "backend": backend}
+            "tape": tape, "fix": result, "backend": backend, "recipe": recipe}
 
 
 def compare(prompt, inventory, seed=0):
@@ -81,22 +103,19 @@ def compare(prompt, inventory, seed=0):
       verified — our solver legalises + verifies it
     Returns both builds with their reports + physics, so the UI can show the
     floating/toppling mess next to the buildable one. This is the thesis."""
-    import router, stability
-    from client import LLMClient
+    import stability
     from serialize import build_json, report_json
     import sculpt as sculpt_backend
 
-    backend, noun, size, _ = router.route(prompt)
+    # build once, then derive the naive baseline from the SAME recorded proposal
+    # so the split-screen compares two renderings of one design, not two samples.
     verified = build_from_prompt(prompt, inventory, seed)
-
-    if backend == "sculpt":
-        voxels, name = LLMClient().propose_shape(prompt, noun, size, seed)
-        naive = sculpt_backend.build_voxels_naive(voxels, name=name, seed=seed)
+    recipe = verified["recipe"]
+    if recipe["backend"] == "sculpt":
+        naive = sculpt_backend.build_voxels_naive(recipe["voxels"], name=recipe["name"], seed=seed)
     else:
-        # compose: the naive baseline is the raw generator output with NO repair
         from generators import expand
-        comp = LLMClient().propose_compose(prompt, inventory.summarize(), noun, size, seed)
-        naive = expand(comp, name=comp.get("name", noun), seed=seed, lenient=True)
+        naive = expand(recipe["composition"], name=recipe["name"], seed=seed, lenient=True)
 
     def pack(b):
         return {"build": build_json(b), "report": report_json(validate(b, inventory)),

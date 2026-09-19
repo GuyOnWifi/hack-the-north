@@ -140,8 +140,10 @@ def build_voxels(voxels, name="Model", tape=None, seed=0, legalize=True, base=Tr
     parts = [type(p)(f"p{i}", p.part, p.color, p.pos, p.rot, p.sub)
              for i, p in enumerate(parts)]
     sub = SubAssembly("hull", None, "sculpt", (), None, ())
+    # stash the source mosaic so replay/compare can rebuild without the LLM
     return Build(id="bld_sculpt", version=0, name=name, parts=tuple(parts),
-                 subs=(sub,), provenance={"backend": "sculpt", "seed": seed})
+                 subs=(sub,), provenance={"backend": "sculpt", "seed": seed,
+                                          "voxels": dict(voxels)})
 
 
 def build_voxels_naive(voxels, name="Model", seed=0):
