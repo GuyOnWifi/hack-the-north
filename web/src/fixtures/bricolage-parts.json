@@ -1,5 +1,9 @@
 [
  {
+  "part": "2456",
+  "name": "Brick 2x6"
+ },
+ {
   "part": "3001",
   "name": "Brick 2x4"
  },
@@ -18,6 +22,14 @@
  {
   "part": "3005",
   "name": "Brick 1x1"
+ },
+ {
+  "part": "3007",
+  "name": "Brick 2x8"
+ },
+ {
+  "part": "3008",
+  "name": "Brick 1x8"
  },
  {
   "part": "3009",
@@ -62,6 +74,10 @@
  {
   "part": "3069b",
   "name": "Tile 1x2"
+ },
+ {
+  "part": "3622",
+  "name": "Brick 1x3"
  },
  {
   "part": "3795",

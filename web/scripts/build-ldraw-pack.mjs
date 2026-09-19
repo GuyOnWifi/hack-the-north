@@ -44,7 +44,7 @@ async function locate(name) {
 }
 
 async function sourceParts() {
-  const files = ["meta.py", "generators.py", "sculpt.py", "demo.py", "substitute.py"];
+  const files = ["meta.py", "bricks.py", "generators.py", "sculpt.py", "demo.py", "substitute.py"];
   const found = new Set();
   for (const f of files) {
     const p = path.join(bricolage, f);

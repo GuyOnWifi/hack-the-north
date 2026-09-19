@@ -9,10 +9,18 @@ Build. Speed-reality: one generation call, then only repair locally if needed.
 from __future__ import annotations
 import os
 import subprocess
+import sys
+import time
 
 import bricks
 import physics
 from meta import NAME_TO_CODE
+
+
+def _log(msg):
+    """Loud, timestamped logging to stderr (captured in the backend log) so we
+    can see exactly what the LLM returned and where a build went wrong."""
+    print(f"[harness {time.strftime('%H:%M:%S')}] {msg}", file=sys.stderr, flush=True)
 
 GRAMMAR = (
     "Build the object as a 3D LEGO model on a 20x20x20 grid from 1-brick-tall "
@@ -44,9 +52,17 @@ def _fewshot_prompt(prompt):
 
 
 def _propose_claude(prompt):
+    t0 = time.time()
+    _log(f"calling claude -p for {prompt!r}…")
     out = subprocess.run(["claude", "-p", _fewshot_prompt(prompt)],
                          capture_output=True, text=True, timeout=220)
-    return bricks.parse(out.stdout)
+    items = bricks.parse(out.stdout)
+    _log(f"claude returned in {time.time()-t0:.0f}s: rc={out.returncode}, "
+         f"{len(out.stdout)} chars stdout, {len(out.stderr)} chars stderr, "
+         f"parsed {len(items)} brick lines")
+    if not items:
+        _log(f"NO BRICKS PARSED. stdout head: {out.stdout[:300]!r}  stderr head: {out.stderr[:200]!r}")
+    return items
 
 
 # shown one-by-one while the (slow) LLM call runs, so the tape looks alive
@@ -154,32 +170,35 @@ def _color_for(prompt):
 
 
 def _stabilize(items, tape=None):
-    """Drop bricks with no support (nothing below / not ground), then keep
-    dropping the physically worst bricks until the force-balance check passes."""
-    # 1) support pass: bottom-up, keep only bricks resting on something
-    items = sorted(items, key=lambda b: b[4])
-    occ, kept = {}, []
-    ground_z = min((b[4] for b in items), default=0)
-    for (h, w, x, y, z) in items:
-        supported = z == ground_z or any((x + dx, y + dy, z - 1) in occ
-                                          for dx in range(h) for dy in range(w))
-        if supported:
-            for dx in range(h):
-                for dy in range(w):
-                    occ[(x + dx, y + dy, z)] = True
-            kept.append((h, w, x, y, z))
-    dropped = 0
-    # 2) physics pass: if unstable, drop the highest bricks until it stands
-    for _ in range(40):
-        if physics.analyze(kept)["stable"] or len(kept) < 4:
-            break
-        top_z = max(b[4] for b in kept)
-        before = len(kept)
-        kept = [b for b in kept if b[4] < top_z]     # shed the top layer
-        dropped += before - len(kept)
+    """Keep the connected structure that touches the ground; drop ONLY bricks in
+    clusters that float free (disconnected from everything). We do NOT shed bricks
+    to force physical stability — that shredded organic shapes (a flower's whole
+    bloom is top-heavy). The shape is preserved; if it's physically shaky, physics
+    reports it and the UI shows it red. Keep the flower, flag it — don't destroy it."""
+    from collections import deque
+    items = list(items)
+    if not items:
+        return items
+    cell = {}
+    for i, b in enumerate(items):
+        for c in bricks.cells(*b):
+            cell[c] = i
+    ground_z = min(z for (h, w, x, y, z) in items)
+    seen = {i for i, (h, w, x, y, z) in enumerate(items) if z == ground_z}
+    q = deque(seen)
+    while q:                                    # flood-fill through face-adjacent cells
+        for (cx, cy, cz) in bricks.cells(*items[q.popleft()]):
+            for nb in ((cx + 1, cy, cz), (cx - 1, cy, cz), (cx, cy + 1, cz),
+                       (cx, cy - 1, cz), (cx, cy, cz + 1), (cx, cy, cz - 1)):
+                j = cell.get(nb)
+                if j is not None and j not in seen:
+                    seen.add(j)
+                    q.append(j)
+    kept = [b for i, b in enumerate(items) if i in seen]
+    dropped = len(items) - len(kept)
     if tape and dropped:
-        tape.emit("repair", "shed", f"physics: shed {dropped} brick(s) that "
-                  f"wouldn't hold, until it stands", ms=8)
+        tape.emit("repair", "drop", f"dropped {dropped} disconnected floating "
+                  f"brick(s) — kept the connected shape", ms=8)
     return kept
 
 
@@ -208,9 +227,12 @@ def build(prompt, name=None, tape=None, seed=0):
     tape.emit("designer", "think", f"planning a 3D build for '{prompt}'…",
               ms=1600, tokens=2000)
     items = _normalize(_propose(prompt, tape))
+    _log(f"build({prompt!r}): proposed {len(items)} bricks after normalize")
     tape.emit("designer", "propose", f"proposed {len(items)} bricks in 3D", ms=300)
 
     kept, issues = bricks.lint(items)
+    _log(f"build({prompt!r}): lint kept {len(kept)}, dropped {len(issues)} "
+         f"({', '.join(sorted({i['code'] for i in issues})) or 'none'})")
     for iss in issues[:4]:
         tape.emit("inspector", "reject", f"{iss['code']}: {iss['why']}",
                   status="warn", ms=3)
@@ -219,6 +241,7 @@ def build(prompt, name=None, tape=None, seed=0):
                   status="warn", ms=2)
 
     kept = _stabilize(kept, tape)
+    _log(f"build({prompt!r}): stabilize kept {len(kept)}")
     # honesty guard: if almost nothing survived, FAIL LOUD — no canned design.
     if len(kept) < 6 and available():
         tape.emit("inspector", "reject", f"only {len(kept)} brick(s) survived lint+physics — "
@@ -231,4 +254,7 @@ def build(prompt, name=None, tape=None, seed=0):
               f"({res.get('studs', 0)} stud joints)",
               status="ok" if res["stable"] else "warn", ms=45)
 
-    return bricks.to_build(kept, name=name or prompt.title(), color=_color_for(prompt))
+    build = bricks.to_build(kept, name=name or prompt.title(), color=_color_for(prompt))
+    _log(f"build({prompt!r}): DONE — {len(build.parts)} parts, stable={res['stable']}, "
+         f"color={_color_for(prompt)}")
+    return build
