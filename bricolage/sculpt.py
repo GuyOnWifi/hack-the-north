@@ -125,7 +125,9 @@ def build_voxels(voxels, name="Model", tape=None, seed=0, legalize=True, base=Tr
         xs = [x for (x, _, _) in cells]; zs = [z for (_, _, z) in cells]
         gy = min(y for (_, y, _) in cells)
         x0, z0 = min(xs) - 1, min(zs) - 1
+        # bonded plate bases only stay fully connected at EVEN dimensions
         W, D = max(xs) - min(xs) + 3, max(zs) - min(zs) + 3
+        W += W % 2; D += D % 2
         for p in bonded(W, D, 0, 71, seed, plates=True, courses=2, sub="base"):
             parts.append(Part(p.id, p.part, p.color,
                               (p.pos[0] + x0, gy - 2 + p.pos[1], p.pos[2] + z0),
