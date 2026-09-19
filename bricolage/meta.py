@@ -73,6 +73,12 @@ SUBSTITUTIONS = {
     "3022": [  # Plate 2x2  ->  two Plate 1x2
         [("3023", 0, 0), ("3023", 1, 0)],
     ],
+    "3023": [  # Plate 1x2  ->  two Plate 1x1  (bottoms out the recursion)
+        [("3024", 0, 0), ("3024", 0, 1)],
+    ],
+    "3004": [  # Brick 1x2  ->  two Brick 1x1
+        [("3005", 0, 0), ("3005", 0, 1)],
+    ],
     "3795": [  # Plate 2x6  ->  Plate 2x4 + Plate 2x2
         [("3020", 0, 0), ("3022", 0, 4)],
     ],

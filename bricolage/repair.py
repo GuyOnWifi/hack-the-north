@@ -38,19 +38,24 @@ class FixResult:
     degraded: bool = False
 
 
-SIZE_ARGS = ("length", "width", "depth", "height", "span", "footprint")
+# per-arg minimums: below these a generator collapses into self-overlap.
+# A chassis shorter than 4 makes underside_front and underside_rear coincide,
+# so the two axle_pairs' wheels land in the same cell (the truck overlap bug).
+SIZE_MIN = {"length": 4, "depth": 3, "width": 2, "height": 2,
+            "span": 2, "footprint": 2}
 
 
 def _shrink_composition(comp):
-    """rung 1: reduce numeric size args by one step (min 2). Socket NAMES are
-    unchanged, so children stay attached — same mechanism as the edit loop."""
+    """rung 1: reduce numeric size args by one step, never past the minimum that
+    keeps a generator geometrically valid. Socket NAMES are unchanged, so
+    children stay attached — same mechanism as the edit loop."""
     import copy
     comp = copy.deepcopy(comp)
 
     def walk(node):
         args = node.setdefault("args", {})
-        for k in SIZE_ARGS:
-            if k in args and isinstance(args[k], int) and args[k] > 2:
+        for k, mn in SIZE_MIN.items():
+            if k in args and isinstance(args[k], int) and args[k] > mn:
                 args[k] -= 1
         for c in node.get("children", []):
             walk(c)

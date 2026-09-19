@@ -14,6 +14,8 @@ from dataclasses import dataclass, field
 from pipeline import build_from_prompt
 from edit import apply_edit, parse_edit
 from validate import validate
+from repair import Budget, fix
+from tape import Tape
 
 
 @dataclass
@@ -52,17 +54,27 @@ class Session:
         return self._commit(None, {"kind": "build", "prompt": prompt, "seed": seed},
                             res["build"], res["report"], res["tape"])
 
+    def _run_edit(self, base_build, sub, arg, delta, seed):
+        """Apply one edit and run it through the same FIX loop as a build, so it
+        streams a tape and self-heals inventory/physics issues."""
+        tape = Tape()
+        tape.emit("designer", "edit",
+                  f"{sub}.{arg} {'+' if delta >= 0 else ''}{delta} — attachment "
+                  f"points frozen, children reattach by socket name", ms=200)
+        nb = apply_edit(base_build, sub, arg, delta, seed=seed)
+        result = fix(nb, self.inv, Budget(seed=seed), tape)
+        return result.build, result.report, tape
+
     def edit(self, text, seed=0):
         cur = self.versions[self.head]
         parsed = parse_edit(text, cur.build)
         if not parsed:
             return cur
         sub, arg, delta = parsed
-        nb = apply_edit(cur.build, sub, arg, delta, seed=seed)
-        rep = validate(nb, self.inv)
+        nb, rep, tape = self._run_edit(cur.build, sub, arg, delta, seed)
         return self._commit(self.head,
                             {"kind": "edit", "sub": sub, "arg": arg,
-                             "delta": delta, "seed": seed}, nb, rep)
+                             "delta": delta, "seed": seed}, nb, rep, tape)
 
     def try_another(self):
         """Re-run the head's op with a new seed as a SIBLING (same parent)."""
@@ -74,8 +86,8 @@ class Session:
             return self._commit(cur.parent, op, res["build"], res["report"], res["tape"])
         else:  # edit — re-apply against the parent's build
             base = self.versions[cur.parent].build
-            nb = apply_edit(base, op["sub"], op["arg"], op["delta"], seed=op["seed"])
-            return self._commit(cur.parent, op, nb, validate(nb, self.inv))
+            nb, rep, tape = self._run_edit(base, op["sub"], op["arg"], op["delta"], op["seed"])
+            return self._commit(cur.parent, op, nb, rep, tape)
 
     # ---- navigation ----------------------------------------------------
     def undo(self):
@@ -109,8 +121,9 @@ class Session:
 
     def edit_direct(self, op):
         cur = self.versions[self.head]
-        nb = apply_edit(cur.build, op["sub"], op["arg"], op["delta"], seed=op["seed"])
-        return self._commit(self.head, op, nb, validate(nb, self.inv))
+        nb, rep, tape = self._run_edit(cur.build, op["sub"], op["arg"],
+                                       op["delta"], op["seed"])
+        return self._commit(self.head, op, nb, rep, tape)
 
     def tree_ascii(self):
         """Render the version tree for the UI/tape."""

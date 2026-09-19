@@ -94,12 +94,14 @@ See `web/README.md`. Talks to `server.py` through a Next proxy; falls back to
 - [x] Added to Lane B's server: `POST /api/inventory` (the scanned pile becomes
       `SESSION.inv`), and `/api/ldr` now includes the `0 STEP` markers.
 
-### Found while integrating (for Lane B)
-- [ ] `/api/edit` returns an empty tape; the UI shows a one-line summary instead.
-- [ ] With a tighter bin, "a small truck" came back invalid with
-      "Two parts occupy the same space at (0, -1, 0)" (generator overlap?).
-- [ ] With a sparse bin, house/jet failed on single missing elements the
-      substitution rung didn't cover (e.g. 1x2 tan, 2x2 plate white).
+### Found while integrating (for Lane B) — ALL FIXED (integration/wow)
+- [x] `/api/edit` empty tape → edits now run the full FIX loop with a tape
+      (streams, and self-heals inventory/physics); replay still byte-identical.
+- [x] "a small truck" overlap at (0,-1,0) → the shrink collapsed the chassis to
+      length 2, coinciding the front/rear axle sockets. Fixed with per-arg
+      minimums (length≥4) so a shrink can never produce self-overlap.
+- [x] substitution gaps → added recursive rules (Plate 1x2→2×1x1, Brick
+      1x2→2×1x1) so a swap bottoms out at 1x1 instead of failing mid-chain.
 
 ## Lane A (CV) - owned by a teammate
 The app's inventory screen consumes `{part, color, count, confidence, crop,
