@@ -9,8 +9,12 @@ offline. Real Opus drops in by setting `PROVIDER=anthropic` — same output shap
 
 ```bash
 python bricolage/demo.py     # end-to-end: 6 scenarios + consequences
-python bricolage/tests.py    # 12 checks: the validator law, invariants, golden set
+python bricolage/tests.py    # 16 checks: validator law, invariants, version tree, golden set
+python bricolage/server.py   # zero-dep HTTP API + dev console at http://localhost:8017
 ```
+
+Set `PROVIDER=claude_cli` on any of them to use the authenticated `claude -p`
+CLI as the designer instead of the deterministic mock (no API key needed).
 
 ## The one rule
 
@@ -38,8 +42,10 @@ Coordinates are computed by `expand()` on an integer grid and checked by
 | `client.py` | provider adapter (anthropic/openai/mock) — `PROVIDER` switches here only |
 | `proposer.py` | the mock designer's composition synthesis |
 | `pipeline.py` | the whole thing wired: `build_from_prompt()` |
+| `session.py` | version tree: build/edit/try-another/undo/redo + byte-identical replay |
 | `tape.py` | the streamed agent tape (Contract 4) |
 | `serialize.py` | Build/Report/steps → the JSON contracts the frontend consumes |
+| `server.py` | zero-dep HTTP API over the session + a self-contained dev console |
 
 ## Consequences you can see in the demo
 
