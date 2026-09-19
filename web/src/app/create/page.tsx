@@ -1,14 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useRef } from "react";
-import { X } from "lucide-react";
+import dynamic from "next/dynamic";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useRef, useState } from "react";
+import { Play, X } from "lucide-react";
 import { FloatingBricks, PlateProgress } from "@/components/ui/chrome";
 import { ChunkyButton, IconTile } from "@/components/ui/controls";
 import { AgentTape } from "@/components/AgentTape";
 import { designBuild, tryAnother, useLive } from "@/lib/live";
 import { LIVE_ID } from "@/lib/useBuild";
+
+const ModelView = dynamic(() => import("@/components/three/ModelView").then((m) => m.ModelView), { ssr: false });
 
 export default function CreatePage() {
   return (
@@ -24,7 +27,6 @@ const EXPECTED_EVENTS = 6;
 // routes, designs, inspects, repairs and sequences; then we open the build.
 function Create() {
   const params = useSearchParams();
-  const router = useRouter();
   const prompt = params.get("prompt")?.trim() || "build a rover";
   const live = useLive();
   const started = useRef<string | null>(null);
@@ -36,14 +38,36 @@ function Create() {
   }, [prompt]);
 
   const valid = live.payload?.report?.ok !== false;
-  useEffect(() => {
-    if (live.status !== "ready" || live.prompt !== prompt || !valid) return;
-    const t = setTimeout(() => router.replace(`/build/${LIVE_ID}`), 900);
-    return () => clearTimeout(t);
-  }, [live.status, live.prompt, prompt, router, valid]);
 
   const events = live.prompt === prompt ? live.tape : [];
   const done = live.status === "ready" && live.prompt === prompt;
+  const modelUrl = done ? live.modelUrl : null;
+
+  // once the model resolves, stream it together brick-by-brick on this screen
+  const [mSteps, setMSteps] = useState<number | null>(null);
+  const [astep, setAstep] = useState(0);
+  const [assembling, setAssembling] = useState(true);
+  const [playToken, setPlayToken] = useState(0);
+  useEffect(() => {
+    setMSteps(null);
+    setAstep(0);
+    setAssembling(true);
+  }, [modelUrl]);
+  useEffect(() => {
+    if (mSteps == null) return;
+    setAstep(0);
+    setAssembling(true);
+    let s = 0;
+    const iv = setInterval(() => {
+      s += 1;
+      setAstep(s);
+      if (s >= (mSteps ?? 0)) {
+        clearInterval(iv);
+        setTimeout(() => setAssembling(false), 500);
+      }
+    }, 340);
+    return () => clearInterval(iv);
+  }, [mSteps, playToken]);
   const failed = live.status === "error" && live.prompt === prompt;
   const progress = done ? 1 : Math.min(0.92, events.length / EXPECTED_EVENTS);
 
@@ -61,7 +85,25 @@ function Create() {
         <h1 className="mt-1 text-center text-[28px] font-[900] leading-tight tracking-[-0.02em] text-white">&ldquo;{prompt}&rdquo;</h1>
         {live.source === "fixture" && live.prompt === prompt && <p className="mt-2 text-center text-[14px] font-semibold text-white/80">The builder is offline, so this is the saved sample.</p>}
 
-        <div className="no-scrollbar mt-6 min-h-0 flex-1 overflow-auto rounded-[24px] bg-[#eef0f2]/90 p-3 shadow-[0_18px_40px_rgba(0,0,0,0.25)]">
+        {/* the model streams itself together, brick by brick, right here */}
+        {modelUrl && (
+          <div className="relative mt-5 h-[248px] shrink-0 overflow-hidden rounded-[24px]" style={{ background: "linear-gradient(180deg,#0b1c22 0%,#376275 100%)", animation: "tape-in 300ms ease-out" }}>
+            <ModelView url={modelUrl} mode={assembling ? "timeline" : "display"} step={astep} spin={assembling ? 0 : 0.15} shadow onLoaded={(m) => setMSteps(m.stepCount)} onError={() => {}} />
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-between px-3 pb-2.5">
+              {assembling ? (
+                <span className="rounded-full bg-black/45 px-3 py-1 text-[13px] font-semibold text-white backdrop-blur">assembling · brick {Math.min(astep, mSteps ?? 0)}/{mSteps ?? "…"}</span>
+              ) : (
+                <button onClick={() => setPlayToken((t) => t + 1)} className="pointer-events-auto flex items-center gap-1 rounded-full bg-white/90 px-3 py-1 text-[13px] font-bold text-ink active:scale-95">
+                  <Play size={14} fill="#1a1a1a" /> replay
+                </button>
+              )}
+              {!valid && <span className="rounded-full bg-[#e02436] px-3 py-1 text-[13px] font-bold text-white shadow">⚠ won&apos;t stand</span>}
+            </div>
+            {!valid && <div className="pointer-events-none absolute inset-2 rounded-[18px] ring-2 ring-[#e02436]/70" style={{ animation: "pulse 1.4s ease-in-out infinite" }} />}
+          </div>
+        )}
+
+        <div className="no-scrollbar mt-5 min-h-0 flex-1 overflow-auto rounded-[24px] bg-[#eef0f2]/90 p-3 shadow-[0_18px_40px_rgba(0,0,0,0.25)]">
           {failed ? (
             <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
               <p className="text-[19px] font-[800] text-ink">The builder didn&apos;t answer</p>
