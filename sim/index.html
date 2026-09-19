@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Brick drop</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <canvas id="stage" aria-label="Top-down view of the plate"></canvas>
+    <canvas id="answers" aria-hidden="true"></canvas>
+
+    <aside id="panel">
+      <header>
+        <h1>Brick drop</h1>
+        <p>A practice plate for the brick scanner. Drop a pile, save the photo, and check the scanner against the answer sheet.</p>
+      </header>
+
+      <section aria-labelledby="h-pieces">
+        <div class="row head">
+          <h2 id="h-pieces">Pieces</h2>
+          <button class="quiet" id="shuffle-pieces" type="button">Shuffle</button>
+        </div>
+        <label class="row field">
+          <span>Different kinds</span>
+          <input id="kinds" type="number" min="1" max="400" value="40" inputmode="numeric" />
+        </label>
+        <div class="chips" id="families" role="group" aria-label="Piece families"></div>
+        <div class="tray" id="chosen" aria-live="polite"></div>
+        <div class="search">
+          <input id="search" type="search" placeholder="Add a piece by name or number" autocomplete="off" />
+          <ul id="results" hidden></ul>
+        </div>
+      </section>
+
+      <section aria-labelledby="h-colours">
+        <div class="row head">
+          <h2 id="h-colours">Colours</h2>
+          <button class="quiet" id="shuffle-colours" type="button">Shuffle</button>
+        </div>
+        <div class="row field">
+          <select id="harmony" aria-label="Colour scheme"></select>
+          <input id="palette-size" type="number" min="2" max="12" value="6" aria-label="Number of colours" inputmode="numeric" />
+        </div>
+        <div class="swatches" id="swatches"></div>
+        <label class="check"><input id="snap" type="checkbox" checked /> <span>Real brick colours only</span></label>
+      </section>
+
+      <section aria-labelledby="h-pile">
+        <h2 id="h-pile">Pile</h2>
+        <div class="count">
+          <input id="count" type="number" min="1" max="1500" value="150" aria-label="Number of pieces" inputmode="numeric" />
+          <input id="count-range" type="range" min="10" max="1000" step="10" value="150" aria-label="Number of pieces" />
+        </div>
+        <label class="slider">
+          <input id="crowding" type="range" min="0.2" max="1.4" step="0.05" value="0.4" aria-label="How crowded the plate is" />
+          <span class="ends"><span>Spread out</span><span>Piled up</span></span>
+        </label>
+      </section>
+
+      <button id="drop" type="button"><span class="studs" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span id="drop-label">Drop 150 pieces</span></button>
+
+      <section class="output" aria-labelledby="h-out">
+        <h2 id="h-out">Photos</h2>
+        <button class="plain" id="save" type="button" disabled>Save this photo</button>
+        <label class="check"><input id="show-answers" type="checkbox" /> <span>Show the answer boxes</span></label>
+      </section>
+
+      <section class="output" aria-labelledby="h-set">
+        <h2 id="h-set">Training set</h2>
+        <p class="note">Drops and photographs the plate over and over, and writes a YOLO dataset: a box and piece number for every piece, plus counts per photo. The pieces above are the classes.</p>
+        <div class="row field">
+          <span>Photos</span>
+          <input id="batch-n" type="number" min="2" max="20000" value="200" aria-label="Photos in the set" inputmode="numeric" />
+        </div>
+        <div class="row field">
+          <span>Photo size</span>
+          <select id="photo-size" aria-label="Photo size">
+            <option value="640">640 px</option>
+            <option value="1024">1024 px</option>
+            <option value="1280" selected>1280 px</option>
+            <option value="1600">1600 px</option>
+          </select>
+        </div>
+        <label class="check"><input id="reshuffle" type="checkbox" checked /> <span>New mix of these pieces, new colours and a new pile size for each photo</span></label>
+        <label class="check"><input id="vary" type="checkbox" checked /> <span>Vary the light, table and camera angle</span></label>
+        <button class="plain" id="batch" type="button">Make training set</button>
+      </section>
+    </aside>
+
+    <p id="status" role="status"></p>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
