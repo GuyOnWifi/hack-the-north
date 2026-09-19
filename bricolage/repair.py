@@ -96,6 +96,19 @@ def fix(build, inventory, budget, tape, client=None):
                           f"rung 2: swapped {len(swaps)} part(s) for smaller "
                           f"pieces the bin has ({swaps[0]['from']} -> "
                           f"{'+'.join(swaps[0]['to'])})", status="ok", ms=8)
+            if not resolved:
+                # rung 2b — recolour to the palette the bin has (works for
+                # sculpt mosaics, which have no composition to shrink)
+                refit, n = substitute.refit_palette(build.parts, inventory)
+                if n:
+                    build = build.with_parts(refit)
+                    applied_rung = 2
+                    tape.emit("repair", "recolour",
+                              f"rung 2: recoloured {n} part(s) to colours your "
+                              f"bin actually has", status="ok", ms=10)
+                    resolved = not any(
+                        e["code"] == "OUT_OF_BUDGET"
+                        for e in validate(build, inventory).errors)
             if not resolved or not swaps:
                 # rung 1 — shrink to fit
                 comp = build.provenance.get("composition")

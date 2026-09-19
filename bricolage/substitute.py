@@ -8,6 +8,52 @@ from model import Part
 from meta import SUBSTITUTIONS, PART_META
 
 
+def refit_palette(parts, inventory):
+    """Recolour parts to colours the bin actually stocks (nearest by RGB), so a
+    mosaic/shape can be built from a finite scanned bin even when it asked for
+    colours you don't have. Preserves the shape; changes only colour. Returns
+    (new_parts, n_remapped). The constraint-solving half of the product."""
+    from dataclasses import replace
+    from meta import COLOR_RGB
+    parts = list(parts)
+
+    def dist(c1, c2):
+        a = COLOR_RGB.get(c1, (128, 128, 128))
+        b = COLOR_RGB.get(c2, (128, 128, 128))
+        return sum((x - y) ** 2 for x, y in zip(a, b))
+
+    remapped = 0
+    for _ in range(40):
+        used = _need(parts)
+        short = [(e, used[e] - inventory.have(*e)) for e in used
+                 if used[e] > inventory.have(*e)]
+        if not short:
+            break
+        (part, color), deficit = max(short, key=lambda x: x[1])
+        # colours the bin stocks THIS part in, with spare headroom, nearest first
+        alts = []
+        for (pp, c), qty in inventory.counts.items():
+            if pp == part and c != color:
+                spare = qty - used.get((pp, c), 0)
+                if spare > 0:
+                    alts.append((dist(color, c), c, spare))
+        if not alts:
+            break                      # no colour of this part is available at all
+        alts.sort()
+        _, newc, spare = alts[0]
+        moved, target = 0, min(deficit, spare)
+        for i, p in enumerate(parts):
+            if moved >= target:
+                break
+            if p.part == part and p.color == color and p.sub != "base":
+                parts[i] = replace(p, color=newc)
+                moved += 1
+                remapped += 1
+        if moved == 0:
+            break
+    return parts, remapped
+
+
 def _need(parts):
     n = {}
     for p in parts:
