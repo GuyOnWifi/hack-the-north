@@ -64,6 +64,9 @@ class Session:
                 else f"{op['gen']}.{op['arg']} {op['delta']:+d}")
         tape.emit("designer", "edit", f"{desc} — keeping everything else fixed", ms=200)
         nb = apply_edit(base_build, op, seed=seed)
+        if nb.parts == base_build.parts:
+            tape.emit("inspector", "edit", "that edit doesn't apply to this "
+                      "build — nothing changed", status="warn", ms=8)
         result = fix(nb, self.inv, Budget(seed=seed), tape)
         return result.build, result.report, tape
 
