@@ -99,7 +99,7 @@ def fix(build, inventory, budget, tape, client=None):
                 if comp:
                     build = expand(_shrink_composition(comp),
                                    build_id=build.id, name=build.name,
-                                   seed=budget.seed)
+                                   seed=budget.seed, lenient=True)
                     applied_rung = applied_rung or 1
                     tape.emit("repair", "regenerate",
                               "rung 1: re-ran generators one size smaller to fit "
@@ -124,7 +124,7 @@ def fix(build, inventory, budget, tape, client=None):
             if comp:
                 budget.seed += 1
                 build = expand(comp, build_id=build.id, name=build.name,
-                               seed=budget.seed)
+                               seed=budget.seed, lenient=True)
                 applied_rung = 1
                 tape.emit("repair", "reseed",
                           "rung 1: regenerated with a new seam offset", ms=10)
@@ -136,7 +136,7 @@ def fix(build, inventory, budget, tape, client=None):
             if comp and client and client.calls < budget.max_llm_calls:
                 shrunk = _shrink_composition(_shrink_composition(comp))
                 build = expand(shrunk, build_id=build.id, name=build.name,
-                               seed=budget.seed)
+                               seed=budget.seed, lenient=True)
                 applied_rung = 4
                 tape.emit("designer", "re-propose",
                           "rung 4: model re-proposed a smaller build",

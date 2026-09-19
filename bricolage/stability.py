@@ -124,6 +124,35 @@ def report(parts):
             "failures": [{"code": f.code, "human": f.human} for f in fails]}
 
 
+def stabilize(parts, seed=0):
+    """Physics self-repair: if the build topples, add a wider bonded-plate
+    FOUNDATION beneath it, sized so the combined centre of mass falls back
+    inside the support polygon. Deterministic. Returns (new_parts, n_added).
+    The agentic arc's payoff: physics rejects -> the agent props it up -> stands."""
+    parts = list(parts)
+    fails = analyze(parts)
+    if not any(f.code == "TOPPLE" for f in fails):
+        return parts, 0
+    from generators import bonded
+    from model import Part
+
+    ground_y = min(p.pos[1] for p in parts)
+    com, _ = _com_xz(parts)
+    xs = [p.pos[0] for p in parts] + [p.pos[0] + p.footprint()[0] for p in parts]
+    zs = [p.pos[2] for p in parts] + [p.pos[2] + p.footprint()[1] for p in parts]
+    # cover the structure AND reach past the COM, with a margin
+    x0 = int(min(min(xs), com[0])) - 2
+    x1 = int(max(max(xs), com[0])) + 2
+    z0 = int(min(min(zs), com[1])) - 2
+    z1 = int(max(max(zs), com[1])) + 2
+    base = []
+    for p in bonded(x1 - x0, z1 - z0, 0, 71, seed, plates=True, courses=2, sub="base"):
+        base.append(Part(f"base{len(base)}", p.part, p.color,
+                         (p.pos[0] + x0, ground_y - 2 + p.pos[1], p.pos[2] + z0),
+                         0, "base"))
+    return parts + base, len(base)
+
+
 def analyze(parts):
     """Return a list of Instability findings ([] means it stands up)."""
     parts = list(parts)

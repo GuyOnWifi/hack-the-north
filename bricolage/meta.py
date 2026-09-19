@@ -39,12 +39,13 @@ COLOR_NAME = {
     25: "orange", 7: "gray",
 }
 
-# LDraw colour code -> approx sRGB (for any local preview / debug)
+# LDraw colour code -> sRGB. Exact values baked from the real LDraw LDConfig.ldr
+# (via the VALUE hex per !COLOUR), so renders match official part colours.
 COLOR_RGB = {
-    0: (33, 33, 33), 1: (0, 85, 191), 2: (35, 120, 65), 4: (201, 26, 9),
-    14: (245, 205, 47), 15: (244, 244, 244), 71: (160, 165, 169),
-    72: (108, 110, 104), 70: (91, 47, 20), 19: (228, 205, 158),
-    25: (254, 138, 24), 7: (155, 161, 157),
+    0: (27, 42, 52), 1: (30, 90, 168), 2: (0, 133, 43), 4: (180, 0, 0),
+    14: (250, 200, 10), 15: (244, 244, 244), 71: (150, 150, 150),
+    72: (100, 100, 100), 70: (95, 49, 9), 19: (215, 186, 140),
+    25: (214, 121, 35), 7: (138, 146, 141),
 }
 
 
