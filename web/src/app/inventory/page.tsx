@@ -1,5 +1,7 @@
 "use client";
 
+import { LogoMark } from "@/components/ui/Logo";
+
 import { play } from "@/lib/sound";
 
 import { useMemo, useState } from "react";
@@ -413,9 +415,9 @@ function Empty({ onAdd, adding, onClose }: { onAdd: () => void; adding: boolean;
       </YellowBucket>
       <div className="flex flex-1 flex-col items-center justify-center gap-3 px-8 text-center">
         <div className="relative mb-2 h-[120px] w-[180px]">
-          <div className="absolute left-2 top-8"><IsoBrick w={2} d={2} h={3} color="#b4b4b4" size={86} /></div>
-          <div className="absolute right-4 top-0"><IsoBrick w={2} d={1} h={3} color="#c7c7c7" size={66} /></div>
-          <div className="absolute bottom-0 right-10"><IsoBrick w={1} d={1} h={1} round color="#a9a9a9" size={40} /></div>
+          <div className="absolute left-0 top-12 opacity-70"><IsoBrick w={2} d={2} h={3} color="#b4b4b4" size={70} /></div>
+          <div className="absolute right-0 top-10 opacity-70"><IsoBrick w={2} d={1} h={3} color="#c7c7c7" size={58} /></div>
+          <div className="absolute left-1/2 top-0 -translate-x-1/2"><LogoMark size={96} className="drop-shadow-[0_8px_10px_rgba(0,0,0,0.25)]" /></div>
         </div>
         <p className="text-[22px] font-[900] tracking-[-0.02em] text-ink">No bricks yet</p>
         <p className="max-w-[300px] text-[16px] text-ink-soft">Snap a photo of your pile and we&apos;ll count every piece.</p>

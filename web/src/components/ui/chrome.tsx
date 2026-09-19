@@ -1,5 +1,7 @@
 "use client";
 
+import { LogoMark } from "./Logo";
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Layers, ScanLine, Smile } from "lucide-react";
@@ -31,7 +33,7 @@ export function TabBar() {
         style={{ background: "#f8d648", ["--rim" as string]: "#d8b320", ["--lift" as string]: "5px" } as React.CSSProperties}
       >
         <div className="relative">
-          <IsoBrick w={2} d={2} h={3} color="#e8e8e8" size={40} />
+          <LogoMark size={44} small />
           <span className="absolute -right-2 -top-2 grid h-6 w-6 place-items-center rounded-full bg-[#1a1a1a]">
             <ScanLine size={14} color="#fff" strokeWidth={2.6} />
           </span>

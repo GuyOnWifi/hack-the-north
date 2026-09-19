@@ -1,5 +1,10 @@
 "use client";
 
+import { APP_NAME } from "@/lib/brand";
+
+import { BrickLoader, LogoMark } from "@/components/ui/Logo";
+
+
 import { play } from "@/lib/sound";
 
 import { useBuild } from "@/lib/useBuild";
@@ -210,9 +215,13 @@ function Steps() {
 
         {done && (
           <>
-            <p className="pointer-events-none absolute left-6 top-5 text-[34px] font-[900] leading-none tracking-[-0.02em] text-ink" style={{ paddingTop: landscape ? 0 : "var(--safe-top)" }}>
-              You built it!
-            </p>
+            <div className="pointer-events-none absolute left-6 top-5 flex items-center gap-3" style={{ paddingTop: landscape ? 0 : "var(--safe-top)", animation: "brick-drop 420ms cubic-bezier(.2,1.4,.4,1) both" }}>
+              <LogoMark size={64} className="drop-shadow-[0_6px_8px_rgba(0,0,0,0.25)]" />
+              <div>
+                <p className="text-[34px] font-[900] leading-none tracking-[-0.02em] text-ink">You built it!</p>
+                <p className="mt-1 text-[14px] font-bold text-ink-soft">Built with {APP_NAME}</p>
+              </div>
+            </div>
             <div className={`absolute bottom-0 flex gap-3 ${landscape ? "right-0 w-[380px] px-6" : "inset-x-0 px-6"}`} style={{ paddingBottom: "calc(var(--safe-bottom) + 24px)", paddingRight: landscape ? "calc(var(--safe-right) + 24px)" : undefined }}>
               <ChunkyButton variant="white" onClick={() => setStep(0)}>
                 Start over
@@ -257,10 +266,7 @@ function BagBadge({ bag }: { bag: number }) {
 function Loading() {
   return (
     <div className="absolute inset-0 grid place-items-center">
-      <div className="flex flex-col items-center gap-3 text-[#8c8c8c]">
-        <div className="h-10 w-10 animate-spin rounded-full border-[4px] border-[#cfcfcf] border-t-[#e3000b]" />
-        <span className="text-[15px] font-semibold">Opening the manual…</span>
-      </div>
+      <BrickLoader label="Opening the manual…" />
     </div>
   );
 }

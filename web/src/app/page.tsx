@@ -4,7 +4,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useState } from "react";
 import { FloatingBricks } from "@/components/ui/chrome";
-import { LogoTile, Wordmark } from "@/components/ui/Logo";
+import { LogoMark, Wordmark } from "@/components/ui/Logo";
 import { play } from "@/lib/sound";
 
 const GlassBrick = dynamic(() => import("@/components/three/GlassBrick").then((m) => m.GlassBrick), { ssr: false });
@@ -20,7 +20,7 @@ export default function Splash() {
         <div className="relative flex min-h-[calc(100dvh-110px)] flex-1 flex-col overflow-hidden rounded-b-[44px] pb-40" style={{ background: "linear-gradient(180deg,#141414 0%,#272727 50%,#3c3c3c 100%)" }}>
           <FloatingBricks tone="colour" />
           <div className="relative z-10 flex flex-col items-center gap-6" style={{ paddingTop: "calc(var(--safe-top) + 84px)" }}>
-            <LogoTile size={66} />
+            <LogoMark size={112} className="drop-shadow-[0_12px_18px_rgba(0,0,0,0.55)]" />
             <Wordmark size={44} />
           </div>
           <div className="relative z-10 mx-auto my-2 aspect-square w-full max-w-[380px] transition-opacity duration-700" style={{ opacity: ready ? 1 : 0 }}>

@@ -1,6 +1,6 @@
 // Cache-first for immutable assets (models, part images, Next static chunks),
 // network-first with cache fallback for pages, so a visited app works offline.
-const VERSION = "v1";
+const VERSION = "v2";
 const ASSETS = `assets-${VERSION}`;
 const PAGES = `pages-${VERSION}`;
 const PRECACHE = ["/", "/home", "/models/car.mpd", "/models/radar-truck.mpd", "/models/lunar.mpd"];

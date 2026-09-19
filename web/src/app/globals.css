@@ -206,3 +206,31 @@ body {
     transform: translateY(0);
   }
 }
+
+/* BrickLoader: the logo hops up, lands with a small squash, and its shadow tracks it. */
+@keyframes brick-hop {
+  0%,
+  100% {
+    transform: translateY(0) scale(1.06, 0.94);
+  }
+  12% {
+    transform: translateY(0) scale(1, 1);
+  }
+  50% {
+    transform: translateY(-38%) scale(0.98, 1.03);
+  }
+  88% {
+    transform: translateY(0) scale(1, 1);
+  }
+}
+@keyframes brick-shadow {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.6);
+    opacity: 0.45;
+  }
+}

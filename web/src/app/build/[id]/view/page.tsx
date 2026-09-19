@@ -1,5 +1,7 @@
 "use client";
 
+import { BrickLoader } from "@/components/ui/Logo";
+
 import { play, setMuted, useMuted } from "@/lib/sound";
 
 import { useBuild } from "@/lib/useBuild";
@@ -160,7 +162,7 @@ function Viewer() {
         )}
         {!model && !failed && (
           <div className="pointer-events-none absolute inset-0 grid place-items-center">
-            <div className="h-10 w-10 animate-spin rounded-full border-[4px] border-white/40 border-t-white" />
+            <BrickLoader label="Unboxing your build…" />
           </div>
         )}
 

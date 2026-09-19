@@ -1,5 +1,7 @@
 "use client";
 
+import { BrickLoader } from "@/components/ui/Logo";
+
 import { play } from "@/lib/sound";
 
 import Link from "next/link";
@@ -99,7 +101,7 @@ export default function Scan() {
 
         {!shot && cam === "starting" && (
           <div className="absolute inset-0 grid place-items-center">
-            <div className="h-10 w-10 animate-spin rounded-full border-[4px] border-white/25 border-t-white" />
+            <BrickLoader tone="light" label="Starting the camera…" />
           </div>
         )}
 

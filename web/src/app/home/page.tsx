@@ -10,6 +10,7 @@ import { YellowBucket } from "@/components/ui/controls";
 import { ModelSnapshot } from "@/components/three/Snapshots";
 import { BUILDS, THEMES, getBuild } from "@/lib/data";
 import { useInView } from "@/lib/useInView";
+import { LogoLockup } from "@/components/ui/Logo";
 
 const ModelView = dynamic(
   () => import("@/components/three/ModelView").then((m) => m.ModelView),
@@ -44,10 +45,8 @@ export default function Home() {
             className="pointer-events-none absolute -left-3 top-[-10px] h-[184px] w-auto select-none drop-shadow-[0_10px_14px_rgba(120,70,0,0.35)]"
           />
           <div className="relative">
-            <div className="text-[15px] font-bold text-ink/65">
-              What are we building?
-            </div>
-            <div className="text-[28px] font-[900] leading-none tracking-[-0.03em] text-ink">
+            <LogoLockup size={26} />
+            <div className="mt-1.5 text-[28px] font-[900] leading-none tracking-[-0.03em] text-ink">
               Let&apos;s build.
             </div>
           </div>
@@ -229,6 +228,10 @@ function Slide({
   children: (active: boolean) => React.ReactNode;
 }) {
   const [ref, inView] = useInView<HTMLAnchorElement>();
+  // Each live 3D card costs a WebGL context; don't create one until the card is
+  // first swiped into view (then keep it, since recreating costs more).
+  const [seen, setSeen] = useState(false);
+  if (inView && !seen) setSeen(true);
   return (
     <Link
       ref={ref}
@@ -236,7 +239,7 @@ function Slide({
       className="relative isolate h-[272px] w-[calc(100%-38px)] shrink-0 snap-start overflow-hidden rounded-[24px]"
       style={{ background: bg, boxShadow: "0 6px 0 rgba(0,0,0,0.12)" }}
     >
-      {children(inView)}
+      {seen && children(inView)}
       {/* keeps the title readable where the model passes behind it */}
       <div
         className="pointer-events-none absolute inset-0"
