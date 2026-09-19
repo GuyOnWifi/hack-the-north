@@ -44,10 +44,11 @@ async function locate(name) {
 }
 
 async function sourceParts() {
-  const files = ["meta.py", "generators.py", "sculpt.py", "demo.py", "substitute.py"];
+  // Lane B's build system, plus brickify's catalog (mesh-to-bricks).
+  const files = ["meta.py", "generators.py", "sculpt.py", "demo.py", "substitute.py"].map((f) => path.join(bricolage, f));
+  files.push(path.resolve(web, "../brickify/brickify/parts.py"), path.resolve(web, "../brickify/brickify/kit.py"));
   const found = new Set();
-  for (const f of files) {
-    const p = path.join(bricolage, f);
+  for (const p of files) {
     if (!(await exists(p))) continue;
     const text = await fs.readFile(p, "utf8");
     for (const m of text.matchAll(/["'](\d{3,5}[a-z]?\d*[a-z]?)["']/g)) found.add(m[1]);

@@ -1,0 +1,411 @@
+{
+ "name": "hummingbird",
+ "palette": {
+  "g": 2,
+  "w": 15,
+  "r": 320,
+  "k": 0,
+  "G": 2,
+  "B": 43,
+  "e": 0,
+  "d": 72,
+  "c": 47
+ },
+ "root": "stand",
+ "bodies": [
+  {
+   "name": "stand",
+   "layers": [
+    [
+     "dddd",
+     "dddd",
+     "dddd",
+     "dddd"
+    ],
+    [
+     "....",
+     ".c..",
+     ".c..",
+     "...."
+    ],
+    [
+     "....",
+     ".c..",
+     ".c..",
+     "...."
+    ],
+    [
+     "....",
+     ".c..",
+     ".c..",
+     "...."
+    ],
+    [
+     "....",
+     ".c..",
+     ".c..",
+     "...."
+    ],
+    [
+     "....",
+     ".c..",
+     ".c..",
+     "...."
+    ],
+    [
+     "....",
+     ".c..",
+     ".c..",
+     "...."
+    ],
+    [
+     "....",
+     ".c..",
+     ".c..",
+     "...."
+    ],
+    [
+     "....",
+     ".c..",
+     ".c..",
+     "...."
+    ],
+    [
+     "....",
+     ".c..",
+     ".c..",
+     "...."
+    ],
+    [
+     "....",
+     ".c..",
+     ".c..",
+     "...."
+    ],
+    [
+     "....",
+     ".c..",
+     ".c..",
+     "...."
+    ],
+    [
+     "....",
+     ".c..",
+     ".c..",
+     "...."
+    ],
+    [
+     "....",
+     ".c..",
+     ".c..",
+     "...."
+    ],
+    [
+     "....",
+     ".c..",
+     ".c..",
+     "...."
+    ],
+    [
+     "....",
+     ".c..",
+     ".c..",
+     "...."
+    ]
+   ],
+   "surface": false,
+   "connectors": [
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      1,
+      16,
+      1
+     ],
+     "quarters": 1,
+     "colour": 72,
+     "attach": [
+      {
+       "body": "body",
+       "angle": 55
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "body",
+   "origin": [
+    -4,
+    19,
+    0
+   ],
+   "layers": [
+    [
+     "............",
+     "............",
+     "............",
+     "............"
+    ],
+    [
+     "............",
+     "...wwwww....",
+     "...wwwww....",
+     "............"
+    ],
+    [
+     ".wwwwwwww...",
+     ".wwwwwwww...",
+     ".wwwwwwww...",
+     ".wwwwwwww..."
+    ],
+    [
+     ".wwwwwwww...",
+     "kwwwwwwww...",
+     "kwwwwwwww...",
+     ".wwwwwwww..."
+    ],
+    [
+     ".gggggwww...",
+     "kgggggwww...",
+     "kgggggwww...",
+     ".gggggwww..."
+    ],
+    [
+     ".gggggwwggrr",
+     "kgggggwwggrr",
+     "kgggggwwggrr",
+     ".gggggwwggrr"
+    ],
+    [
+     ".gggggggggrr",
+     ".gggggggggrr",
+     ".gggggggggrr",
+     ".gggggggggrr"
+    ],
+    [
+     "...gggggggrr",
+     "...gggggggrr",
+     "...gggggggrr",
+     "...gggggggrr"
+    ],
+    [
+     "........gggg",
+     "........gggg",
+     "........gggg",
+     "........gggg"
+    ],
+    [
+     "........gggg",
+     "........gggg",
+     "........gggg",
+     "........gggg"
+    ],
+    [
+     "........ggg.",
+     "........ggg.",
+     "........ggg.",
+     "........ggg."
+    ],
+    [
+     "........ggg.",
+     "........ggg.",
+     "........ggg.",
+     "........ggg."
+    ]
+   ],
+   "connectors": [
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      9,
+      8,
+      0
+     ],
+     "quarters": 0,
+     "colour": "g",
+     "attach": [
+      {
+       "body": "eyeL"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      9,
+      8,
+      3
+     ],
+     "quarters": 2,
+     "colour": "g",
+     "attach": [
+      {
+       "body": "eyeR"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      11,
+      7,
+      1
+     ],
+     "quarters": 3,
+     "colour": "g",
+     "attach": [
+      {
+       "body": "beak"
+      }
+     ]
+    },
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      4,
+      8,
+      0
+     ],
+     "colour": 72,
+     "attach": [
+      {
+       "body": "wingL",
+       "angle": -38
+      }
+     ]
+    },
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      4,
+      8,
+      3
+     ],
+     "colour": 72,
+     "attach": [
+      {
+       "body": "wingR",
+       "angle": 38
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "eyeL",
+   "layers": [],
+   "parts": [
+    [
+     "98138",
+     "e",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ],
+   "surface": false
+  },
+  {
+   "name": "eyeR",
+   "layers": [],
+   "parts": [
+    [
+     "98138",
+     "e",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ],
+   "surface": false
+  },
+  {
+   "name": "beak",
+   "layers": [],
+   "parts": [],
+   "surface": false
+  },
+  {
+   "name": "wingL",
+   "origin": [
+    2,
+    11,
+    -6
+   ],
+   "layers": [
+    [
+     "BBB.....",
+     "BBBB....",
+     "BBGGG...",
+     "..GG....",
+     "..GG....",
+     "..GG....",
+     "..GG...."
+    ],
+    [
+     "BBB.....",
+     "BBBB....",
+     "BBGGG...",
+     "..GG....",
+     "..GG....",
+     "..GG....",
+     "..GG...."
+    ]
+   ],
+   "surface": false
+  },
+  {
+   "name": "wingR",
+   "origin": [
+    2,
+    11,
+    3
+   ],
+   "layers": [
+    [
+     "..GG....",
+     "..GG....",
+     "..GG....",
+     "..GG....",
+     "BBGGG...",
+     "BBBB....",
+     "BBB....."
+    ],
+    [
+     "..GG....",
+     "..GG....",
+     "..GG....",
+     "..GG....",
+     "BBGGG...",
+     "BBBB....",
+     "BBB....."
+    ]
+   ],
+   "surface": false
+  }
+ ],
+ "details": [
+  {
+   "kind": "bar",
+   "body": "beak",
+   "at": [
+    0,
+    0,
+    0
+   ],
+   "colour": "k",
+   "holder": "k"
+  }
+ ]
+}

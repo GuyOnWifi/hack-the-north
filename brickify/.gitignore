@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+out/
+runs/
+runs-*.log
+meshes/
+concepts/*
+!concepts/hummingbird-gemini.png
+!concepts/dog-umbrella-gemini.png

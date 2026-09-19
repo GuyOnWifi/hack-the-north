@@ -42,3 +42,6 @@ next-env.d.ts
 
 # synced from ../fixtures by scripts/sync-fixtures.mjs
 /public/bricolage-fixtures
+
+# pipeline round files (the best round is copied to <name>.ldr)
+/public/lab/*-r[0-9].ldr

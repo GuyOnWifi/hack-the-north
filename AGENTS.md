@@ -184,3 +184,51 @@ judged the same way.
     have 0)"; a design proposal becomes "Sketched the design" plus part chips).
     Raw lines, timings and token counts only appear under "Show details".
     Add a pattern to `tapeCopy` whenever Lane B adds a new tape message.
+
+## Brand
+
+14. **The brand is BrickedUp, and the mark is the red corner brick.** Use the
+    real logo image, never a drawn stand-in: on the splash (big, above the
+    wordmark), in the home header as a small lockup (mark + name) above the
+    greeting, as the glyph on the yellow "build" buttons, on the app and
+    home-screen icons (mark on the app's yellow), and on the PDF manual (cover
+    band plus a "Made with BrickedUp" footer on every page).
+    *How:* `LogoMark` / `LogoLockup` / `Wordmark` in `components/ui/Logo.tsx`;
+    the name and logo paths live in `lib/brand.ts` so a rename is one line.
+    Web sizes are in `public/brand/` (trimmed from `brickedup-logo.png`).
+    The mark carries the whole app, not just a few spots: `BrickLoader` (the
+    logo hopping onto its shadow) replaces every spinner; the lockup sits on
+    the Designing, Scanning and Printing screens; the tab bar's scan button,
+    the empty inventory, 404 and error pages use the mark; finishing a build
+    stamps it with "Built with BrickedUp"; shared links get `brand/og.png`.
+    *Why:* the first pass (splash, header, icons, PDF) "seems very limited".
+
+## Performance
+
+15. **One WebGL context per screen, and only render when something moves.**
+    *Why:* the home page froze for 7.6s on load; profiling showed almost all
+    of it was creating WebGL contexts and compiling their shaders, not parsing
+    models. The app felt heavy and used ~1GB.
+    *How:*
+    - Anything that doesn't move ships as an image: sample-model cards and
+      missing part pictures are pre-rendered by `npm run snapshots`
+      (`scripts/bake-snapshots.mjs`); re-run it when a sample, a card size or
+      the lighting changes.
+    - Live 3D cards mount the first time they're on screen, and pause when off
+      screen.
+    - The manual renders on demand (`frameloop="demand"` plus a short busy
+      window after a step change or drag); eases must land exactly or the
+      scene never goes idle.
+    - Canvases cap pixel density at 1.5; keep the glass at 4 samples / 256px.
+    - Caches that grow per live design version are LRU-capped (`remember` in
+      `lib/ldraw.ts`).
+    - Demo on a production build (`npm run build && npm start`), not `npm run
+      dev`: half the download and a quarter of the server memory.
+
+
+## Beyond the UI
+
+- **brickify/** (idea -> real LEGO model: distill, concept image, brief,
+  build, critique) has its own rules in `brickify/AGENTS.md` and setup in
+  `brickify/README.md`. Its core principle: models decide what to build; code
+  places every brick.
