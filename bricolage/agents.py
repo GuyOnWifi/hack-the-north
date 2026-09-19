@@ -26,15 +26,24 @@ from harness import _log, HarnessError
 # Per-agent models: a strong model plans (few tokens, high leverage); a fast
 # model fills each band (small output, latency-critical). Overridable by env.
 import os
+# sonnet plans + builds (fast & reliable from a clean cwd, ~3-8s/call); OPUS is
+# the vision critic that actually looks at the render and judges it. (haiku
+# intermittently hangs on the per-band prompt; opus builders are 10x slower.)
 PLANNER_MODEL = os.environ.get("PLANNER_MODEL", "sonnet")
-BUILDER_MODEL = os.environ.get("BUILDER_MODEL", "haiku")
+BUILDER_MODEL = os.environ.get("BUILDER_MODEL", "sonnet")
+CRITIC_MODEL = os.environ.get("CRITIC_MODEL", "opus")
 
 
 def _claude(prompt, model=None, timeout=120):
+    # CRITICAL for speed: run from a clean cwd. In the project dir, `claude -p`
+    # loads the repo CLAUDE.md + every MCP server + skills on EACH call (~40-70s
+    # of pure overhead). From /tmp it skips all that — auth is user-level, so it
+    # still works — dropping a per-call cost of ~60s to ~3-11s. That's what makes
+    # a multi-agent loop of many small calls viable.
     cmd = ["claude", "-p", prompt]
     if model:
         cmd += ["--model", model]
-    out = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+    out = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, cwd="/tmp")
     return out.stdout
 
 
@@ -56,15 +65,20 @@ region below it, so nothing floats. A narrow feature (stem, neck, leg) sits cent
 model spans ~8-16 studs, centered near x=6..12, y=6..12.
 - Region = center (cx,cy) and size (sx,sy) in studs. Keep sx,sy within 2..16 and inside 0..20.
 - Brick count per band scales with area (a thin stem ~2-6, a wide base ~10-25).
+- CORBEL wide-on-narrow transitions: a wide feature can NOT sit directly on a thin one (a \
+bloom on a 2-wide stem would float). If a band is much wider than the band below, either give it \
+enough z-layers to widen GRADUALLY (about +3 studs of width per layer), OR insert a medium \
+transition band (a "calyx"/"crown"/"shoulders") between them. Each band's width should be at \
+most ~2x the width of the band directly below it.
 
 Output ONLY the plan, one band per line, bottom band FIRST, in EXACTLY this format:
 BAND z<z_from>-<z_to> | <cx>,<cy> | <sx>x<sy> | n=<brick_count> | <short_name>: <what it represents>
 
-Example for a flower:
-BAND z0-1 | 10,10 | 8x8 | n=18 | pot: wide round-ish base the flower sits in
+Example for a flower (note the calyx corbel between the thin stem and the wide bloom):
+BAND z0-1 | 10,10 | 8x8 | n=16 | pot: wide round-ish base the flower sits in
 BAND z2-6 | 10,10 | 2x2 | n=6 | stem: thin vertical stalk, centered
-BAND z5-6 | 10,10 | 10x2 | n=6 | leaves: two leaves off the stem
-BAND z7-11 | 10,10 | 12x12 | n=22 | bloom: wide flat flower head
+BAND z7-8 | 10,10 | 6x6 | n=10 | calyx: cupped base of the bloom, widening out from the stem
+BAND z9-11 | 10,10 | 12x12 | n=22 | bloom: wide flower head corbelling out over the calyx
 
 Output 3-6 BAND lines and NOTHING else."""
 
@@ -140,6 +154,10 @@ Hard rules:
 except z=0 bricks which sit on the ground. Do not float.
 - NO COLLISIONS: never reuse an (x,y,z) cell already filled below or by your own bricks.
 - Stay inside the region box and the 20x20 grid (0..19).
+- CORBEL, don't float: a brick may hang over the '#' support below by at most HALF its length. \
+To spread a wide shape (a bloom) over a narrow base, build your LOWEST z-layer only slightly \
+wider than the '#' cells, then each higher z-layer a bit wider, resting on the bricks you just \
+placed — a stepped bowl/dome. Emit lower-z bricks BEFORE higher-z bricks so each rests on the last.
 - Match the {name} shape: solid where it reads solid, outline for thin features. Prefer bigger \
 footprints (2x4, 2x6) for solid areas, 1x1/1x2 for detail and edges.{fixup}
 
@@ -188,12 +206,76 @@ def inspect(new, occ, band):
         cs = bricks.cells(h, w, x, y, z)
         if cs & occ.keys():
             issues.append(("COLLISION", (h, w, x, y, z))); continue
-        if not (z == 0 or any((cx, cy, z - 1) in occ for (cx, cy, _) in cs)):
-            issues.append(("FLOATING", (h, w, x, y, z))); continue
+        # Deliberately DON'T reject "floating" here: a corbelled bloom fans out
+        # and only its centre rests on z-1. The final connectivity flood-fill in
+        # build() keeps the whole ground-connected component and drops only
+        # genuinely detached clusters — so organic overhangs survive.
         for c in cs:
             occ[c] = True
         kept.append((h, w, x, y, z))
     return kept, issues
+
+
+# Colour bricks by the ROLE of the band they belong to, so a flower reads as a
+# flower: brown base, green stem/leaves, coloured bloom. Huge readability win.
+_BAND_COLOUR = [
+    (("pot", "base", "root", "ground", "soil", "vase", "trunk"), 6),          # brown
+    (("stem", "leaf", "leaves", "calyx", "sepal", "branch", "vine", "grass"), 2),  # green
+    (("bloom", "flower", "petal", "blossom", "head", "bud", "crown", "center"), 4),  # red
+]
+
+
+def _band_colour(name, prompt):
+    n = (name or "").lower()
+    for words, code in _BAND_COLOUR:
+        if any(w in n for w in words):
+            # let an explicit colour word in the prompt override the bloom colour
+            if code == 4:
+                return harness._color_for(prompt) if _has_colour_word(prompt) else 4
+            return code
+    return harness._color_for(prompt)
+
+
+def _has_colour_word(prompt):
+    import re
+    return any(re.search(rf"\b{w}\b", prompt.lower()) for w in harness.NAME_TO_CODE)
+
+
+def _colours_for(placed, bands, prompt):
+    out = []
+    for (h, w, x, y, z) in placed:
+        band = next((b for b in bands if b["z_from"] <= z <= b["z_to"]), None)
+        out.append(_band_colour(band["name"] if band else "", prompt))
+    return out
+
+
+def _drop_islands(items):
+    """Drop ONLY fully-isolated bricks (no face-adjacent neighbour, not on the
+    ground) — stray floaters. Keep connected clusters (a bloom) even if the whole
+    cluster overhangs; instability is reported, not deleted."""
+    if not items:
+        return items
+    cell = {}
+    for i, b in enumerate(items):
+        for c in bricks.cells(*b):
+            cell[c] = i
+    ground_z = min(z for (h, w, x, y, z) in items)
+    kept = []
+    for i, (h, w, x, y, z) in enumerate(items):
+        if z == ground_z:
+            kept.append((h, w, x, y, z)); continue
+        nb = False
+        for (cx, cy, cz) in bricks.cells(h, w, x, y, z):
+            for q in ((cx + 1, cy, cz), (cx - 1, cy, cz), (cx, cy + 1, cz),
+                      (cx, cy - 1, cz), (cx, cy, cz - 1), (cx, cy, cz + 1)):
+                j = cell.get(q)
+                if j is not None and j != i:
+                    nb = True; break
+            if nb:
+                break
+        if nb:
+            kept.append((h, w, x, y, z))
+    return kept
 
 
 def _fixup_note(issues):
@@ -223,6 +305,7 @@ def build(prompt, name=None, tape=None, seed=0):
     if not bands:
         tape.emit("planner", "plan", "planner returned no plan — no fallback", status="fail", ms=5)
         raise HarnessError(f"the planner produced no plan for “{prompt}”. Try again.")
+    bands = bands[:4]                            # cap calls — each CLI call is slow
     tape.emit("planner", "plan",
               f"plan: {len(bands)} bands — {', '.join(b['name'] for b in bands)}",
               status="ok", ms=100)
@@ -233,7 +316,13 @@ def build(prompt, name=None, tape=None, seed=0):
                   f"building {band['name']} (z{band['z_from']}–{band['z_to']})…",
                   status="running", ms=900, tokens=400)
         t0 = time.time()
-        new = build_layer(prompt, bands, band, placed, occ)
+        try:
+            new = build_layer(prompt, bands, band, placed, occ)
+        except subprocess.TimeoutExpired:
+            tape.emit("builder", "build", f"{band['name']}: builder timed out — "
+                      f"skipping this band, keeping what stands", status="warn", ms=5)
+            _log(f"band {band['name']}: TIMED OUT, skipping")
+            continue                             # a slow band never kills the whole build
         kept, issues = inspect(new, occ, band)
         _log(f"band {band['name']}: builder gave {len(new)}, kept {len(kept)}, "
              f"{len(issues)} issues, {time.time()-t0:.0f}s")
@@ -242,25 +331,60 @@ def build(prompt, name=None, tape=None, seed=0):
             tape.emit("inspector", "reject",
                       f"{band['name']}: {len(issues)} bad bricks — sending back to the builder",
                       status="warn", ms=30)
-            new = build_layer(prompt, bands, band, placed, occ, fixup=_fixup_note(issues))
-            k2, _ = inspect(new, occ, band)
-            kept += k2
+            try:
+                new = build_layer(prompt, bands, band, placed, occ, fixup=_fixup_note(issues))
+                k2, _ = inspect(new, occ, band)
+                kept += k2
+            except subprocess.TimeoutExpired:
+                pass
         placed += kept
         tape.emit("inspector", "check",
                   f"{band['name']}: {len(kept)} bricks held (total {len(placed)})",
                   status="ok", ms=40)
         harness._emit_geometry(tape, placed, f"placed {band['name']} — {len(placed)} bricks", draft=False)
 
-    placed = harness._normalize(placed)
+    # Keep the whole inspected shape (each brick already passed bounds+collision
+    # per band). We DON'T flood-fill to ground here anymore — that was dropping a
+    # flower's entire bloom as "disconnected." A few overhanging bricks are fine;
+    # instability is reported (red), not deleted. Just drop isolated single cells.
+    placed = _drop_islands(placed)
     if len(placed) < 6:
         tape.emit("inspector", "reject",
                   f"only {len(placed)} bricks survived — too sparse", status="fail", ms=5)
         raise HarnessError(f"only {len(placed)} bricks held up for “{prompt}”. Try again.")
+    colours = _colours_for(placed, bands, prompt)     # colour by band role (pre-normalize z)
+    placed = harness._normalize(placed)
     res = physics.analyze(placed)
     tape.emit("inspector", "physics",
               f"force + torque check: {'stands up' if res['stable'] else 'top-heavy, may not stand'} "
               f"({res.get('studs', 0)} stud joints)",
               status="ok" if res["stable"] else "warn", ms=45)
-    build = bricks.to_build(placed, name=name or prompt.title(), color=harness._color_for(prompt))
+    build = bricks.to_build(placed, name=name or prompt.title(), colors=colours)
     _log(f"assemble '{prompt}': DONE — {len(build.parts)} parts, stable={res['stable']}")
     return build
+
+
+def vision_check(build, prompt, tape=None):
+    """VISION CRITIC: render the finished model and show the IMAGE to a strong
+    multimodal model — does it actually read as the object? Returns (score, note).
+    This is the 'give it the images' loop; failure never blocks the build."""
+    try:
+        import render
+        img = "/tmp/agent_look.png"
+        render.render_build(build, img, view="iso")
+        ask = (f"@{img}\nThis is an isometric render of a LEGO brick model meant to be "
+               f"\"{prompt}\". Judge ONLY whether it clearly reads as that object in 3D. "
+               f"Reply with exactly one line: SCORE=<0-10> — <one short sentence on what's "
+               f"missing or wrong structurally>.")
+        out = _claude(ask, model=CRITIC_MODEL, timeout=90)
+        m = re.search(r"SCORE\s*=\s*(\d+)", out)
+        score = int(m.group(1)) if m else 5
+        note = re.sub(r"\s+", " ", out).strip()[:200]
+        _log(f"vision_check '{prompt}': score={score} — {note}")
+        if tape:
+            tape.emit("critic", "look", f"looked at the render — {note}",
+                      status="ok" if score >= 6 else "warn", ms=80, tokens=500)
+        return score, note
+    except Exception as e:
+        _log(f"vision_check failed: {e}")
+        return 10, ""
