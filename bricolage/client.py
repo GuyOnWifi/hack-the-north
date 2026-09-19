@@ -42,6 +42,10 @@ PROPOSE_TOOL = {
 
 
 def provider():
+    # DEMO_SAFE forces the deterministic offline mock no matter what PROVIDER
+    # says — the judging-table wifi-died insurance (DoD #4).
+    if os.environ.get("DEMO_SAFE") == "1":
+        return "mock"
     return os.environ.get("PROVIDER", "mock")
 
 

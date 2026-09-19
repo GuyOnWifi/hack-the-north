@@ -97,8 +97,9 @@ def test_insertion_sweep():
 
 
 # ---------------------------------------------------------- golden compose set
-GOLDEN = ["build a rover", "a small truck", "build a house", "make a tower",
-          "a long wall", "build a jet", "build a pyramid", "build a heart"]
+GOLDEN = ["build a rover", "a small truck", "build a big buggy", "build a house",
+          "build a garage", "make a tower", "a long wall", "build a jet",
+          "build a pyramid", "build a heart"]
 
 
 def test_golden():
