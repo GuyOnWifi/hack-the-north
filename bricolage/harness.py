@@ -63,12 +63,13 @@ _THINKING = [
 
 
 def _think_while(prompt, tape, stop):
-    """Emit a rolling 'designer is thinking' trace every few seconds until the
-    LLM call returns, so a 60-130s claude -p wait shows life, not a spinner."""
+    """Emit a 'designer is thinking' trace until the LLM returns, so the long
+    claude -p wait shows life. The distinct steps play once (7s apart); after
+    that a slow 'still refining' pulse keeps it alive without spamming the tape."""
     i = 0
-    while not stop.wait(6.0):
-        tape.emit("designer", "think", _THINKING[i % len(_THINKING)],
-                  ms=0, tokens=180)
+    while not stop.wait(7.0 if i < len(_THINKING) else 15.0):
+        msg = _THINKING[i] if i < len(_THINKING) else "still refining the design…"
+        tape.emit("designer", "think", msg, ms=0, tokens=180)
         i += 1
 
 
@@ -194,11 +195,6 @@ def build(prompt, name=None, tape=None, seed=0):
     tape = tape or Tape()
     tape.emit("designer", "think", f"planning a 3D build for '{prompt}'…",
               ms=1600, tokens=2000)
-    # speed-reality: while the real designer thinks (30-90s), place a fast
-    # speculative draft so the first bricks land in seconds, not at the end.
-    if available():
-        _emit_geometry(tape, _normalize(_propose_mock(prompt)),
-                       "rough draft placed — the designer is refining it…", draft=True)
     items = _normalize(_propose(prompt, tape))
     tape.emit("designer", "propose", f"proposed {len(items)} bricks in 3D", ms=300)
 
@@ -211,13 +207,12 @@ def build(prompt, name=None, tape=None, seed=0):
                   status="warn", ms=2)
 
     kept = _stabilize(kept, tape)
-    # junk guard: if almost nothing survived lint+physics, the proposal was
-    # garbage (apology text, all-collisions). Rebuild from the solid fallback so
-    # the user never gets an "ok" 2-brick blob.
+    # honesty guard: if almost nothing survived, the model's proposal was too
+    # sparse/garbled — say so rather than swapping in a canned design.
     if len(kept) < 6:
-        tape.emit("inspector", "reject", f"only {len(kept)} brick(s) held up — "
-                  f"rebuilding from a solid fallback", status="warn", ms=3)
-        kept = _stabilize(bricks.lint(_normalize(_propose_mock(prompt)))[0], tape)
+        tape.emit("inspector", "reject", f"only {len(kept)} brick(s) survived — "
+                  f"the model's proposal was too sparse; try again or steer it",
+                  status="warn", ms=3)
     res = physics.analyze(kept)
     tape.emit("inspector", "physics",
               f"force + torque check: {'stands up' if res['stable'] else 'would topple'} "

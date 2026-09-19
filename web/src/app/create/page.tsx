@@ -91,7 +91,7 @@ function Create() {
   };
 
   return (
-    <main className="fixed inset-0 flex flex-col items-center overflow-y-auto" style={{ background: "linear-gradient(180deg,#6e6e6e 0%,#838383 50%,#959595 100%)" }}>
+    <main className="fixed inset-0 flex flex-col items-center overflow-hidden" style={{ background: "linear-gradient(180deg,#6e6e6e 0%,#838383 50%,#959595 100%)" }}>
       <FloatingBricks tone="grey" />
       <div className="absolute right-5 top-5 z-10" style={{ marginTop: "var(--safe-top)" }}>
         <IconTile tone="glass-light" label="Cancel" href="/builds" size={60}>

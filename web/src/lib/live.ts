@@ -1,7 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { bricolage, fixturePayload, type Payload, type TapeEvent } from "./bricolage";
+import { bricolage, type Payload, type TapeEvent } from "./bricolage";
 import { registerModelText } from "./ldraw";
 import type { InventoryItem } from "./types";
 
@@ -98,25 +98,10 @@ async function streamDesign(displayPrompt: string, fullPrompt: string) {
       set({ tape: [...state.tape, e] });
     });
     await adopt(payload, "live");
-  } catch {
-    try {
-      const { payload, ldr } = await fixturePayload();
-      await replayTape(payload.tape ?? []);
-      await adopt(payload, "fixture", ldr);
-    } catch (e) {
-      set({ status: "error", error: e instanceof Error ? e.message : "The builder is offline" });
-    }
-  }
-}
-
-/** Offline: play the fixture tape with its recorded timing (compressed). */
-async function replayTape(events: TapeEvent[]) {
-  set({ tape: [] });
-  let last = 0;
-  for (const e of events) {
-    await new Promise((r) => setTimeout(r, Math.min(900, Math.max(180, (e.t - last) * 0.4))));
-    last = e.t;
-    set({ tape: [...state.tape, e] });
+  } catch (e) {
+    // NO canned fallback. If the live builder fails, say so — never show a
+    // hardcoded design. Everything on screen is real LLM output or nothing.
+    set({ status: "error", error: e instanceof Error ? e.message : "The builder is offline" });
   }
 }
 

@@ -15,69 +15,26 @@ from validate import validate
 
 
 def build_from_prompt(prompt, inventory, seed=0, tape=None, recipe=None):
+    """ONE path: the LEGO LLM harness. Every prompt is designed by the LLM in the
+    3D brick grammar, then lint + force/torque physics checked. No hardcoded
+    template designs, no canned fallbacks — it's real model output or nothing."""
     tape = tape or Tape()
+    import harness
 
     if recipe is not None:
-        # DETERMINISTIC REPLAY: rebuild from the recorded LLM proposal — no
-        # router, no model, no vision. expand/fix are deterministic, so same
-        # recipe + seed + inventory => byte-identical build.
-        backend = recipe["backend"]
-        if backend == "harness":
-            # harness builds validate via lint + force/torque physics (already
-            # baked into the recorded bricks), NOT the compose validator — go
-            # straight to the harness finish so replay is byte-identical.
-            import bricks as bricks_mod
-            build = bricks_mod.to_build(recipe["bricks"], name=recipe["name"],
-                                        color=recipe.get("color", 71))
-            return _finish_harness(build, recipe, tape)
-        elif backend == "sculpt":
-            build = sculpt_backend.build_voxels(recipe["voxels"], name=recipe["name"],
-                                                tape=tape, seed=seed)
-        else:
-            build = expand(recipe["composition"], name=recipe["name"],
-                           seed=seed, lenient=True)
-        result = fix(build, inventory, Budget(seed=seed), tape)
-        return _finish(result, backend, recipe, tape)
-
-    backend, noun, size, reason = router.route(prompt)
-    tape.emit("router", "route", f"{reason}  (backend={backend})", ms=2)
-    client = LLMClient(tape)
-
-    if backend == "sculpt":
-        # the LEGO LLM harness: prompt the model in 3D brick grammar, lint +
-        # real physics-check every placement. Validation is lint + force-balance
-        # physics (done inside harness.build), NOT the compose validator — a 3D
-        # wall of 1x1s is fine even though it lacks horizontal bond.
-        import harness, physics
-        build = harness.build(prompt, name=noun.title(), tape=tape, seed=seed)
-        recipe = {"backend": "harness", "name": build.name,
-                  "color": build.parts[0].color if build.parts else 71,
-                  "bricks": build.provenance.get("bricks", [])}
+        # DETERMINISTIC REPLAY from the recorded bricks — no router, no model.
+        import bricks as bricks_mod
+        build = bricks_mod.to_build(recipe["bricks"], name=recipe["name"],
+                                    color=recipe.get("color", 71))
         return _finish_harness(build, recipe, tape)
-    else:
-        comp = client.propose_compose(prompt, inventory.summarize(), noun, size, seed)
-        tape.emit("designer", "propose", _describe(comp["root"]), ms=1900, tokens=2400)
-        try:
-            # lenient: keep the model's valid children, drop only the impossible
-            build = expand(comp, name=comp.get("name", noun), seed=seed, lenient=True)
-            for d in build.provenance.get("dropped", []):
-                tape.emit("inspector", "reject",
-                          f"dropped {d['gen']}@{d['attach']}: {d['why']}",
-                          status="warn", ms=4)
-        except AttachError as e:
-            # even the root won't attach — degrade to a known-good template
-            tape.emit("inspector", "reject",
-                      f"composition invalid ({e}); falling back to a known-good "
-                      f"template", status="warn", ms=5)
-            from proposer import synthesize
-            comp = synthesize(noun, size, seed)
-            tape.emit("designer", "propose", _describe(comp["root"]), ms=200, tokens=0)
-            build = expand(comp, name=comp.get("name", noun), seed=seed)
-        recipe = {"backend": "compose", "name": comp.get("name", noun),
-                  "composition": comp}
 
-    result = fix(build, inventory, Budget(seed=seed), tape, client)
-    return _finish(result, backend, recipe, tape)
+    _, noun, _, reason = router.route(prompt)
+    tape.emit("router", "route", f"{reason}  (backend=sculpt)", ms=2)
+    build = harness.build(prompt, name=noun.title(), tape=tape, seed=seed)
+    recipe = {"backend": "harness", "name": build.name,
+              "color": build.parts[0].color if build.parts else 71,
+              "bricks": build.provenance.get("bricks", [])}
+    return _finish_harness(build, recipe, tape)
 
 
 def _finish_harness(build, recipe, tape):
