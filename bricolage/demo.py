@@ -25,7 +25,7 @@ def rich_bin():
     but finite — the validator still has to fit the build inside them."""
     bricks = ["3001", "3003", "3004", "3005", "3009", "3010"]
     plates = ["3020", "3022", "3023", "3024"]
-    colors = [15, 19, 72, 71, 70, 4, 14, 0]        # white tan grays brown red yellow black
+    colors = [15, 19, 72, 71, 70, 4, 14, 0, 2, 1]  # white tan grays brown red yellow black green blue
     counts = {}
     for c in colors:
         for part in bricks:

@@ -65,3 +65,36 @@ def synthesize(noun, size=1.0, seed=0):
 
     # LLM fallback default
     return synthesize("rover", size, seed)
+
+
+def voxel_shape(noun, size=1.0):
+    """The DESIGNER imagining an arbitrary shape as a voxel field (cell->colour).
+    Still a CHOICE, not coordinates-we-trust: our solver legalises + verifies it.
+    Mock stands in for `claude -p` emitting layer masks. Overhangs are LEFT IN
+    on purpose — the solver's job is to prop them up (visible work)."""
+    v = {}
+
+    def fill(x0, x1, y0, y1, z0, z1, col):
+        for x in range(x0, x1):
+            for y in range(y0, y1):
+                for z in range(z0, z1):
+                    v[(x, y, z)] = col
+
+    # even-aligned regions so 2x2 plates tile them perfectly and bond
+    if noun in ("flower", "rose", "tulip"):
+        fill(0, 4, 0, 1, 0, 4, 70)                 # pot 4x4 (brown)
+        fill(1, 3, 1, 5, 1, 3, 2)                  # stem 2x2 (green) — bloom overhangs it
+        fill(0, 4, 5, 6, 0, 4, 4)                  # bloom 4x4 (red) — overhangs the stem
+        fill(1, 3, 6, 7, 1, 3, 14)                 # centre 2x2 (yellow)
+        return v, "Flower"
+    if noun in ("tree",):
+        fill(1, 3, 0, 4, 1, 3, 70)                 # trunk 2x2 (brown)
+        fill(0, 4, 4, 6, 0, 4, 2)                  # canopy 4x4 (green) — overhangs trunk
+        return v, "Tree"
+    if noun in ("mushroom",):
+        fill(1, 3, 0, 3, 1, 3, 15)                 # stalk 2x2 (white)
+        fill(0, 4, 3, 4, 0, 4, 4)                  # cap 4x4 (red) — overhangs stalk
+        return v, "Mushroom"
+    # default blob: a stepped mound (always supported)
+    fill(0, 4, 0, 1, 0, 4, 1); fill(1, 3, 1, 2, 1, 3, 1)
+    return v, noun.title()

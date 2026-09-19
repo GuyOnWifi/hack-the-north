@@ -2,6 +2,19 @@
 
 _Updated 2026-09-19._
 
+## THE PIVOT (this is the project now)
+Not "what can I build from my pile" (that's Brickit, shipped). We do what Brickit
+**won't**: **invent a new model to any request and PROVE it stands up, from your
+bricks.** Two hard cores make it not-a-GPT-wrapper:
+- **Real physics** (`stability.py`): static-stability analysis — centre of mass
+  vs. ground support polygon (topple) + per-cut stud-clutch overhang (joint rip).
+  Catches builds the connectivity validator passes. (à la "Legolization", 2015.)
+- **Arbitrary-shape solver** (`sculpt.py`): "build me a flower" → LLM imagines a
+  voxel shape → the solver **adds support columns under overhangs**, tiles with a
+  bonded 2x2 offset grid, verifies physics + inventory — **streaming every step**.
+  The LLM imagines; the solver does provably-hard work; you watch it live.
+
+
 ## Lane B (build system) — **working end-to-end, offline**
 
 `python bricolage/demo.py` and `python bricolage/tests.py` both run with zero

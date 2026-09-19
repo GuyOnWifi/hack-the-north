@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 
 from model import occupancy
 from meta import PART_META, COLOR_NAME
+import stability
 
 
 @dataclass
@@ -26,7 +27,7 @@ def _elem(part, color):
     return f"{name} in {COLOR_NAME.get(color, color)}"
 
 
-def validate(build, inventory=None):
+def validate(build, inventory=None, physics=True):
     parts = build.parts
     errors, warnings = [], []
 
@@ -92,6 +93,13 @@ def validate(build, inventory=None):
                                "human": f"Needs {qty}x {_elem(part, color)}; "
                                         f"you have {have}."})
         stats_remaining = sum(v for v in remaining.values() if v > 0)
+
+    # ---- 5. physics: does it actually stand up? -----------------------
+    # only meaningful once the structure is geometrically sound (connected, no
+    # floating) — otherwise the mass model is nonsense.
+    if physics and not errors:
+        for f in stability.analyze(parts):
+            errors.append({"code": f.code, "parts": f.parts, "human": f.human})
 
     # ---- warnings (advisory) ------------------------------------------
     _bond_warnings(parts, warnings)
