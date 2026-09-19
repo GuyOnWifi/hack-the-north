@@ -185,3 +185,24 @@ body {
     opacity: 1;
   }
 }
+
+@keyframes sidebar-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* A tape brick landing on the tower: drops in and settles with a small bounce. */
+@keyframes brick-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
