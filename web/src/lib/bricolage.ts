@@ -62,6 +62,17 @@ export interface TapeEvent {
   tokens: number;
 }
 
+/** Structural stability of the current build (from Lane B's physics engine). */
+export interface Physics {
+  stable: boolean;
+  com: [number, number] | null;
+  base: [number, number][];
+  topple_margin: number;
+  sturdiness: number;
+  weakest_layer: number | null;
+  failures: { code: string; human: string }[];
+}
+
 export interface Payload {
   version: string | null;
   name?: string;
@@ -71,6 +82,7 @@ export interface Payload {
   tape?: TapeEvent[];
   tree?: string;
   head?: string | null;
+  physics?: Physics;
 }
 
 const BASE = "/bricolage";

@@ -93,11 +93,29 @@ def tile_voxels(cells, tape=None):
     return parts
 
 
-def build_voxels(voxels, name="Model", tape=None, seed=0, legalize=True):
-    """arbitrary target shape -> legalised, tiled, connected Build."""
-    from model import Build, SubAssembly
+def build_voxels(voxels, name="Model", tape=None, seed=0, legalize=True, base=True):
+    """arbitrary target shape -> legalised, tiled, connected Build. `base` mounts
+    the shape on a bonded plate baseplate (a display stand): every cell then
+    connects DOWN to the base, so even a FLAT silhouette (a heart, a letter) is
+    one connected, stable mass — otherwise side-by-side plates in one layer don't
+    bond and the shape falls apart."""
+    from model import Build, SubAssembly, Part
     cells = legalize_voxels(voxels, tape)[0] if legalize else dict(voxels)
     parts = tile_voxels(cells, tape)
+
+    if base and cells:
+        xs = [x for (x, _, _) in cells]; zs = [z for (_, _, z) in cells]
+        gy = min(y for (_, y, _) in cells)
+        x0, z0 = min(xs) - 1, min(zs) - 1
+        W, D = max(xs) - min(xs) + 3, max(zs) - min(zs) + 3
+        for p in bonded(W, D, 0, 71, seed, plates=True, courses=2, sub="base"):
+            parts.append(Part(p.id, p.part, p.color,
+                              (p.pos[0] + x0, gy - 2 + p.pos[1], p.pos[2] + z0),
+                              0, "base"))
+        if tape:
+            tape.emit("scribe", "base", "solver: mounted the shape on a baseplate "
+                      "so it holds together and stands", ms=4)
+
     parts = [type(p)(f"p{i}", p.part, p.color, p.pos, p.rot, p.sub)
              for i, p in enumerate(parts)]
     sub = SubAssembly("hull", None, "sculpt", (), None, ())

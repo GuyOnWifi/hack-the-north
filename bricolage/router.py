@@ -17,6 +17,9 @@ SCULPT_NOUNS = {
 }
 SIZE = {"tiny": 0.5, "small": 0.7, "little": 0.7, "big": 1.5, "large": 1.5,
         "huge": 2.0, "long": 1.4, "mini": 0.6}
+STOPWORDS = {"build", "make", "create", "the", "and", "for", "with", "please",
+             "can", "you", "give", "want", "would", "like", "some", "this",
+             "that", "small", "big", "tiny", "huge", "large", "little"}
 
 
 def route(prompt):
@@ -32,5 +35,7 @@ def route(prompt):
     for w in words:
         if w in SCULPT_NOUNS:
             return "sculpt", w, size, f"'{w}' is an organic shape -> sculpt"
-    # LLM fallback (mock): default to compose, generic vehicle
-    return "compose", "rover", size, "no keyword matched -> LLM fallback picked compose"
+    # Unknown request: it's a freeform object ("a moon", "a dragon"). Let the
+    # designer IMAGINE it as a shape (sculpt) rather than defaulting to a vehicle.
+    noun = next((w for w in words if len(w) > 2 and w not in STOPWORDS), "blob")
+    return "sculpt", noun, size, f"no structural keyword -> freeform shape '{noun}' -> sculpt"

@@ -3,6 +3,7 @@ tape. One entry point everything downstream consumes.
 """
 from __future__ import annotations
 
+import os
 import router
 import sculpt as sculpt_backend
 from client import LLMClient
@@ -28,6 +29,13 @@ def build_from_prompt(prompt, inventory, seed=0, tape=None):
                   f"proposed a {len(voxels)}-cell shape across "
                   f"{len({y for _, y, _ in voxels})} layers", ms=200)
         build = sculpt_backend.build_voxels(voxels, name=model_name, tape=tape, seed=seed)
+        # vision-in-the-loop: render it, look at it, correct it (real LLM only)
+        import vision
+        if vision.available():
+            import tempfile
+            rd = os.path.join(tempfile.gettempdir(), "bricolage_renders")
+            os.makedirs(rd, exist_ok=True)
+            build = vision.refine(build, voxels, prompt, tape, rd, rounds=2, seed=seed)
     else:
         comp = client.propose_compose(prompt, inventory.summarize(), noun, size, seed)
         tape.emit("designer", "propose", _describe(comp["root"]), ms=1900, tokens=2400)
