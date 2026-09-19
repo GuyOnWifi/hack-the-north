@@ -45,7 +45,7 @@ def _fewshot_prompt(prompt):
 
 def _propose_claude(prompt):
     out = subprocess.run(["claude", "-p", _fewshot_prompt(prompt)],
-                         capture_output=True, text=True, timeout=150)
+                         capture_output=True, text=True, timeout=220)
     return bricks.parse(out.stdout)
 
 
@@ -73,31 +73,43 @@ def _think_while(prompt, tape, stop):
         i += 1
 
 
+class HarnessError(Exception):
+    """A loud failure — surfaced to the user, never swallowed by a fallback."""
+
+
 def _propose(prompt, tape=None):
-    """Get a brick proposal, degrading gracefully: real LLM if available, else
-    the offline 3D fallback. A failed/empty LLM call never propagates — it falls
-    back so the stream always finishes with a real structure."""
-    if available():
-        import threading
-        stop = threading.Event()
+    """Get a brick proposal from the LLM. NO silent fallback: if claude times
+    out, errors, or returns nothing, we RAISE — the user sees a loud error, not
+    a canned cube. The offline scaffold is used ONLY in explicit mock mode."""
+    if not available():
+        return _propose_mock(prompt)          # PROVIDER=mock: intentional dev mode
+
+    import threading
+    stop = threading.Event()
+    if tape:
+        threading.Thread(target=_think_while, args=(prompt, tape, stop),
+                         daemon=True).start()
+    try:
+        items = _propose_claude(prompt)
+    except subprocess.TimeoutExpired:
         if tape:
-            threading.Thread(target=_think_while, args=(prompt, tape, stop),
-                             daemon=True).start()
-        try:
-            items = _propose_claude(prompt)
-            if items:
-                return items
-            if tape:
-                tape.emit("designer", "propose", "model returned no bricks — "
-                          "using the offline 3D fallback", status="warn", ms=2)
-        except Exception as e:
-            if tape:
-                tape.emit("designer", "propose", f"designer call failed "
-                          f"({type(e).__name__}) — using the offline 3D fallback",
-                          status="warn", ms=2)
-        finally:
-            stop.set()          # halt the thinking trace the moment the LLM returns
-    return _propose_mock(prompt)
+            tape.emit("designer", "propose", "designer (claude) TIMED OUT — no fallback",
+                      status="fail", ms=2)
+        raise HarnessError(f"the designer timed out on “{prompt}”. No fallback — "
+                           f"try again or a simpler prompt.")
+    except Exception as e:
+        if tape:
+            tape.emit("designer", "propose", f"designer call FAILED: {type(e).__name__} — no fallback",
+                      status="fail", ms=2)
+        raise HarnessError(f"the designer failed: {e}")
+    finally:
+        stop.set()          # halt the thinking trace the moment the LLM returns
+    if not items:
+        if tape:
+            tape.emit("designer", "propose", "designer returned NO bricks — no fallback",
+                      status="fail", ms=2)
+        raise HarnessError(f"the designer returned no usable bricks for “{prompt}”. Try again.")
+    return items
 
 
 def _propose_mock(prompt):
@@ -207,12 +219,12 @@ def build(prompt, name=None, tape=None, seed=0):
                   status="warn", ms=2)
 
     kept = _stabilize(kept, tape)
-    # honesty guard: if almost nothing survived, the model's proposal was too
-    # sparse/garbled — say so rather than swapping in a canned design.
-    if len(kept) < 6:
-        tape.emit("inspector", "reject", f"only {len(kept)} brick(s) survived — "
-                  f"the model's proposal was too sparse; try again or steer it",
-                  status="warn", ms=3)
+    # honesty guard: if almost nothing survived, FAIL LOUD — no canned design.
+    if len(kept) < 6 and available():
+        tape.emit("inspector", "reject", f"only {len(kept)} brick(s) survived lint+physics — "
+                  f"the proposal was too sparse", status="fail", ms=3)
+        raise HarnessError(f"only {len(kept)} bricks held up for “{prompt}” — the model's "
+                           f"proposal was too sparse. Try again or steer it.")
     res = physics.analyze(kept)
     tape.emit("inspector", "physics",
               f"force + torque check: {'stands up' if res['stable'] else 'would topple'} "

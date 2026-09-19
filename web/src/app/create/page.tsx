@@ -94,7 +94,7 @@ function Create() {
   };
 
   return (
-    <main className="fixed inset-0 flex flex-col items-center overflow-hidden" style={{ background: "linear-gradient(180deg,#6e6e6e 0%,#838383 50%,#959595 100%)" }}>
+    <main className="fixed inset-0 flex flex-col items-center overflow-y-auto" style={{ background: "linear-gradient(180deg,#6e6e6e 0%,#838383 50%,#959595 100%)" }}>
       <FloatingBricks tone="grey" />
       <div className="absolute right-5 top-5 z-10" style={{ marginTop: "var(--safe-top)" }}>
         <IconTile tone="glass-light" label="Cancel" href="/builds" size={60}>
@@ -102,7 +102,7 @@ function Create() {
         </IconTile>
       </div>
 
-      <div className="relative z-10 flex w-full max-w-[520px] flex-1 flex-col px-5" style={{ paddingTop: "calc(var(--safe-top) + 96px)" }}>
+      <div className="relative z-10 flex w-full max-w-[520px] flex-col px-5" style={{ paddingTop: "calc(var(--safe-top) + 96px)" }}>
         <p className="text-center text-[15px] font-bold uppercase tracking-wide text-white/70">{done ? (valid ? "Designed" : "Almost") : "Designing"}</p>
         <h1 className="mt-1 text-center text-[28px] font-[900] leading-tight tracking-[-0.02em] text-white">&ldquo;{prompt}&rdquo;</h1>
         {live.source === "fixture" && live.prompt === prompt && <p className="mt-2 text-center text-[14px] font-semibold text-white/80">The builder is offline, so this is the saved sample.</p>}
@@ -189,7 +189,7 @@ function Create() {
           </div>
         </div>
 
-        <div className="no-scrollbar mt-4 min-h-0 flex-1 overflow-auto rounded-[24px] bg-[#eef0f2]/90 p-3 shadow-[0_18px_40px_rgba(0,0,0,0.25)]">
+        <div className="no-scrollbar mt-4 min-h-[240px] rounded-[24px] bg-[#eef0f2]/90 p-3 shadow-[0_18px_40px_rgba(0,0,0,0.25)]">
           {failed ? (
             <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
               <p className="text-[19px] font-[800] text-ink">The builder didn&apos;t answer</p>
