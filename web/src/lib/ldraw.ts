@@ -47,7 +47,10 @@ export function isAuthoredModel(url: string) {
 
 /** The bundled library subset (scripts/build-ldraw-pack.mjs): colours + embedded part files. */
 function partsPack() {
-  pack ??= fetch("/ldraw/parts.pack.ldr")
+  // ?v bust: the pack is a static file the browser caches hard; bump this
+  // whenever build-ldraw-pack.mjs regenerates it so a stale cache can't strand
+  // a model on a missing part (the "Couldn't load this model" bug).
+  pack ??= fetch("/ldraw/parts.pack.ldr?v=3")
     .then((r) => {
       if (!r.ok) throw new Error("Missing /ldraw/parts.pack.ldr");
       return r.text();

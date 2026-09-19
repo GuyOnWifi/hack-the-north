@@ -37,7 +37,8 @@ function Create() {
     designBuild(prompt);
   }, [prompt]);
 
-  const valid = live.payload?.report?.ok !== false;
+  const valid = live.payload?.report?.ok !== false;       // renderable / openable
+  const stable = live.payload?.physics?.stable !== false;  // physically stands?
 
   const events = live.prompt === prompt ? live.tape : [];
   const done = live.status === "ready" && live.prompt === prompt;
@@ -130,9 +131,9 @@ function Create() {
                   <Play size={14} fill="#1a1a1a" /> replay
                 </button>
               )}
-              {!valid && <span className="rounded-full bg-[#e02436] px-3 py-1 text-[13px] font-bold text-white shadow">⚠ won&apos;t stand</span>}
+              {!stable && <span className="rounded-full bg-[#e02436] px-3 py-1 text-[13px] font-bold text-white shadow">⚠ won&apos;t stand</span>}
             </div>
-            {!valid && <div className="pointer-events-none absolute inset-2 rounded-[18px] ring-2 ring-[#e02436]/70" style={{ animation: "pulse 1.4s ease-in-out infinite" }} />}
+            {!stable && <div className="pointer-events-none absolute inset-2 rounded-[18px] ring-2 ring-[#e02436]/70" style={{ animation: "pulse 1.4s ease-in-out infinite" }} />}
           </div>
         )}
 

@@ -38,19 +38,23 @@ def build_from_prompt(prompt, inventory, seed=0, tape=None, recipe=None):
 
 
 def _finish_harness(build, recipe, tape):
-    """Harness builds validate via lint + force-balance physics (already run),
-    then sequence. Returns the standard pipeline result."""
+    """Harness builds are VALID/viewable if they produced a model. Physical
+    instability is a WARNING (shown red in the UI), NOT a failure — you should
+    always be able to see, assemble, and open your model even if it's top-heavy."""
     import physics
     from repair import FixResult
     from validate import Report
     ph = physics.analyze(recipe.get("bricks", []))
-    report = Report(ok=ph["stable"],
-                    errors=[] if ph["stable"] else
-                    [{"code": "UNSTABLE", "parts": [],
-                      "human": "the design won't stand — some bricks aren't held"}],
-                    warnings=[], stats={"parts": len(build.parts),
-                                        "studs_used": sum(p.footprint()[0] * p.footprint()[1] for p in build.parts),
-                                        "subs": 1})
+    parts = len(build.parts)
+    report = Report(ok=parts > 0,
+                    errors=[] if parts > 0 else
+                    [{"code": "EMPTY", "parts": [], "human": "no bricks were produced"}],
+                    warnings=[] if ph["stable"] else
+                    [{"code": "UNSTABLE", "sub": None,
+                      "human": "top-heavy — the physics says it might not stand on its own"}],
+                    stats={"parts": parts,
+                           "studs_used": sum(p.footprint()[0] * p.footprint()[1] for p in build.parts),
+                           "subs": 1})
     return _finish(FixResult(build, report, __import__("collections").Counter(), 0, 0), "harness", recipe, tape)
 
 
