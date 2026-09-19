@@ -1,12 +1,14 @@
 "use client";
 
+import { BrickLoader } from "@/components/ui/Logo";
+
 import { play } from "@/lib/sound";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowLeft, Check, ImagePlus, RotateCcw } from "lucide-react";
-import { ChunkyButton, IconTile, YellowBucket } from "@/components/ui/controls";
+import { BrickChip, ChunkyButton, IconTile, YellowBucket } from "@/components/ui/controls";
 import { loadSampleSession, setSession } from "@/lib/store";
 
 type CamState = "starting" | "live" | "denied" | "unavailable";
@@ -79,8 +81,10 @@ export default function Scan() {
         </div>
         <ul className="no-scrollbar -mx-[18px] mt-4 flex gap-2 overflow-x-auto px-[18px]">
           {TIPS.map((t) => (
-            <li key={t} className="flex shrink-0 items-center gap-1.5 rounded-full bg-white/70 px-3 py-1.5 text-[14px] font-bold text-ink">
-              <Check size={16} strokeWidth={3} color="#1f7a3a" /> {t}
+            <li key={t} className="shrink-0">
+              <BrickChip bg="rgba(255,255,255,0.7)" className="!gap-1.5 !px-3 !text-[14px]">
+                <Check size={16} strokeWidth={3} color="#1f7a3a" /> {t}
+              </BrickChip>
             </li>
           ))}
         </ul>
@@ -97,7 +101,7 @@ export default function Scan() {
 
         {!shot && cam === "starting" && (
           <div className="absolute inset-0 grid place-items-center">
-            <div className="h-10 w-10 animate-spin rounded-full border-[4px] border-white/25 border-t-white" />
+            <BrickLoader tone="light" label="Starting the camera…" />
           </div>
         )}
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { jsPDF } from "jspdf";
-import { APP_NAME } from "./brand";
+import { APP_NAME, LOGO_SMALL_SRC, LOGO_SRC } from "./brand";
 import { partImageUrl } from "./data";
 import { allParts, modelSnapshot, partThumbnail, prepareModel, renderStep, stepParts, type PartNode } from "./ldraw";
 import type { Build } from "./types";
@@ -70,9 +70,23 @@ export async function exportManual(build: Build, onProgress?: (done: number, tot
   doc.setFontSize(13);
   doc.setFont("helvetica", "normal");
   doc.text(`${build.pieces} pieces  ·  ${model.stepCount} steps  ·  ${build.age}`, 18, 40);
+  // Brand block on the yellow band: the mark, name under it.
+  const logo = await toDataUrl(LOGO_SRC).catch(() => null);
+  if (logo) await fit(doc, logo, PAGE.w - 58, 6, 40, 32);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.text(APP_NAME, PAGE.w - 38, 44, { align: "center" });
+  doc.setFont("helvetica", "normal");
   await fit(doc, await modelSnapshot(build.model, 1400, 1000), 30, 55, PAGE.w - 60, PAGE.h - 70);
-  doc.setFontSize(10);
-  doc.text(APP_NAME, PAGE.w - 18, PAGE.h - 10, { align: "right" });
+  const small = await toDataUrl(LOGO_SMALL_SRC).catch(() => null);
+  const footer = async () => {
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(...INK);
+    if (small) await fit(doc, small, 10, PAGE.h - 12.6, 6.5, 6.5);
+    doc.text(`Made with ${APP_NAME}`, 18, PAGE.h - 8);
+  };
+  await footer();
   onProgress?.(1, total);
 
   // Parts list
@@ -126,6 +140,7 @@ export async function exportManual(build: Build, onProgress?: (done: number, tot
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
     doc.text(`${s + 1} / ${model.stepCount}`, PAGE.w - 10, PAGE.h - 8, { align: "right" });
+    await footer();
     onProgress?.(s + 3, total);
     await new Promise((r) => setTimeout(r, 0));
   }

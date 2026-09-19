@@ -1,5 +1,8 @@
 "use client";
 
+import { BrickLoader, LogoLockup } from "@/components/ui/Logo";
+
+
 import { play } from "@/lib/sound";
 
 import Link from "next/link";
@@ -53,6 +56,9 @@ function Create() {
   return (
     <main className="fixed inset-0 flex flex-col items-center overflow-hidden" style={{ background: "linear-gradient(180deg,#6e6e6e 0%,#838383 50%,#959595 100%)" }}>
       <FloatingBricks tone="grey" />
+      <div className="absolute left-5 top-5 z-10" style={{ marginTop: "calc(var(--safe-top) + 14px)" }}>
+        <LogoLockup size={26} ink="#ffffff" />
+      </div>
       <div className="absolute right-5 top-5 z-10" style={{ marginTop: "var(--safe-top)" }}>
         <IconTile tone="glass-light" label="Cancel" href="/builds" size={60}>
           <X size={32} strokeWidth={2.6} />
@@ -80,7 +86,7 @@ function Create() {
             </div>
           ) : events.length === 0 ? (
             <div className="flex h-full items-center justify-center gap-2 text-[15px] font-semibold text-ink-soft">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-purple" /> Reading your bricks…
+              <BrickLoader size={48} label="Reading your bricks…" />
             </div>
           ) : (
             <AgentTape events={events} live={!done} />

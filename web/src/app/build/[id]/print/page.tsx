@@ -1,5 +1,7 @@
 "use client";
 
+import { LogoLockup } from "@/components/ui/Logo";
+
 import { useBuild } from "@/lib/useBuild";
 import { BuildMissing } from "@/components/BuildMissing";
 import Link from "next/link";
@@ -42,6 +44,9 @@ export default function PrintPage() {
   return (
     <main className="fixed inset-0 flex flex-col items-center justify-center gap-6 overflow-hidden px-8 text-center text-white" style={{ background: "linear-gradient(180deg,#6e6e6e 0%,#959595 100%)" }}>
       <FloatingBricks tone="grey" />
+      <div className="absolute left-5 top-5 z-10" style={{ marginTop: "calc(var(--safe-top) + 14px)" }}>
+        <LogoLockup size={26} ink="#ffffff" />
+      </div>
       <div className="absolute right-5 top-5 z-10" style={{ marginTop: "var(--safe-top)" }}>
         <IconTile tone="glass-light" label="Close" href={`/build/${id}`} size={60}>
           <X size={32} strokeWidth={2.6} />

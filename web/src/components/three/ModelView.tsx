@@ -24,6 +24,12 @@ type Props = {
   spin?: number;
   interactive?: boolean;
   shadow?: boolean;
+  /** Framing multiplier: above 1 pushes in, so a preview can overflow and clip its card. */
+  zoom?: number;
+  /** Fixed turntable angle in radians (with spin 0): for rendering set views. */
+  yaw?: number;
+  /** false pauses animation (one still frame stays up), for previews scrolled out of view. */
+  active?: boolean;
   onLoaded?: (model: PreparedModel) => void;
   onError?: (err: unknown) => void;
   className?: string;
@@ -37,7 +43,7 @@ const OUTLINE_LAYER = 7;
 
 /** One WebGL canvas that renders a prepared LDraw model in either look. */
 export const ModelView = forwardRef<ModelViewHandle, Props>(function ModelView(props, ref) {
-  const { className, mode, interactive = true } = props;
+  const { className, mode, interactive = true, active = true } = props;
   const controls = useRef<OrbitControlsImpl | null>(null);
   const rig = useRef<Rig | null>(null);
   useImperativeHandle(ref, () => ({ resetView: () => rig.current?.snapCamera() }), []);
@@ -45,10 +51,11 @@ export const ModelView = forwardRef<ModelViewHandle, Props>(function ModelView(p
   return (
     <Canvas
       className={className}
-      dpr={[1, 2]}
+      dpr={[1, 1.5]}
+      frameloop={active && mode !== "steps" ? "always" : "demand"}
       gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
       camera={{ fov: mode === "steps" ? 20 : 28, near: 0.05, far: 2000, position: [-8, 6, 9] }}
-      style={{ touchAction: "none" }}
+      style={{ touchAction: interactive ? "none" : "auto" }}
     >
       <StudioEnvironment />
       <directionalLight position={[-6, 12, 8]} intensity={1.1} />
@@ -106,7 +113,7 @@ class Rig {
   }
 
   /** Whole model for display/timeline; placed-so-far (biased to new parts) for steps. */
-  frame(mode: ViewMode, step: number, camera: THREE.PerspectiveCamera) {
+  frame(mode: ViewMode, step: number, camera: THREE.PerspectiveCamera, zoom = 1) {
     this.turntable.rotation.y = mode === "steps" ? 0 : this.turntable.rotation.y;
     this.model.root.updateMatrixWorld(true);
     const box = new THREE.Box3();
@@ -123,11 +130,27 @@ class Rig {
     const fov = THREE.MathUtils.degToRad(camera.fov);
     const fit = Math.min(fov, 2 * Math.atan(Math.tan(fov / 2) * camera.aspect));
     const margin = mode === "steps" ? 0.92 : mode === "timeline" ? 1.0 : 0.95;
-    this.goal.dist = (sphere.radius / Math.sin(fit / 2)) * margin;
+    this.goal.dist = ((sphere.radius / Math.sin(fit / 2)) * margin) / zoom;
+  }
+
+  /** Until when the scene still has motion to show (drop-in, camera ease). */
+  busyUntil = 0;
+
+  setYaw(radians: number) {
+    this.turntable.rotation.y = radians;
   }
 
   snapCamera() {
     this.goal.snap = true;
+    this.wake();
+  }
+
+  wake(ms = 1400) {
+    this.busyUntil = Math.max(this.busyUntil, performance.now() + ms);
+  }
+
+  get busy() {
+    return this.dragging || performance.now() < this.busyUntil;
   }
 
   dragStart() {
@@ -137,9 +160,11 @@ class Rig {
   dragEnd() {
     this.dragging = false;
     this.resumeAt = performance.now() + 1800;
+    this.wake(800); // let the orbit damping settle
   }
 
-  tick(dt: number, mode: ViewMode, spin: number, camera: THREE.Camera, controls: OrbitControlsImpl) {
+  /** `animate` false = a single still frame (paused preview): jump to the goal instead of easing. */
+  tick(dt: number, mode: ViewMode, spin: number, camera: THREE.Camera, controls: OrbitControlsImpl, animate = true) {
     const step = Math.min(dt, 0.05);
     if (mode !== "steps" && !this.dragging && performance.now() > this.resumeAt) this.turntable.rotation.y += spin * step;
 
@@ -149,7 +174,7 @@ class Rig {
 
     const g = this.goal;
     const offset = camera.position.clone().sub(controls.target);
-    if (g.snap) {
+    if (g.snap || !animate) {
       controls.target.copy(g.target);
       offset.copy(ISO).multiplyScalar(g.dist);
       g.snap = false;
@@ -157,6 +182,10 @@ class Rig {
       const k = 1 - Math.pow(0.001, step);
       controls.target.lerp(g.target, k);
       offset.setLength(THREE.MathUtils.lerp(offset.length(), g.dist, k));
+      // An exponential ease never quite arrives; land it, or every frame nudges
+      // the camera a hair, fires "change", and the scene never goes idle.
+      if (controls.target.distanceToSquared(g.target) < 1e-8) controls.target.copy(g.target);
+      if (Math.abs(offset.length() - g.dist) < 1e-4) offset.setLength(g.dist);
     }
     camera.position.copy(controls.target).add(offset);
     controls.update();
@@ -187,9 +216,10 @@ type SceneProps = Props & {
   rig: React.RefObject<Rig | null>;
 };
 
-function Scene({ url, mode, step = 0, spin = 0.15, shadow, onLoaded, onError, controls, rig }: SceneProps) {
+function Scene({ url, mode, step = 0, spin = 0.15, shadow, zoom = 1, yaw, active = true, onLoaded, onError, controls, rig }: SceneProps) {
   const [loaded, setLoaded] = useState<{ turntable: THREE.Group; shadowScale: number } | null>(null);
   const camera = useThree((s) => s.camera) as THREE.PerspectiveCamera;
+  const invalidate = useThree((s) => s.invalidate);
   const aspect = useThree((s) => s.size.width / Math.max(1, s.size.height));
   const loadedEvent = useEffectEvent((m: PreparedModel) => onLoaded?.(m));
   const errorEvent = useEffectEvent((e: unknown) => onError?.(e));
@@ -216,18 +246,24 @@ function Scene({ url, mode, step = 0, spin = 0.15, shadow, onLoaded, onError, co
   useEffect(() => {
     const r = rig.current;
     if (!r) return;
+    if (yaw !== undefined) r.setYaw(yaw);
     const landing = r.apply(mode, step);
-    r.frame(mode, step, camera);
+    r.frame(mode, step, camera, zoom);
+    r.wake();
+    invalidate();
     if (mode !== "steps" || !landing) return;
     // The new parts snap home as the drop-in finishes: one soft click per step.
     const t = setTimeout(() => play("connect", { volume: 0.45 }), DROP_MS * 0.85);
     return () => clearTimeout(t);
-  }, [loaded, mode, step, camera, rig]);
+  }, [loaded, mode, step, camera, rig, zoom, yaw, invalidate]);
 
   useEffect(() => {
     const r = rig.current;
-    if (r) r.frame(mode, step, camera);
-  }, [aspect, mode, step, camera, rig]);
+    if (!r) return;
+    r.frame(mode, step, camera, zoom);
+    r.wake();
+    invalidate();
+  }, [aspect, mode, step, camera, rig, zoom, invalidate]);
 
   useEffect(() => {
     const c = controls.current;
@@ -272,7 +308,12 @@ function Scene({ url, mode, step = 0, spin = 0.15, shadow, onLoaded, onError, co
 
   useFrame((state, dt) => {
     const c = controls.current;
-    if (rig.current && c) rig.current.tick(dt, mode, spin, state.camera, c);
+    const r = rig.current;
+    if (!r || !c) return;
+    r.tick(dt, mode, spin, state.camera, c, active);
+    // On-demand scenes keep asking for frames only while something is moving
+    // (drop-in, camera ease, a drag with damping); idle, they cost nothing.
+    if (state.frameloop === "demand" && active && r.busy) invalidate();
   });
 
   if (!loaded) return null;

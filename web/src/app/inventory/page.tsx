@@ -1,11 +1,14 @@
 "use client";
 
+import { LogoMark } from "@/components/ui/Logo";
+
 import { play } from "@/lib/sound";
 
 import { useMemo, useState } from "react";
 import { ArrowLeft, Check, Minus, Plus, Search, Trash2, X } from "lucide-react";
-import { ChunkyButton, IconTile, YellowBucket } from "@/components/ui/controls";
+import { BrickChip, ChunkyButton, IconTile, YellowBucket } from "@/components/ui/controls";
 import { IsoBrick, BrickGlyph } from "@/components/ui/IsoBrick";
+import { GhostBricks } from "@/components/ui/chrome";
 import { PartsScroller } from "@/components/PartsScroller";
 import { PartImage } from "@/components/three/Snapshots";
 import { PilePhoto } from "@/components/PilePhoto";
@@ -16,6 +19,9 @@ import { useRouter } from "next/navigation";
 import type { Confidence, InventoryItem } from "@/lib/types";
 
 type Filter = "all" | "review" | "unknown";
+
+/** The signature light blue of LEGO instruction pages. */
+const SKY = "#c9e2f6";
 
 const CHIP: Record<Confidence, { bg: string; ring: string; label: string }> = {
   confident: { bg: "#2fbf5b", ring: "#2fbf5b", label: "Confident" },
@@ -42,7 +48,8 @@ export default function Inventory() {
   if (!items.length) return <Empty onAdd={() => setAdding(true)} adding={adding} onClose={() => setAdding(false)} />;
 
   return (
-    <main className="fixed inset-0 mx-auto flex max-w-[1100px] flex-col bg-parts-bg">
+    <main className="fixed inset-0 mx-auto flex max-w-[1100px] flex-col overflow-hidden" style={{ background: SKY }}>
+      <GhostBricks seed={307} cols={4} rows={4} scale={1.6} color="#123a8c" opacity={0.12} skip={0.3} />
       <YellowBucket className="px-[18px] pb-5">
         <div className="flex items-center gap-4 pt-4">
           <IconTile tone="white" label="Back" href="/home" size={56}>
@@ -76,7 +83,8 @@ export default function Inventory() {
           </div>
         ) : (
           <PartsScroller
-            size={62}
+            variant="slots"
+            size={58}
             cells={shown.map((it) => ({
               key: it.id,
               part: it.part,
@@ -113,10 +121,10 @@ export default function Inventory() {
 
 function FilterChip({ active, label, onClick, dot }: { active: boolean; label: string; onClick: () => void; dot?: string }) {
   return (
-    <button onClick={onClick} className="flex h-10 items-center gap-2 rounded-full px-4 text-[15px] font-[800] transition-colors" style={{ background: active ? "#1a1a1a" : "rgba(255,255,255,0.7)", color: active ? "#fff" : "#1a1a1a" }}>
-      {dot && <span className="h-2.5 w-2.5 rounded-full" style={{ background: dot }} />}
+    <BrickChip onClick={onClick} bg={active ? "#1a1a1a" : "rgba(255,255,255,0.7)"} ink={active ? "#fff" : "#1a1a1a"}>
+      {dot && <span className="h-2.5 w-2.5 rounded-[3px]" style={{ background: dot }} />}
       {label}
-    </button>
+    </BrickChip>
   );
 }
 
@@ -187,7 +195,9 @@ function Evidence({ item, all, onClose }: { item: InventoryItem; all: InventoryI
             <PilePhoto items={all} focus={item.crop} className="aspect-[4/3]" />
           )}
           <div className="pointer-events-none absolute left-1/2 top-1/2 h-[62%] w-[62%] -translate-x-1/2 -translate-y-1/2 rounded-[10px] border-[3px]" style={{ borderColor: c.ring }} />
-          <span className="absolute left-2 top-2 rounded-full bg-black/55 px-2 py-0.5 text-[12px] font-bold text-white">From your photo</span>
+          <BrickChip size="sm" bg="rgba(0,0,0,0.55)" ink="#fff" className="absolute left-2 top-2">
+            From your photo
+          </BrickChip>
         </div>
         <div className="flex w-[104px] flex-col items-center justify-center rounded-[18px] bg-white px-2 text-center">
           <span className="text-[30px] font-[900] leading-none text-ink">{pct}%</span>
@@ -393,7 +403,8 @@ function AddSheet({ onClose }: { onClose: () => void }) {
 
 function Empty({ onAdd, adding, onClose }: { onAdd: () => void; adding: boolean; onClose: () => void }) {
   return (
-    <main className="mx-auto flex min-h-dvh max-w-[520px] flex-col bg-parts-bg">
+    <main className="relative mx-auto flex min-h-dvh max-w-[520px] flex-col overflow-hidden" style={{ background: SKY }}>
+      <GhostBricks seed={307} cols={3} rows={4} scale={1.6} color="#123a8c" opacity={0.12} skip={0.3} />
       <YellowBucket className="px-[18px] pb-6">
         <div className="flex items-center gap-4 pt-4">
           <IconTile tone="white" label="Back" href="/home" size={56}>
@@ -404,9 +415,9 @@ function Empty({ onAdd, adding, onClose }: { onAdd: () => void; adding: boolean;
       </YellowBucket>
       <div className="flex flex-1 flex-col items-center justify-center gap-3 px-8 text-center">
         <div className="relative mb-2 h-[120px] w-[180px]">
-          <div className="absolute left-2 top-8"><IsoBrick w={2} d={2} h={3} color="#b4b4b4" size={86} /></div>
-          <div className="absolute right-4 top-0"><IsoBrick w={2} d={1} h={3} color="#c7c7c7" size={66} /></div>
-          <div className="absolute bottom-0 right-10"><IsoBrick w={1} d={1} h={1} round color="#a9a9a9" size={40} /></div>
+          <div className="absolute left-0 top-12 opacity-70"><IsoBrick w={2} d={2} h={3} color="#b4b4b4" size={70} /></div>
+          <div className="absolute right-0 top-10 opacity-70"><IsoBrick w={2} d={1} h={3} color="#c7c7c7" size={58} /></div>
+          <div className="absolute left-1/2 top-0 -translate-x-1/2"><LogoMark size={96} className="drop-shadow-[0_8px_10px_rgba(0,0,0,0.25)]" /></div>
         </div>
         <p className="text-[22px] font-[900] tracking-[-0.02em] text-ink">No bricks yet</p>
         <p className="max-w-[300px] text-[16px] text-ink-soft">Snap a photo of your pile and we&apos;ll count every piece.</p>

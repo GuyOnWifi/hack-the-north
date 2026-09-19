@@ -5,7 +5,7 @@ import { Suspense, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, ArrowUp, BookOpen, Filter, Sparkles } from "lucide-react";
 import { TabBar } from "@/components/ui/chrome";
-import { IconTile, YellowBucket } from "@/components/ui/controls";
+import { BrickChip, IconTile, YellowBucket } from "@/components/ui/controls";
 import { IsoBrick } from "@/components/ui/IsoBrick";
 import { ModelSnapshot } from "@/components/three/Snapshots";
 import { BUILDS, THEMES, coverage } from "@/lib/data";
@@ -69,17 +69,17 @@ function Builds() {
             design(prompt);
           }}
         >
-          <Sparkles size={22} color="#6e13bc" fill="#6e13bc" />
+          <Sparkles size={22} color="#e3000b" fill="#e3000b" />
           <input value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder="A little red truck" aria-label="Describe a build" className="h-full min-w-0 flex-1 bg-transparent text-[18px] text-ink outline-none placeholder:text-[#949494]" />
-          <button type="submit" aria-label="Design it" disabled={!prompt.trim()} className="grid h-11 w-11 place-items-center rounded-[14px] bg-purple text-white transition-opacity disabled:opacity-35">
+          <button type="submit" aria-label="Design it" disabled={!prompt.trim()} className="grid h-11 w-11 place-items-center rounded-[14px] bg-ai text-white transition-opacity disabled:opacity-35">
             <ArrowUp size={24} strokeWidth={2.8} />
           </button>
         </form>
-        <div className="no-scrollbar -mx-[18px] mt-3 flex gap-2 overflow-x-auto px-[18px]">
+        <div className="no-scrollbar -mx-[18px] mt-3 flex gap-2 overflow-x-auto px-[18px] pt-1">
           {IDEAS.map((idea) => (
-            <button key={idea} onClick={() => design(idea)} className="shrink-0 rounded-full bg-white/80 px-4 py-2 text-[15px] font-bold text-ink shadow-[0_2px_0_rgba(0,0,0,0.08)] active:scale-95">
+            <BrickChip key={idea} onClick={() => design(idea)}>
               {idea}
-            </button>
+            </BrickChip>
           ))}
         </div>
       </section>
@@ -88,7 +88,7 @@ function Builds() {
         <Link href={`/build/${LIVE_ID}`} className="chunky mx-[18px] mt-7 flex items-center gap-4 rounded-[22px] bg-white p-3 pr-5" style={{ ["--rim" as string]: "#c9d6e3", ["--lift" as string]: "5px" } as React.CSSProperties}>
           <ModelSnapshot url={current.build.model} alt={current.build.name} width={320} height={240} className="h-[84px] w-[112px]" />
           <div className="min-w-0 flex-1">
-            <div className="text-[13px] font-[800] uppercase tracking-wide text-purple">Your design</div>
+            <div className="text-[13px] font-[800] uppercase tracking-wide text-ai">Your design</div>
             <div className="truncate text-[19px] font-[800] text-ink">{current.build.name}</div>
             <div className="text-[15px] text-ink-soft">{current.build.pieces} pieces</div>
           </div>

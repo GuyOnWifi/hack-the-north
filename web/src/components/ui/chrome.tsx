@@ -1,5 +1,7 @@
 "use client";
 
+import { LogoMark } from "./Logo";
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Layers, ScanLine, Smile } from "lucide-react";
@@ -31,7 +33,7 @@ export function TabBar() {
         style={{ background: "#f8d648", ["--rim" as string]: "#d8b320", ["--lift" as string]: "5px" } as React.CSSProperties}
       >
         <div className="relative">
-          <IsoBrick w={2} d={2} h={3} color="#e8e8e8" size={40} />
+          <LogoMark size={44} small />
           <span className="absolute -right-2 -top-2 grid h-6 w-6 place-items-center rounded-full bg-[#1a1a1a]">
             <ScanLine size={14} color="#fff" strokeWidth={2.6} />
           </span>
@@ -92,6 +94,65 @@ export function FloatingBricks({ tone = "colour", opacity = 1 }: { tone?: "colou
   );
 }
 
+const GHOST_SHAPES: { w: number; d: number; h: number; round?: boolean }[] = [
+  { w: 2, d: 2, h: 3 },
+  { w: 2, d: 1, h: 3 },
+  { w: 1, d: 1, h: 3 },
+  { w: 2, d: 2, h: 1 },
+  { w: 1, d: 2, h: 1 },
+  { w: 2, d: 4, h: 3 },
+  { w: 1, d: 1, h: 1, round: true },
+];
+
+/** Small seeded generator (mulberry32): same sequence on the server and in the browser. */
+function seeded(seed: number) {
+  let a = seed | 0;
+  return () => {
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/**
+ * Faint brick silhouettes scattered behind a card or screen, drifting slowly.
+ * Placement is a jittered grid from a seeded generator, so it looks random but
+ * stays evenly spread and renders identically every time. Bigger bricks are
+ * fainter and slightly soft, which reads as depth.
+ */
+export function GhostBricks({ seed = 1, cols = 5, rows = 3, color = "#ffffff", opacity = 0.14, skip = 0.18, scale = 1 }: { seed?: number; cols?: number; rows?: number; color?: string; opacity?: number; skip?: number; scale?: number }) {
+  const rand = seeded(seed);
+  const bricks = [];
+  for (let r = 0; r < rows; r++)
+    for (let c = 0; c < cols; c++) {
+      const roll = { keep: rand() >= skip, shape: rand(), depth: rand(), x: rand(), y: rand(), rot: rand(), dur: rand(), delay: rand() };
+      if (!roll.keep) continue;
+      bricks.push({
+        shape: GHOST_SHAPES[Math.floor(roll.shape * GHOST_SHAPES.length)],
+        left: (((c + 0.12 + roll.x * 0.76) / cols) * 100).toFixed(2),
+        top: (((r + 0.1 + roll.y * 0.8) / rows) * 100).toFixed(2),
+        size: Math.round((24 + roll.depth * 62) * scale),
+        rotate: Math.round(roll.rot * 70 - 35),
+        alpha: (opacity * (1.3 - roll.depth * 0.6)).toFixed(3),
+        blur: roll.depth > 0.78,
+        duration: (6 + roll.dur * 6).toFixed(1),
+        delay: (-roll.delay * 9).toFixed(1),
+      });
+    }
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
+      {bricks.map((b, i) => (
+        <div key={i} className="absolute -translate-x-1/2 -translate-y-1/2" style={{ left: `${b.left}%`, top: `${b.top}%`, opacity: b.alpha, filter: b.blur ? "blur(1.2px)" : undefined }}>
+          <div style={{ ["--r" as string]: `${b.rotate}deg`, animation: `float-y ${b.duration}s ease-in-out ${b.delay}s infinite` }}>
+            <IsoBrick w={b.shape.w} d={b.shape.d} h={b.shape.h} round={b.shape.round} color={color} size={b.size} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /** Round-plate stack progress bar from the loading screen (IMG_1230). */
 export function PlateProgress({ value, count = 12 }: { value: number; count?: number }) {
   const active = Math.min(count - 1, Math.floor(value * count));
@@ -126,7 +187,7 @@ export function StudSlider({ value, max, stops = [], onChange, className = "" }:
   const passed = [0, ...stops].filter((s) => s <= value).pop() ?? 0;
   const donePct = (passed / Math.max(1, max)) * 100;
   return (
-    <div data-sound="off" className={`relative h-[46px] rounded-full px-[14px] ${className}`} style={{ background: "rgba(90,90,90,0.55)" }}>
+    <div data-sound="off" className={`relative h-[46px] rounded-full px-[14px] ${className}`} style={{ background: "rgba(28,78,150,0.32)" }}>
       <div className="relative top-1/2 h-[20px] -translate-y-1/2 rounded-full bg-white">
         <div className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${pct}%`, background: "#e88b00" }} />
         <div className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${donePct}%`, background: "#ffd502" }} />

@@ -22,8 +22,9 @@
   --color-blue-icon: #2458ca;
   --color-navy: #123181;
 
-  --color-purple: #6e13bc;
-  --color-purple-rim: #5c109d;
+  /* The AI's colour (sparkles, "Change it", send, working dots): LEGO red. */
+  --color-ai: #e3000b;
+  --color-ai-rim: #b30009;
   --color-highlight: #9840b0;
 
   --color-orange: #e88b00;
@@ -182,5 +183,54 @@ body {
   }
   to {
     opacity: 1;
+  }
+}
+
+@keyframes sidebar-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* A tape brick landing on the tower: drops in and settles with a small bounce. */
+@keyframes brick-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* BrickLoader: the logo hops up, lands with a small squash, and its shadow tracks it. */
+@keyframes brick-hop {
+  0%,
+  100% {
+    transform: translateY(0) scale(1.06, 0.94);
+  }
+  12% {
+    transform: translateY(0) scale(1, 1);
+  }
+  50% {
+    transform: translateY(-38%) scale(0.98, 1.03);
+  }
+  88% {
+    transform: translateY(0) scale(1, 1);
+  }
+}
+@keyframes brick-shadow {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.6);
+    opacity: 0.45;
   }
 }

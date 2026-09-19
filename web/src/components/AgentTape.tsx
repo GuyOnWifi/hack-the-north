@@ -1,24 +1,24 @@
 "use client";
 
 import { useEffect, useEffectEvent, useRef, useState } from "react";
-import { Check, Loader2, TriangleAlert, X } from "lucide-react";
-import { parseSse, type TapeActor, type TapeEvent, type TapeStatus } from "@/lib/bricolage";
+import { parseSse, type TapeActor, type TapeEvent } from "@/lib/bricolage";
+import { tapeCopy } from "@/lib/tapeCopy";
 
-// Actor colours follow Lane B's dev console so the two read the same.
-const ACTOR: Record<TapeActor, { bg: string; ink: string; label: string }> = {
-  router: { bg: "#e5efff", ink: "#2458ca", label: "Router" },
-  designer: { bg: "#dff7fb", ink: "#0e7c8c", label: "Designer" },
-  inspector: { bg: "#f3e8fb", ink: "#6e13bc", label: "Inspector" },
-  repair: { bg: "#fff4d6", ink: "#946200", label: "Repair" },
-  scribe: { bg: "#e3f5e8", ink: "#1f7a3a", label: "Scribe" },
+// The agent tape as a tower of bricks: every step the agent takes is a brick
+// in that actor's colour, landing on top of the last, on a baseplate. A step
+// that fails sits crooked and cracked; once a later step fixes it, it greys
+// out. Plain words up front; timings and raw lines live behind "details".
+
+// Actor colours are real LDraw colours so the tower looks like actual bricks.
+const ACTOR: Record<TapeActor, { brick: string; ink: string; label: string }> = {
+  router: { brick: "#0055bf", ink: "#ffffff", label: "Router" },
+  designer: { brick: "#00838f", ink: "#ffffff", label: "Designer" },
+  inspector: { brick: "#c91a09", ink: "#ffffff", label: "Inspector" },
+  repair: { brick: "#f2cd37", ink: "#1a1a1a", label: "Repair" },
+  scribe: { brick: "#237841", ink: "#ffffff", label: "Scribe" },
 };
 
-const STATUS: Record<TapeStatus, { icon: typeof Check; ink: string }> = {
-  ok: { icon: Check, ink: "#1f7a3a" },
-  fail: { icon: X, ink: "#c0182b" },
-  warn: { icon: TriangleAlert, ink: "#b27a00" },
-  running: { icon: Loader2, ink: "#8c8c8c" },
-};
+const STUD = { w: 20, h: 7 };
 
 let fixtureTape: Promise<TapeEvent[]> | null = null;
 
@@ -62,39 +62,148 @@ export function useTapePlayback(events: TapeEvent[], runKey: number | null, onDo
   return runKey === null || run.key !== runKey ? [] : events.slice(0, run.shown);
 }
 
-/** The agent's working log: who acted, what they did, and whether it held up. */
-export function AgentTape({ events, live, compact }: { events: TapeEvent[]; live?: boolean; compact?: boolean }) {
-  const end = useRef<HTMLLIElement>(null);
+/** A failed step counts as fixed once any later step succeeds. */
+function fixedFailures(events: TapeEvent[]) {
+  const fixed = new Set<number>();
+  events.forEach((e, i) => {
+    if (e.status === "fail" && events.slice(i + 1).some((later) => later.status === "ok")) fixed.add(i);
+  });
+  return fixed;
+}
+
+/** The agent's working log, stacked as a tower of bricks (newest on top). */
+export function AgentTape({ events, live }: { events: TapeEvent[]; live?: boolean; compact?: boolean }) {
+  const top = useRef<HTMLDivElement>(null);
+  const [details, setDetails] = useState(false);
   useEffect(() => {
-    end.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    top.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }, [events.length, live]);
+  const fixed = fixedFailures(events);
+  const order = events.map((e, i) => ({ e, i })).reverse();
+
   return (
-    <ol className="flex flex-col gap-2" aria-live="polite">
-      {events.map((e, i) => {
-        const a = ACTOR[e.actor] ?? ACTOR.router;
-        const s = STATUS[e.status] ?? STATUS.ok;
-        const Icon = s.icon;
-        return (
-          <li key={`${e.t}-${i}`} className="flex items-start gap-3 rounded-[14px] bg-white px-3 py-2.5 shadow-[0_2px_0_rgba(0,0,0,0.06)]" style={{ animation: "tape-in 260ms ease-out" }}>
-            <span className="mt-0.5 shrink-0 rounded-full px-2 py-0.5 text-[11px] font-[800] uppercase tracking-wide" style={{ background: a.bg, color: a.ink }}>
-              {a.label}
-            </span>
-            <div className="min-w-0 flex-1">
-              <div className={`text-[14px] font-semibold leading-snug text-ink ${compact ? "line-clamp-2" : ""}`}>{e.text}</div>
-              {(e.ms > 0 || e.tokens > 0) && (
-                <div className="mt-0.5 text-[12px] font-semibold text-ink-soft">
-                  {e.ms > 0 && `${e.ms >= 1000 ? `${(e.ms / 1000).toFixed(1)}s` : `${e.ms}ms`}`}
-                  {e.tokens > 0 && ` · ${e.tokens.toLocaleString()} tokens`}
-                </div>
-              )}
+    <div className="flex min-w-0 flex-col" aria-live="polite">
+      <div ref={top} />
+      {live && <PendingBrick />}
+      {order.map(({ e, i }) => (
+        <TapeBrick key={`${e.t}-${i}`} event={e} index={i} fixed={fixed.has(i)} details={details} />
+      ))}
+      <Baseplate />
+      {events.length > 0 && (
+        <button type="button" onClick={() => setDetails((d) => !d)} className="mt-2 self-end px-1 text-[12px] font-bold text-ink-soft underline-offset-2 hover:underline">
+          {details ? "Hide details" : "Show details"}
+        </button>
+      )}
+    </div>
+  );
+}
+
+function Studs({ colour, count = 5 }: { colour: string; count?: number }) {
+  return (
+    <div aria-hidden className="flex justify-evenly px-3" style={{ height: STUD.h }}>
+      {Array.from({ length: count }, (_, k) => (
+        <span key={k} className="rounded-t-[3px]" style={{ width: STUD.w, height: STUD.h, background: colour, boxShadow: "inset 0 2px 0 rgba(255,255,255,0.28)" }} />
+      ))}
+    </div>
+  );
+}
+
+function TapeBrick({ event: e, index, fixed, details }: { event: TapeEvent; index: number; fixed: boolean; details: boolean }) {
+  const a = ACTOR[e.actor] ?? ACTOR.router;
+  const copy = tapeCopy(e);
+  const failed = e.status === "fail";
+  const warned = e.status === "warn";
+  const brick = fixed ? "#a0a5a9" : a.brick;
+  const ink = fixed ? "#ffffff" : a.ink;
+  // Hand-stacked: bricks sit a few px off each other; a failure sits crooked.
+  const nudge = [0, 6, -4, 3, -6, 2][index % 6];
+  const tilt = failed && !fixed ? -2.4 : 0;
+  return (
+    <div className="relative" style={{ animation: "brick-drop 320ms cubic-bezier(.2,1.4,.4,1) both", marginLeft: Math.max(0, nudge), marginRight: Math.max(0, -nudge) }}>
+      <div style={{ transform: `rotate(${tilt}deg)`, transformOrigin: "left bottom", transition: "transform 300ms" }}>
+        <Studs colour={brick} />
+        <div className="relative rounded-[5px] px-3.5 pb-3 pt-2.5" style={{ background: brick, color: ink, boxShadow: "inset 0 -5px 0 rgba(0,0,0,0.2), inset 0 2px 0 rgba(255,255,255,0.22)" }}>
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[11px] font-[900] uppercase tracking-[0.08em] opacity-80">{a.label}</span>
+            <StatusMark status={e.status} fixed={fixed} ink={ink} />
+          </div>
+          <div className="mt-0.5 text-[15px] font-[800] leading-snug [overflow-wrap:anywhere]" style={{ textDecorationLine: fixed ? "line-through" : "none", textDecorationThickness: 2 }}>
+            {copy.text}
+          </div>
+          {copy.parts && copy.parts.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {copy.parts.map((p) => (
+                <span key={p} className="rounded-[4px] px-2 py-0.5 text-[12px] font-[800]" style={{ background: "rgba(255,255,255,0.22)" }}>
+                  {p}
+                </span>
+              ))}
             </div>
-            <Icon size={18} strokeWidth={2.8} color={s.ink} className={`mt-0.5 shrink-0 ${e.status === "running" ? "animate-spin" : ""}`} />
-          </li>
-        );
-      })}
-      <li ref={end} className="flex items-center gap-2 px-3 py-1 text-[13px] font-semibold text-ink-soft" style={{ visibility: live ? "visible" : "hidden" }}>
-        <span className="h-2 w-2 animate-pulse rounded-full bg-purple" /> Working…
-      </li>
-    </ol>
+          )}
+          {fixed && <div className="mt-1 text-[12px] font-bold opacity-90">Fixed further up</div>}
+          {warned && !fixed && <div className="mt-1 text-[12px] font-bold opacity-90">Worked around it</div>}
+          {details && (
+            <div className="mt-2 rounded-[4px] px-2 py-1.5 font-mono text-[11px] leading-snug [overflow-wrap:anywhere]" style={{ background: "rgba(0,0,0,0.18)" }}>
+              {e.text}
+              <div className="mt-0.5 opacity-80">
+                {e.ms >= 1000 ? `${(e.ms / 1000).toFixed(1)}s` : `${e.ms}ms`}
+                {e.tokens > 0 && ` · ${e.tokens.toLocaleString()} tokens`}
+              </div>
+            </div>
+          )}
+          {failed && !fixed && <Crack />}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Status as a stud: seated (ok), cross (fail), half-seated (warn), spinning (running). */
+function StatusMark({ status, fixed, ink }: { status: TapeEvent["status"]; fixed: boolean; ink: string }) {
+  const ring = { width: 16, height: 16, borderRadius: 999, border: `2.5px solid ${ink}` } as const;
+  if (status === "running") return <span aria-label="Working" className="animate-spin" style={{ ...ring, borderTopColor: "transparent" }} />;
+  if (status === "fail" && !fixed)
+    return (
+      <span aria-label="Didn't fit" className="text-[15px] font-[900] leading-none">
+        ✕
+      </span>
+    );
+  if (status === "warn") return <span aria-label="Partly fitted" style={{ ...ring, background: `linear-gradient(90deg, ${ink} 50%, transparent 50%)` }} />;
+  return <span aria-label="Fitted" style={{ ...ring, background: ink }} />;
+}
+
+/** A jagged crack across a brick that didn't fit. */
+function Crack() {
+  return (
+    <svg aria-hidden viewBox="0 0 60 40" className="pointer-events-none absolute right-10 top-1 h-[calc(100%-8px)] w-12 opacity-45">
+      <path d="M30 0 L24 12 L33 18 L26 29 L31 40" fill="none" stroke="#1a1a1a" strokeWidth="2.4" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+/** The brick being placed right now: a dashed outline waiting to be filled. */
+function PendingBrick() {
+  return (
+    <div className="animate-pulse">
+      <div aria-hidden className="flex justify-evenly px-3" style={{ height: STUD.h }}>
+        {Array.from({ length: 5 }, (_, k) => (
+          <span key={k} className="rounded-t-[3px] border-2 border-b-0 border-dashed border-[#9cc5ec]" style={{ width: STUD.w, height: STUD.h }} />
+        ))}
+      </div>
+      <div className="flex h-[52px] items-center rounded-[5px] border-2 border-dashed border-[#9cc5ec] px-3.5 text-[13px] font-bold text-ink-soft">Placing the next brick…</div>
+    </div>
+  );
+}
+
+/** Where the tower stands. */
+function Baseplate() {
+  return (
+    <div aria-hidden>
+      <div className="flex h-[5px] justify-evenly px-1">
+        {Array.from({ length: 14 }, (_, k) => (
+          <span key={k} className="rounded-t-[2px]" style={{ width: 12, height: 5, background: "#9cc5ec" }} />
+        ))}
+      </div>
+      <div className="h-[9px] rounded-[3px]" style={{ background: "#9cc5ec", boxShadow: "inset 0 -3px 0 rgba(0,0,0,0.1)" }} />
+    </div>
   );
 }

@@ -1,5 +1,10 @@
 "use client";
 
+import { APP_NAME } from "@/lib/brand";
+
+import { BrickLoader, LogoMark } from "@/components/ui/Logo";
+
+
 import { play } from "@/lib/sound";
 
 import { useBuild } from "@/lib/useBuild";
@@ -7,17 +12,23 @@ import { BuildMissing } from "@/components/BuildMissing";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, RefreshCw, X } from "lucide-react";
-import { IconTile, ChunkyButton } from "@/components/ui/controls";
-import { PartImage } from "@/components/three/Snapshots";
+import { BrickChip, IconTile, ChunkyButton } from "@/components/ui/controls";
+import { StepStrip } from "@/components/StepStrip";
 import type { ModelViewHandle } from "@/components/three/ModelView";
 
-import { stepParts, type PreparedModel } from "@/lib/ldraw";
+import type { PreparedModel } from "@/lib/ldraw";
 import { useLandscape } from "@/lib/useOrientation";
 import { BrickGlyph } from "@/components/ui/IsoBrick";
 
 const ModelView = dynamic(() => import("@/components/three/ModelView").then((m) => m.ModelView), { ssr: false });
+
+/**
+ * LEGO instruction-booklet palette: the page is the signature light blue, and
+ * the parts list is the booklet's paler "callout box" with a blue rule.
+ */
+const MANUAL = { page: "#c9e2f6", callout: "#e4f1fc", line: "#9cc5ec" };
 
 export default function StepsPage() {
   return (
@@ -27,8 +38,8 @@ export default function StepsPage() {
   );
 }
 
-// Step viewer (IMG_1235-1241): grey parts rail on the left with the step's
-// parts and counts, the model on a light stage with new parts outlined in
+// Step viewer (IMG_1235-1241): a film strip of step frames on the left (the
+// current step large, neighbours smaller, dock-style magnification on hover), the model on a light stage with new parts outlined in
 // purple, prev / next tiles, close and reset-view controls.
 function Steps() {
   const { id } = useParams<{ id: string }>();
@@ -41,12 +52,15 @@ function Steps() {
   const [failed, setFailed] = useState(false);
   const [step, setStep] = useState(() => Math.max(0, Number(params.get("step") ?? 0) || 0));
   const [rail, setRail] = useState(true);
+  // Rail size in px once the user drags the tab (null = the default size).
+  const [railSize, setRailSize] = useState<number | null>(null);
+  const [resizing, setResizing] = useState(false);
+  const asideRef = useRef<HTMLElement>(null);
   const [hint, setHint] = useState(true);
 
   const count = model?.stepCount ?? 0;
   const done = model !== null && step >= count;
   const bagSize = Math.max(3, Math.ceil(count / 5));
-  const parts = useMemo(() => (model && !done ? stepParts(model, step) : []), [model, step, done]);
 
   const go = useCallback(
     (d: number) => {
@@ -81,32 +95,23 @@ function Steps() {
 
   if (!build) return <BuildMissing pending={pending} live={live} />;
 
-  const railList = (
-    <div className={`flex ${landscape ? "flex-col items-start gap-5" : "flex-row items-end gap-6"} `}>
-      {parts.map((p) => (
-        <div key={`${p.part}@${p.colour}`} className={`relative flex ${landscape ? "flex-col" : "flex-col"} items-start`}>
-          <PartImage part={p.part} colour={p.colour} node={p.sample} size={landscape ? 84 : 76} />
-          <span className="mt-1 text-[17px] text-ink">{p.count}x</span>
-        </div>
-      ))}
-    </div>
-  );
-
   return (
-    <main className="fixed inset-0 flex select-none overflow-hidden bg-rail" style={{ flexDirection: landscape ? "row" : "column-reverse" }}>
+    <main className="fixed inset-0 flex select-none overflow-hidden" style={{ background: MANUAL.page, flexDirection: landscape ? "row" : "column-reverse" }}>
       {/* Parts rail */}
       <aside
-        className="relative z-20 flex shrink-0 bg-rail transition-[width,height] duration-300"
+        ref={asideRef}
+        className={`relative z-20 flex shrink-0 ${resizing ? "" : "transition-[width,height] duration-300"}`}
         style={
           landscape
-            ? { width: rail ? "min(26vw, 280px)" : 0, paddingLeft: rail ? "calc(var(--safe-left) + 0px)" : 0 }
-            : { height: rail ? "calc(150px + var(--safe-bottom))" : "calc(var(--safe-bottom) + 0px)" }
+            ? { width: rail ? (railSize ?? "min(30vw, 300px)") : 0, paddingLeft: rail ? "calc(var(--safe-left) + 0px)" : 0, background: MANUAL.callout, borderRight: rail ? `3px solid ${MANUAL.line}` : undefined }
+            : { height: rail ? (railSize ?? "calc(168px + var(--safe-bottom))") : "calc(var(--safe-bottom) + 0px)", background: MANUAL.callout, borderTop: rail ? `3px solid ${MANUAL.line}` : undefined }
         }
       >
-        <div className={`flex h-full w-full overflow-hidden ${landscape ? "flex-col px-[30px] py-6" : "flex-row items-center px-4 pb-[var(--safe-bottom)]"}`} style={{ opacity: rail ? 1 : 0, transition: "opacity 200ms" }}>
+        <div className={`flex h-full w-full overflow-hidden ${landscape ? "flex-col gap-3 px-5 py-5" : "flex-row items-center pb-[var(--safe-bottom)]"}`} style={{ opacity: rail ? 1 : 0, transition: "opacity 200ms" }}>
           {landscape && <BagBadge bag={Math.floor(Math.min(step, count - 1) / bagSize) + 1} />}
-          <div className={`no-scrollbar flex min-h-0 flex-1 overflow-auto ${landscape ? "flex-col py-4" : "items-center px-3"}`}>
-            <div className={landscape ? "my-auto" : "mx-auto"}>{railList}</div>
+          {/* data-sound off: picking a frame already plays the landing snap */}
+          <div data-sound="off" className="flex min-h-0 min-w-0 flex-1 self-stretch">
+            {model && !done && <StepStrip model={model} step={step} axis={landscape ? "y" : "x"} onPick={(i) => { setHint(false); setStep(i); }} />}
           </div>
           {landscape && (
             <IconTile tone="white" label="Previous step" onClick={() => go(-1)} disabled={step === 0} size={60} data-sound="off">
@@ -114,18 +119,47 @@ function Steps() {
             </IconTile>
           )}
         </div>
-        {/* Drawer handle */}
+        {/* Drawer handle: drag to resize the rail, tap to hide or show it */}
         <button
-          onClick={() => setRail((r) => !r)}
-          aria-label={rail ? "Hide parts" : "Show parts"}
-          className={`absolute z-10 grid place-items-center bg-[#d6d7d7] ${landscape ? "right-[-14px] top-1/2 h-[80px] w-[14px] -translate-y-1/2 rounded-r-[10px]" : "left-1/2 top-[-14px] h-[14px] w-[80px] -translate-x-1/2 rounded-t-[10px]"}`}
+          aria-label={rail ? "Resize or hide parts" : "Show parts"}
+          onPointerDown={(e) => {
+            const aside = asideRef.current;
+            if (!aside) return;
+            e.currentTarget.setPointerCapture(e.pointerId);
+            const start = { x: e.clientX, y: e.clientY };
+            const box = aside.getBoundingClientRect();
+            let moved = false;
+            const move = (ev: PointerEvent) => {
+              if (!moved && Math.hypot(ev.clientX - start.x, ev.clientY - start.y) < 5) return;
+              if (!moved) {
+                moved = true;
+                setResizing(true);
+                setRail(true);
+              }
+              const size = landscape ? ev.clientX - box.left : box.bottom - ev.clientY;
+              const max = landscape ? Math.min(window.innerWidth * 0.6, 640) : window.innerHeight * 0.6;
+              setRailSize(Math.round(Math.max(landscape ? 180 : 120, Math.min(max, size))));
+            };
+            const up = () => {
+              window.removeEventListener("pointermove", move);
+              window.removeEventListener("pointerup", up);
+              window.removeEventListener("pointercancel", up);
+              setResizing(false);
+              if (!moved) setRail((r) => !r);
+            };
+            window.addEventListener("pointermove", move);
+            window.addEventListener("pointerup", up);
+            window.addEventListener("pointercancel", up);
+          }}
+          style={{ touchAction: "none", cursor: landscape ? "ew-resize" : "ns-resize" }}
+          className={`absolute z-10 grid place-items-center bg-[#a9cdef] ${landscape ? "right-[-14px] top-1/2 h-[80px] w-[14px] -translate-y-1/2 rounded-r-[10px]" : "left-1/2 top-[-14px] h-[14px] w-[80px] -translate-x-1/2 rounded-t-[10px]"}`}
         >
-          <span className={`rounded-full bg-[#8a8a8a] ${landscape ? "h-[40px] w-[4px]" : "h-[4px] w-[40px]"}`} />
+          <span className={`rounded-full bg-[#4f86c6] ${landscape ? "h-[40px] w-[4px]" : "h-[4px] w-[40px]"}`} />
         </button>
       </aside>
 
       {/* Stage */}
-      <section className="relative flex-1" style={{ background: "linear-gradient(180deg,#dadada 0%,#f6f6f6 100%)" }}>
+      <section className="relative flex-1" style={{ background: MANUAL.page }}>
         {failed ? (
           <div className="grid h-full place-items-center p-8 text-center">
             <div>
@@ -162,7 +196,7 @@ function Steps() {
         )}
 
         <div className="absolute right-6 top-5 flex flex-col items-center gap-6" style={{ paddingTop: landscape ? 0 : "var(--safe-top)", marginRight: "var(--safe-right)" }}>
-          <IconTile tone="glass-light" label="Close" href={`/build/${id}`} size={60}>
+          <IconTile tone="white" label="Close" href={`/build/${id}`} size={60}>
             <X size={34} strokeWidth={2.6} />
           </IconTile>
         </div>
@@ -181,9 +215,13 @@ function Steps() {
 
         {done && (
           <>
-            <p className="pointer-events-none absolute left-6 top-5 text-[34px] font-[900] leading-none tracking-[-0.02em] text-ink" style={{ paddingTop: landscape ? 0 : "var(--safe-top)" }}>
-              You built it!
-            </p>
+            <div className="pointer-events-none absolute left-6 top-5 flex items-center gap-3" style={{ paddingTop: landscape ? 0 : "var(--safe-top)", animation: "brick-drop 420ms cubic-bezier(.2,1.4,.4,1) both" }}>
+              <LogoMark size={64} className="drop-shadow-[0_6px_8px_rgba(0,0,0,0.25)]" />
+              <div>
+                <p className="text-[34px] font-[900] leading-none tracking-[-0.02em] text-ink">You built it!</p>
+                <p className="mt-1 text-[14px] font-bold text-ink-soft">Built with {APP_NAME}</p>
+              </div>
+            </div>
             <div className={`absolute bottom-0 flex gap-3 ${landscape ? "right-0 w-[380px] px-6" : "inset-x-0 px-6"}`} style={{ paddingBottom: "calc(var(--safe-bottom) + 24px)", paddingRight: landscape ? "calc(var(--safe-right) + 24px)" : undefined }}>
               <ChunkyButton variant="white" onClick={() => setStep(0)}>
                 Start over
@@ -217,7 +255,7 @@ function Steps() {
 
 function BagBadge({ bag }: { bag: number }) {
   return (
-    <div className="grid h-[60px] w-[60px] shrink-0 place-items-center rounded-full bg-[#9d9e9e]">
+    <div className="grid h-[60px] w-[60px] shrink-0 place-items-center rounded-full bg-[#a9cdef]">
       <div className="relative grid h-[34px] w-[30px] place-items-center rounded-[4px] border-[3px] border-[#1a1a1a] bg-white">
         <span className="text-[15px] font-[900] leading-none text-ink">{bag}</span>
       </div>
@@ -228,10 +266,7 @@ function BagBadge({ bag }: { bag: number }) {
 function Loading() {
   return (
     <div className="absolute inset-0 grid place-items-center">
-      <div className="flex flex-col items-center gap-3 text-[#8c8c8c]">
-        <div className="h-10 w-10 animate-spin rounded-full border-[4px] border-[#cfcfcf] border-t-[#9840b0]" />
-        <span className="text-[15px] font-semibold">Opening the manual…</span>
-      </div>
+      <BrickLoader label="Opening the manual…" />
     </div>
   );
 }
@@ -252,7 +287,9 @@ function Hand() {
           <ellipse cx="33" cy="50" rx="12" ry="4" fill="#bfe3ff" opacity="0.8" />
         </svg>
       </div>
-      <span className="mt-3 rounded-full bg-white/90 px-3 py-1 text-[14px] font-bold text-ink shadow">Drag to spin</span>
+      <BrickChip bg="rgba(255,255,255,0.92)" className="mt-3 !h-8 !px-3 !text-[14px]">
+        Drag to spin
+      </BrickChip>
     </div>
   );
 }

@@ -104,7 +104,10 @@ function stud(x: number, y: number, z: number, r: number, h: number, color: stri
   ];
 }
 
-/** The red 2x2 brick glyph used on the yellow "build" buttons. */
+/** The logo mark as the glyph on the yellow "build" buttons. */
 export function BrickGlyph({ size = 34 }: { size?: number }) {
-  return <IsoBrick w={2} d={1} h={3} color="#d90000" size={size} />;
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src="/brand/mark-160.png" alt="" draggable={false} className="pointer-events-none select-none" style={{ width: size, height: "auto" }} />
+  );
 }
