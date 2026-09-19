@@ -5,7 +5,6 @@ stdlib only, so it runs under DEMO_SAFE with wifi off.
   POST /api/edit         {text}        -> {version, report, tape?, tree}
   POST /api/try_another  {}            -> {version, report, tree}
   POST /api/undo|redo    {}            -> {version, report, tree}
-  POST /api/inventory    {items:[{part,color,count}]} -> {ok, elements}  (empty = demo bin)
   GET  /api/state                      -> current build/report/steps
   GET  /api/ldr                        -> current model as text/plain LDraw
   GET  /                               -> a tiny self-contained dev console
@@ -26,8 +25,8 @@ from serialize import build_json, report_json
 from ldraw import to_ldr
 import engine_c
 
-# IMAGINE mode by default (unlimited bricks, any request). Posting a scanned
-# inventory switches to SOLVE mode (design within a real, finite bin).
+# Designs are never limited by a real bin: the app asks for an idea, the
+# designer builds it.
 SESSION = Session(Inventory({}, unlimited=True))
 
 
@@ -181,16 +180,6 @@ class H(BaseHTTPRequestHandler):
                 SESSION.undo()
             elif self.path == "/api/redo":
                 SESSION.redo()
-            elif self.path == "/api/inventory":
-                # Scanned bin (Lane A -> UI -> here) = SOLVE mode. Empty list =
-                # back to IMAGINE mode (unlimited bricks).
-                counts = {}
-                for item in body.get("items", []):
-                    key = (str(item["part"]), int(item["color"]))
-                    counts[key] = counts.get(key, 0) + int(item["count"])
-                SESSION.inv = Inventory(counts) if counts else Inventory({}, unlimited=True)
-                return self._send(200, {"ok": True, "elements": len(counts),
-                                        "mode": "solve" if counts else "imagine"})
             else:
                 return self._send(404, {"error": "not found"})
         except Exception as e:

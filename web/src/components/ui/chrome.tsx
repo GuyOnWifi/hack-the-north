@@ -4,17 +4,16 @@ import { LogoMark } from "./Logo";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Layers, ScanLine, Smile } from "lucide-react";
+import { Home, Plus, Smile } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { play } from "@/lib/sound";
 import { IsoBrick } from "./IsoBrick";
 
-/** Floating white tab pill + yellow scan button (IMG_1247). */
+/** Floating white tab pill + yellow "new build" button (IMG_1247). */
 export function TabBar() {
   const path = usePathname();
   const tabs = [
     { href: "/home", label: "Home", icon: Home, active: path === "/home" },
-    { href: "/inventory", label: "My bricks", icon: Layers, active: path.startsWith("/inventory") },
     { href: "/builds", label: "Builds", icon: Smile, active: path.startsWith("/builds") },
   ];
   return (
@@ -27,15 +26,15 @@ export function TabBar() {
         ))}
       </div>
       <Link
-        href="/scan"
-        aria-label="Scan bricks"
+        href="/home"
+        aria-label="New build"
         className="chunky pointer-events-auto grid h-[72px] w-[72px] place-items-center rounded-[22px]"
         style={{ background: "#f8d648", ["--rim" as string]: "#d8b320", ["--lift" as string]: "5px" } as React.CSSProperties}
       >
         <div className="relative">
           <LogoMark size={44} small />
           <span className="absolute -right-2 -top-2 grid h-6 w-6 place-items-center rounded-full bg-[#1a1a1a]">
-            <ScanLine size={14} color="#fff" strokeWidth={2.6} />
+            <Plus size={14} color="#fff" strokeWidth={3} />
           </span>
         </div>
       </Link>

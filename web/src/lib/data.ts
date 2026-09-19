@@ -1,11 +1,9 @@
 import buildsJson from "@/fixtures/builds.json";
-import inventoryJson from "@/fixtures/inventory.json";
 import coloursJson from "@/fixtures/colours.json";
 import partImages from "@/fixtures/part-images.json";
-import type { Build, InventoryItem } from "./types";
+import type { Build } from "./types";
 
 export const BUILDS = buildsJson as Build[];
-export const INVENTORY_FIXTURE = inventoryJson as InventoryItem[];
 
 const COLOURS = coloursJson as Record<string, { name: string; hex: string }>;
 const IMAGES = new Set(partImages as string[]);
@@ -33,12 +31,3 @@ export const THEMES = [
   { id: "Trucks", label: "Trucks", bg: "linear-gradient(180deg,#2a2a2a,#3a3a3a)", ink: "#ffffff", model: "radar-truck" },
   { id: "Anything", label: "Surprise me", bg: "linear-gradient(180deg,#8fc3ec,#cfe6f8)", ink: "#10284e", model: "car" },
 ] as const;
-
-/** How many of a build's pieces the inventory covers. */
-export function coverage(build: Build, inventory: InventoryItem[]) {
-  const have = new Map<string, number>();
-  for (const item of inventory) have.set(`${item.part}@${item.colour}`, (have.get(`${item.part}@${item.colour}`) ?? 0) + item.count);
-  let used = 0;
-  for (const p of build.parts) used += Math.min(p.count, have.get(`${p.part}@${p.colour}`) ?? 0);
-  return { used, total: build.pieces };
-}

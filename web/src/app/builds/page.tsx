@@ -8,8 +8,7 @@ import { TabBar } from "@/components/ui/chrome";
 import { BrickChip, IconTile, YellowBucket } from "@/components/ui/controls";
 import { IsoBrick } from "@/components/ui/IsoBrick";
 import { ModelSnapshot } from "@/components/three/Snapshots";
-import { BUILDS, THEMES, coverage } from "@/lib/data";
-import { useSession } from "@/lib/store";
+import { BUILDS, THEMES } from "@/lib/data";
 import { LIVE_ID, useBuild } from "@/lib/useBuild";
 
 // Build suggestions (IMG_1228): yellow bucket with the hero model and
@@ -25,20 +24,15 @@ export default function BuildsPage() {
 function Builds() {
   const params = useSearchParams();
   const theme = params.get("theme");
-  const session = useSession();
   const router = useRouter();
   const current = useBuild(LIVE_ID);
   const [prompt, setPrompt] = useState("");
   const design = (text: string) => text.trim() && router.push(`/create?prompt=${encodeURIComponent(text.trim())}`);
   const [filter, setFilter] = useState<string | null>(theme && theme !== "Anything" ? theme : null);
-  const pieces = session.inventory.reduce((n, i) => n + i.count, 0);
 
-  const list = useMemo(() => {
-    const rows = BUILDS.filter((b) => !filter || b.theme === filter).map((b) => ({ build: b, cov: coverage(b, session.inventory) }));
-    return session.inventory.length ? rows.sort((a, b) => b.cov.used / b.cov.total - a.cov.used / a.cov.total) : rows;
-  }, [filter, session.inventory]);
+  const list = useMemo(() => BUILDS.filter((b) => !filter || b.theme === filter), [filter]);
 
-  const hero = current.build ?? list[0]?.build ?? BUILDS[0];
+  const hero = current.build ?? list[0] ?? BUILDS[0];
 
   return (
     <main className="relative mx-auto min-h-dvh max-w-[520px] pb-36" style={{ background: "linear-gradient(180deg,#9cc0df 0%,#cfe0ef 45%,#ffffff 100%)" }}>
@@ -104,15 +98,8 @@ function Builds() {
         >
           <Filter size={24} fill={filter ? "#2458ca" : "#1a1a1a"} color={filter ? "#2458ca" : "#1a1a1a"} />
         </button>
-        <h2 className="pt-12 text-center text-[30px] font-[800] tracking-[-0.02em] text-ink">{session.inventory.length ? `From your ${pieces} pieces` : "Featured"}</h2>
-        {!session.inventory.length && (
-          <p className="mx-auto mt-1 max-w-[300px] text-center text-[15px] text-ink-soft">
-            <Link href="/scan" className="font-bold text-blue underline-offset-2 hover:underline">
-              Scan your bricks
-            </Link>{" "}
-            to see what you can build with them.
-          </p>
-        )}
+        <h2 className="pt-12 text-center text-[30px] font-[800] tracking-[-0.02em] text-ink">Featured</h2>
+        <p className="mx-auto mt-1 max-w-[320px] text-center text-[15px] text-ink-soft">Or describe anything above and the designer will build it.</p>
       </div>
 
       {list.length === 0 ? (
@@ -125,16 +112,14 @@ function Builds() {
         </div>
       ) : (
         <div className="mt-8 grid grid-cols-2 gap-x-4 gap-y-8 px-[18px]">
-          {list.map(({ build, cov }) => (
+          {list.map((build) => (
             <Link key={build.id} href={`/build/${build.id}`} className="group flex flex-col items-center text-center active:scale-[0.97] transition-transform">
               <ModelSnapshot url={build.model} alt={build.name} width={480} height={360} className="h-[140px] w-full" />
               <span className="mt-2 grid h-9 w-9 place-items-center rounded-full bg-blue">
                 <BookOpen size={18} color="#fff" strokeWidth={2.4} />
               </span>
               <span className="mt-2 text-[17px] font-[800] leading-tight text-ink">{build.name}</span>
-              <span className="text-[16px] text-ink">
-                {session.inventory.length ? `${Math.round((cov.used / cov.total) * 100)}% your bricks` : `${build.pieces} pieces`}
-              </span>
+              <span className="text-[16px] text-ink">{build.pieces} pieces</span>
             </Link>
           ))}
         </div>

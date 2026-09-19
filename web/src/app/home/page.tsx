@@ -4,7 +4,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Camera, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { GhostBricks, TabBar } from "@/components/ui/chrome";
 import { YellowBucket } from "@/components/ui/controls";
 import { ModelSnapshot } from "@/components/three/Snapshots";
@@ -76,14 +76,6 @@ export default function Home() {
             aria-label="Describe a build"
             className="h-full min-w-0 flex-1 bg-transparent text-[19px] text-ink outline-none placeholder:text-[#949494]"
           />
-          <span className="h-9 w-px bg-[#d9d9d9]" />
-          <Link
-            href="/scan"
-            aria-label="Scan bricks"
-            className="grid h-11 w-11 place-items-center"
-          >
-            <Camera size={28} strokeWidth={2.2} color="#1a1a1a" />
-          </Link>
         </form>
       </YellowBucket>
 
@@ -162,7 +154,7 @@ const CARD_BRICKS: Record<string, { color: string; opacity: number }> = {
   Anything: { color: "#1f5fd6", opacity: 0.2 },
 };
 
-/** The smoked-glass brick in front of the scan rings, which pulse from the card's right edge. */
+/** The smoked-glass brick in front of the rings, which pulse from the card's right edge. */
 function HeroGlass({ active }: { active: boolean }) {
   const [ready, setReady] = useState(false);
   return (
@@ -267,7 +259,7 @@ function Carousel() {
   const [page, setPage] = useState(0);
   const lunar = BUILDS.find((b) => b.id === "lunar")!;
   const car = BUILDS.find((b) => b.id === "car")!;
-  const titles = ["Scan your pile", lunar.name, "Your manual, printed"];
+  const titles = ["Say it, build it", lunar.name, "Your manual, printed"];
   return (
     <>
       <div
@@ -282,9 +274,9 @@ function Carousel() {
         }}
       >
         <Slide
-          href="/scan"
+          href="/builds"
           title={titles[0]}
-          sub="Loose bricks in. A build out."
+          sub="An idea in. A real build out."
           bg="linear-gradient(180deg,#050505,#1c1c1c)"
         >
           {(active) => (

@@ -19,18 +19,3 @@ export interface Build {
   pieces: number;
   parts: BuildPart[];
 }
-
-export type Confidence = "confident" | "review" | "unknown";
-
-export interface InventoryItem {
-  id: string;
-  part: string;
-  colour: ColourCode;
-  title: string;
-  count: number;
-  status: Confidence;
-  confidence: number;
-  /** Normalised crop rectangle inside the captured photo. */
-  crop: { x: number; y: number; w: number; h: number };
-  alternatives: { part: string; colour: ColourCode; title: string; confidence: number }[];
-}

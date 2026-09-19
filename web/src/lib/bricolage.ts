@@ -30,7 +30,7 @@ export interface Report {
   ok: boolean;
   errors: ReportIssue[];
   warnings: ReportIssue[];
-  stats: { parts: number; studs_used: number; subs: number; inventory_remaining: number };
+  stats: { parts: number; studs_used: number; subs: number };
 }
 
 export interface BuildStep {
@@ -140,7 +140,6 @@ export const bricolage = {
   tryAnother: () => post("/try_another", {}, DESIGN_TIMEOUT),
   undo: () => post("/undo"),
   redo: () => post("/redo"),
-  setInventory: (items: { part: string; color: number; count: number }[]) => request<{ ok: boolean; elements: number }>("/inventory", { method: "POST", body: JSON.stringify({ items }) }),
 
   /** Live build: tape events arrive as they fire; resolves with the final payload. */
   stream(prompt: string, onEvent: (e: TapeEvent) => void): Promise<Payload> {

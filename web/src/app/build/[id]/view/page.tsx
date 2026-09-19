@@ -41,7 +41,6 @@ import {
   redo,
   tryAnother,
   undo,
-  useLive,
 } from "@/lib/live";
 import type { Report, TapeEvent } from "@/lib/bricolage";
 
@@ -398,7 +397,6 @@ function EditPanel({
   onClose: () => void;
   onChanged: () => void;
 }) {
-  const session = useLive();
   const fixture = useFixtureTape();
   const [text, setText] = useState("");
   const [turns, setTurns] = useState<Turn[]>([]);
@@ -464,7 +462,6 @@ function EditPanel({
   };
 
   const chips = live ? LIVE_CHIPS : SAMPLE_CHIPS;
-  const remaining = session.payload?.report?.stats.inventory_remaining;
 
   return (
     <aside
@@ -574,17 +571,6 @@ function EditPanel({
               </div>
             );
           })
-        )}
-        {live && remaining !== undefined && turns.length > 0 && !busy && (
-          <div
-            className="flex items-center justify-between rounded-[16px] bg-white px-4 py-3"
-            style={{ animation: "tape-in 260ms ease-out" }}
-          >
-            <span className="text-[15px] font-bold text-ink">
-              Bricks left in your pile
-            </span>
-            <span className="text-[22px] font-[900] text-ink">{remaining}</span>
-          </div>
         )}
       </div>
       <div className="px-4 pb-[calc(var(--safe-bottom)+14px)]">

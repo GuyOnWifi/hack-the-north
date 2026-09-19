@@ -6,12 +6,10 @@ import { BuildMissing } from "@/components/BuildMissing";
 import dynamic from "next/dynamic";
 import { useParams } from "next/navigation";
 import { useState } from "react";
-import { ArrowLeft, Layers, ListOrdered, Play, Plus, Sparkles, Users } from "lucide-react";
+import { ArrowLeft, Layers, ListOrdered, Play, Plus, Sparkles } from "lucide-react";
 import { ChunkyButton, IconTile } from "@/components/ui/controls";
 import { FloatingBricks } from "@/components/ui/chrome";
 import { BrickGlyph } from "@/components/ui/IsoBrick";
-import { coverage } from "@/lib/data";
-import { useSession } from "@/lib/store";
 
 const ModelView = dynamic(() => import("@/components/three/ModelView").then((m) => m.ModelView), { ssr: false });
 
@@ -20,7 +18,6 @@ const ModelView = dynamic(() => import("@/components/three/ModelView").then((m) 
 export default function BuildDetail() {
   const { id } = useParams<{ id: string }>();
   const { build, live, pending, report } = useBuild(id);
-  const session = useSession();
   const [failed, setFailed] = useState(false);
   // brick-by-brick assembly playback: reveal one step at a time, then settle
   const assembly = useAssembly(build?.id, 360);
@@ -28,7 +25,6 @@ export default function BuildDetail() {
   const broken = live && report != null && !report.ok;
 
   if (!build) return <BuildMissing pending={pending} live={live} />;
-  const cov = coverage(build, session.inventory);
 
   return (
     <main className="mx-auto min-h-dvh max-w-[520px] pb-10" style={{ background: "linear-gradient(180deg,#94afb9 0%,#c6d7de 100%)" }}>
@@ -106,14 +102,9 @@ export default function BuildDetail() {
             ))}
           </ul>
         )}
-        <div className="mt-6 grid grid-cols-3 gap-2">
+        <div className="mt-6 grid grid-cols-2 gap-2">
           <Stat icon={<Layers size={26} strokeWidth={2} />} label="Pieces" value={String(build.pieces)} />
           <Stat icon={<ListOrdered size={26} strokeWidth={2} />} label="Steps" value={steps === null ? "…" : String(steps)} />
-          {live ? (
-            <Stat icon={<Users size={26} strokeWidth={2} />} label="Left over" value={report ? String(report.stats.inventory_remaining) : "-"} />
-          ) : (
-            <Stat icon={<Users size={26} strokeWidth={2} />} label="Your bricks" value={session.inventory.length ? `${Math.round((cov.used / cov.total) * 100)}%` : "-"} />
-          )}
         </div>
         <ChunkyButton variant="white" href={`/build/${build.id}/parts`} className="mt-8 !text-[17px]" icon={<Layers size={22} />}>
           See all pieces

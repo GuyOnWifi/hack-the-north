@@ -3,7 +3,6 @@
 import { useSyncExternalStore } from "react";
 import { bricolage, type Payload, type TapeEvent } from "./bricolage";
 import { registerModelText } from "./ldraw";
-import type { InventoryItem } from "./types";
 
 // The live design session against Lane B: the current version, its LDraw text,
 // and the agent tape as it streams. One per tab, shared by every build screen.
@@ -118,16 +117,6 @@ export async function resumeLive() {
     if (payload.version) await adopt(payload, "live");
   } catch {
     // no server: stay idle
-  }
-}
-
-/** Hands the reviewed inventory to the builder so designs fit the real pile. */
-export async function sendInventory(items: InventoryItem[]) {
-  try {
-    await bricolage.setInventory(items.map((i) => ({ part: i.part, color: i.colour, count: i.count })));
-    return true;
-  } catch {
-    return false;
   }
 }
 
