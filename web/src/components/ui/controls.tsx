@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { forwardRef } from "react";
 
-type Variant = "yellow" | "blue" | "purple" | "white";
+type Variant = "yellow" | "blue" | "red" | "white";
 
 const VARIANTS: Record<Variant, { bg: string; rim: string; ink: string }> = {
   yellow: { bg: "#ffd502", rim: "#ccaa02", ink: "#1a1a1a" },
   blue: { bg: "#005ad2", rim: "#034aa9", ink: "#ffffff" },
-  purple: { bg: "#6e13bc", rim: "#5c109d", ink: "#ffffff" },
+  red: { bg: "#e3000b", rim: "#b30009", ink: "#ffffff" },
   white: { bg: "#ffffff", rim: "#cccccc", ink: "#1a1a1a" },
 };
 
@@ -94,4 +94,52 @@ export function YellowBucket({ children, className = "", tone = "yellow" }: { ch
 /** Big bold centered screen title. */
 export function Title({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return <h1 className={`text-center text-[30px] font-[900] leading-[1.05] tracking-[-0.025em] text-ink ${className}`}>{children}</h1>;
+}
+
+type BrickChipProps = {
+  children: React.ReactNode;
+  /** Body colour (studs match it). Any CSS colour, translucency included. */
+  bg?: string;
+  ink?: string;
+  /** Visible studs along the top; a 2x3 brick seen from the side shows 3. */
+  studs?: number;
+  size?: "sm" | "md";
+  onClick?: () => void;
+  disabled?: boolean;
+  className?: string;
+  style?: React.CSSProperties;
+  "aria-label"?: string;
+};
+
+/**
+ * The app's chip: a brick seen from the side, a rounded rectangle with studs
+ * sticking up off its top edge. Replaces every pill. Renders a button when it
+ * has an onClick, otherwise a plain label.
+ */
+export function BrickChip({ children, bg = "rgba(255,255,255,0.8)", ink = "#1a1a1a", studs = 3, size = "md", onClick, disabled, className = "", style, ...rest }: BrickChipProps) {
+  const sm = size === "sm";
+  const stud = { w: sm ? 10 : 16, h: sm ? 4 : 6 };
+  const body = (
+    <>
+      <span aria-hidden className="pointer-events-none absolute inset-x-0 flex justify-evenly" style={{ top: -stud.h, height: stud.h }}>
+        {Array.from({ length: studs }, (_, i) => (
+          <span key={i} className="rounded-t-[3px]" style={{ width: stud.w, height: stud.h, background: bg }} />
+        ))}
+      </span>
+      {children}
+    </>
+  );
+  const cls = `relative inline-flex shrink-0 items-center font-[800] ${sm ? "h-6 gap-1 rounded-[5px] px-2 text-[11px]" : "h-10 gap-2 rounded-[8px] px-4 text-[15px]"} ${className}`;
+  const css = { background: bg, color: ink, marginTop: stud.h, boxShadow: "inset 0 -3px 0 rgba(0,0,0,0.12)", ...style };
+  if (onClick)
+    return (
+      <button type="button" onClick={onClick} disabled={disabled} className={`${cls} transition-transform active:scale-95 disabled:opacity-50`} style={css} {...rest}>
+        {body}
+      </button>
+    );
+  return (
+    <span className={cls} style={css} {...rest}>
+      {body}
+    </span>
+  );
 }

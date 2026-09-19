@@ -11,7 +11,7 @@ export function BuildMissing({ pending, live }: { pending: boolean; live: boolea
     return (
       <main className="grid min-h-dvh place-items-center bg-parts-bg">
         <div className="flex flex-col items-center gap-3 text-ink-soft">
-          <div className="h-10 w-10 animate-spin rounded-full border-[4px] border-[#cfcfcf] border-t-[#9840b0]" />
+          <div className="h-10 w-10 animate-spin rounded-full border-[4px] border-[#cfcfcf] border-t-[#e3000b]" />
           <span className="text-[15px] font-semibold">Loading your build…</span>
         </div>
       </main>

@@ -22,8 +22,9 @@
   --color-blue-icon: #2458ca;
   --color-navy: #123181;
 
-  --color-purple: #6e13bc;
-  --color-purple-rim: #5c109d;
+  /* The AI's colour (sparkles, "Change it", send, working dots): LEGO red. */
+  --color-ai: #e3000b;
+  --color-ai-rim: #b30009;
   --color-highlight: #9840b0;
 
   --color-orange: #e88b00;

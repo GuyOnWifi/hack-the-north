@@ -51,7 +51,7 @@ export default function BuildDetail() {
           <ChunkyButton variant="yellow" href={`/build/${build.id}/steps`} icon={<BrickGlyph size={36} />}>
             Start Building
           </ChunkyButton>
-          <ChunkyButton variant="purple" href={`/build/${build.id}/view?edit=1`} icon={<Sparkles size={26} fill="#fff" />}>
+          <ChunkyButton variant="red" href={`/build/${build.id}/view?edit=1`} icon={<Sparkles size={26} fill="#fff" />}>
             Change it
           </ChunkyButton>
         </div>

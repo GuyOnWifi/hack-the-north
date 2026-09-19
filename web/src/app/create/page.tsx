@@ -80,7 +80,7 @@ function Create() {
             </div>
           ) : events.length === 0 ? (
             <div className="flex h-full items-center justify-center gap-2 text-[15px] font-semibold text-ink-soft">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-purple" /> Reading your bricks…
+              <span className="h-2 w-2 animate-pulse rounded-full bg-ai" /> Reading your bricks…
             </div>
           ) : (
             <AgentTape events={events} live={!done} />

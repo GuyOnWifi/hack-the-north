@@ -2,13 +2,14 @@
 
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { Check, Loader2, TriangleAlert, X } from "lucide-react";
+import { BrickChip } from "@/components/ui/controls";
 import { parseSse, type TapeActor, type TapeEvent, type TapeStatus } from "@/lib/bricolage";
 
 // Actor colours follow Lane B's dev console so the two read the same.
 const ACTOR: Record<TapeActor, { bg: string; ink: string; label: string }> = {
   router: { bg: "#e5efff", ink: "#2458ca", label: "Router" },
   designer: { bg: "#dff7fb", ink: "#0e7c8c", label: "Designer" },
-  inspector: { bg: "#f3e8fb", ink: "#6e13bc", label: "Inspector" },
+  inspector: { bg: "#fde4e4", ink: "#c20009", label: "Inspector" },
   repair: { bg: "#fff4d6", ink: "#946200", label: "Repair" },
   scribe: { bg: "#e3f5e8", ink: "#1f7a3a", label: "Scribe" },
 };
@@ -76,9 +77,9 @@ export function AgentTape({ events, live, compact }: { events: TapeEvent[]; live
         const Icon = s.icon;
         return (
           <li key={`${e.t}-${i}`} className="flex items-start gap-3 rounded-[14px] bg-white px-3 py-2.5 shadow-[0_2px_0_rgba(0,0,0,0.06)]" style={{ animation: "tape-in 260ms ease-out" }}>
-            <span className="mt-0.5 shrink-0 rounded-full px-2 py-0.5 text-[11px] font-[800] uppercase tracking-wide" style={{ background: a.bg, color: a.ink }}>
+            <BrickChip size="sm" bg={a.bg} ink={a.ink} studs={2} className="uppercase tracking-wide">
               {a.label}
-            </span>
+            </BrickChip>
             <div className="min-w-0 flex-1">
               <div className={`text-[14px] font-semibold leading-snug text-ink ${compact ? "line-clamp-2" : ""}`}>{e.text}</div>
               {(e.ms > 0 || e.tokens > 0) && (
@@ -93,7 +94,7 @@ export function AgentTape({ events, live, compact }: { events: TapeEvent[]; live
         );
       })}
       <li ref={end} className="flex items-center gap-2 px-3 py-1 text-[13px] font-semibold text-ink-soft" style={{ visibility: live ? "visible" : "hidden" }}>
-        <span className="h-2 w-2 animate-pulse rounded-full bg-purple" /> Working…
+        <span className="h-2 w-2 animate-pulse rounded-full bg-ai" /> Working…
       </li>
     </ol>
   );
