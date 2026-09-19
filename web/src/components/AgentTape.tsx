@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useEffectEvent, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useState } from "react";
 import { Check, Loader2, TriangleAlert, X } from "lucide-react";
 import { parseSse, type TapeActor, type TapeEvent, type TapeStatus } from "@/lib/bricolage";
 
@@ -64,10 +64,8 @@ export function useTapePlayback(events: TapeEvent[], runKey: number | null, onDo
 
 /** The agent's working log: who acted, what they did, and whether it held up. */
 export function AgentTape({ events, live, compact }: { events: TapeEvent[]; live?: boolean; compact?: boolean }) {
-  const end = useRef<HTMLLIElement>(null);
-  useEffect(() => {
-    end.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [events.length, live]);
+  // NOTE: no auto-scroll-into-view — it dragged the whole page (and the 3D
+  // render) down as events streamed. The render stays put; scroll to read logs.
   return (
     <ol className="flex flex-col gap-2" aria-live="polite">
       {events.map((e, i) => {

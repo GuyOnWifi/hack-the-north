@@ -55,7 +55,7 @@ def _propose_claude(prompt):
     t0 = time.time()
     _log(f"calling claude -p for {prompt!r}…")
     out = subprocess.run(["claude", "-p", _fewshot_prompt(prompt)],
-                         capture_output=True, text=True, timeout=220)
+                         capture_output=True, text=True, timeout=300)
     items = bricks.parse(out.stdout)
     _log(f"claude returned in {time.time()-t0:.0f}s: rc={out.returncode}, "
          f"{len(out.stdout)} chars stdout, {len(out.stderr)} chars stderr, "
