@@ -58,10 +58,15 @@ dependencies and no network.
 
 **25/25 tests pass.**
 
+- [x] **Verified the metadata table against the real LDraw library** (`~/ldraw`):
+      19/19 parts confirmed. The verifier follows `~Moved to` redirects
+      (3023→3023b, 4073→6141, 3040→3040b) and caught exactly one real error —
+      the 3040 slope was transposed (dx/dz swapped); now fixed to match LDraw.
+      Colour table `~/ldraw/LDConfig.ldr` is available for accurate colours.
+
 ### Not done / next
-- [ ] Run `build_part_meta.py` against the real LDraw library once downloaded
-      (surfaces the slope-orientation discrepancy to hand-verify — by design).
 - [ ] Keep-valid-subparts is whole-child granularity; could go finer.
+- [ ] Parse `LDConfig.ldr` into `meta.COLOR_RGB` for exact colours (invariant #6).
 - [ ] 3D render + PDF manual live in Lane C (frontend), against `fixtures/` + the API.
 
 ## Lanes A (CV), C (frontend) — owned by teammates

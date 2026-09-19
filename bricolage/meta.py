@@ -26,7 +26,8 @@ PART_META = {
     "3068b": {"name": "Tile 2x2", "dx": 2, "dz": 2, "h": 1, "studs": False},
     "3069b": {"name": "Tile 1x2", "dx": 1, "dz": 2, "h": 1, "studs": False},
     # slopes (treated as brick footprint; insertion still straight down)
-    "3040": {"name": "Slope 45 2x1", "dx": 1, "dz": 2, "h": 3, "studs": False},
+    # dims verified against LDraw 3040b/3039 via scripts/build_part_meta.py
+    "3040": {"name": "Slope 45 2x1", "dx": 2, "dz": 1, "h": 3, "studs": False},
     "3039": {"name": "Slope 45 2x2", "dx": 2, "dz": 2, "h": 3, "studs": False},
     # round 1x1 as a wheel/stud stand-in (no Technic — anti-goal)
     "4073": {"name": "Round Plate 1x1", "dx": 1, "dz": 1, "h": 1, "studs": True},

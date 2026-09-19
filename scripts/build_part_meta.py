@@ -47,6 +47,19 @@ def parse_description(desc):
     return {"name": d, "dx": dx, "dz": dz, "h": h, "studs": studs}
 
 
+_MOVED = re.compile(r"~Moved to (\w+)", re.I)
+
+
+def redirect_target(dat_text):
+    """Official parts that were renamed start with `0 ~Moved to <part>`."""
+    for line in dat_text.splitlines():
+        line = line.strip()
+        if line.startswith("0 "):
+            m = _MOVED.search(line)
+            return m.group(1) if m else None
+    return None
+
+
 def derive_meta(dat_text):
     """First non-empty `0 ...` comment line is the part description."""
     for line in dat_text.splitlines():
@@ -55,6 +68,20 @@ def derive_meta(dat_text):
            not line.startswith("0 //"):
             return parse_description(line[2:])
     return None
+
+
+def resolve(ldraw_dir, part, depth=0):
+    """Read a part's metadata, following `~Moved to` redirects (max depth 4).
+    Returns (meta, resolved_part) or (None, part)."""
+    path = _find_dat(ldraw_dir, part)
+    if not path or depth > 4:
+        return None, part
+    with open(path, encoding="latin-1") as f:
+        text = f.read()
+    tgt = redirect_target(text)
+    if tgt:
+        return resolve(ldraw_dir, tgt, depth + 1)
+    return derive_meta(text), part
 
 
 def _find_dat(ldraw_dir, part):
@@ -79,19 +106,17 @@ def main():
 
     ok, warn, missing = 0, 0, 0
     for part, hand in PART_META.items():
-        path = _find_dat(ldraw_dir, part)
-        if not path:
-            print(f"  ?  {part}: no .dat found"); missing += 1; continue
-        with open(path, encoding="latin-1") as f:
-            got = derive_meta(f.read())
+        got, resolved = resolve(ldraw_dir, part)
+        via = f" (via {resolved})" if resolved != part else ""
         if not got:
-            print(f"  ?  {part}: couldn't parse description"); missing += 1; continue
+            print(f"  ?  {part}: no .dat / couldn't parse{via}"); missing += 1; continue
         diffs = [k for k in ("dx", "dz", "h", "studs") if got[k] != hand[k]]
         if diffs:
-            print(f"  ✗  {part} {hand['name']}: hand={ {k:hand[k] for k in diffs} } "
+            print(f"  ✗  {part} {hand['name']}{via}: "
+                  f"hand={ {k:hand[k] for k in diffs} } "
                   f"dat={ {k:got[k] for k in diffs} }"); warn += 1
         else:
-            ok += 1
+            print(f"  ✓  {part} {hand['name']}{via}"); ok += 1
     print(f"\n{ok} verified, {warn} mismatched, {missing} missing "
           f"(of {len(PART_META)}).")
     return 1 if warn else 0

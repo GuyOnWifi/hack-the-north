@@ -163,6 +163,9 @@ def test_meta_parser():
     d = derive_meta("0 Brick 2 x 2\n0 Name: 3003.dat\n1 16 0 0 0 ...\n")
     check("META: derive_meta reads the description line",
           d["dx"] == 2 and d["dz"] == 2)
+    from build_part_meta import redirect_target
+    check("META: follows '~Moved to' redirects",
+          redirect_target("0 ~Moved to 3023b\n0 Name: 3023.dat\n") == "3023b")
 
 
 def test_version_tree():
