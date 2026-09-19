@@ -6,6 +6,7 @@ import { forwardRef, useEffect, useEffectEvent, useImperativeHandle, useRef, use
 import * as THREE from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { prepareModel, type PreparedModel } from "@/lib/ldraw";
+import { play } from "@/lib/sound";
 import { StudioEnvironment } from "./StudioEnvironment";
 
 export type ViewMode = "display" | "steps" | "timeline";
@@ -81,6 +82,7 @@ class Rig {
     }
   }
 
+  /** Returns how many parts drop in (for the landing sound). */
   apply(mode: ViewMode, step: number) {
     const fresh: PreparedModel["parts"] = [];
     this.selection.length = 0;
@@ -100,6 +102,7 @@ class Rig {
       }
     }
     this.drop = { start: performance.now(), parts: fresh };
+    return fresh.length;
   }
 
   /** Whole model for display/timeline; placed-so-far (biased to new parts) for steps. */
@@ -213,20 +216,57 @@ function Scene({ url, mode, step = 0, spin = 0.15, shadow, onLoaded, onError, co
   useEffect(() => {
     const r = rig.current;
     if (!r) return;
-    r.apply(mode, step);
+    const landing = r.apply(mode, step);
     r.frame(mode, step, camera);
-  }, [loaded, mode, step, camera, aspect, rig]);
+    if (mode !== "steps" || !landing) return;
+    // The new parts snap home as the drop-in finishes: one soft click per step.
+    const t = setTimeout(() => play("connect", { volume: 0.45 }), DROP_MS * 0.85);
+    return () => clearTimeout(t);
+  }, [loaded, mode, step, camera, rig]);
+
+  useEffect(() => {
+    const r = rig.current;
+    if (r) r.frame(mode, step, camera);
+  }, [aspect, mode, step, camera, rig]);
 
   useEffect(() => {
     const c = controls.current;
     if (!c || !loaded) return;
-    const start = () => rig.current?.dragStart();
-    const end = () => rig.current?.dragEnd();
+    // Turning the model by hand clicks like a turntable: one drag sound per
+    // ~9 degrees swept, so faster spins give denser clicks.
+    let dragging = false;
+    let last = { az: 0, pol: 0 };
+    let swept = 0;
+    const start = () => {
+      dragging = true;
+      last = { az: c.getAzimuthalAngle(), pol: c.getPolarAngle() };
+      swept = 0;
+      rig.current?.dragStart();
+    };
+    const end = () => {
+      dragging = false;
+      rig.current?.dragEnd();
+    };
+    const change = () => {
+      if (!dragging) return;
+      const az = c.getAzimuthalAngle();
+      const pol = c.getPolarAngle();
+      let dAz = Math.abs(az - last.az);
+      if (dAz > Math.PI) dAz = 2 * Math.PI - dAz;
+      swept += dAz + Math.abs(pol - last.pol);
+      last = { az, pol };
+      if (swept > 0.16) {
+        swept = 0;
+        play("drag");
+      }
+    };
     c.addEventListener("start", start);
     c.addEventListener("end", end);
+    c.addEventListener("change", change);
     return () => {
       c.removeEventListener("start", start);
       c.removeEventListener("end", end);
+      c.removeEventListener("change", change);
     };
   }, [controls, loaded, rig]);
 

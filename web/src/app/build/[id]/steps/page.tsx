@@ -1,5 +1,7 @@
 "use client";
 
+import { play } from "@/lib/sound";
+
 import { useBuild } from "@/lib/useBuild";
 import { BuildMissing } from "@/components/BuildMissing";
 import dynamic from "next/dynamic";
@@ -73,6 +75,10 @@ function Steps() {
     if (model) window.history.replaceState(null, "", `?step=${step}`);
   }, [step, model]);
 
+  useEffect(() => {
+    if (done) play("connect", { volume: 0.6 });
+  }, [done]);
+
   if (!build) return <BuildMissing pending={pending} live={live} />;
 
   const railList = (
@@ -103,7 +109,7 @@ function Steps() {
             <div className={landscape ? "my-auto" : "mx-auto"}>{railList}</div>
           </div>
           {landscape && (
-            <IconTile tone="white" label="Previous step" onClick={() => go(-1)} disabled={step === 0} size={60}>
+            <IconTile tone="white" label="Previous step" onClick={() => go(-1)} disabled={step === 0} size={60} data-sound="off">
               <ChevronLeft size={34} strokeWidth={2.4} />
             </IconTile>
           )}
@@ -192,14 +198,14 @@ function Steps() {
         {/* Prev / next */}
         {!landscape && model && (
           <div className="absolute bottom-5 left-5">
-            <IconTile tone="white" label="Previous step" onClick={() => go(-1)} disabled={step === 0} size={60}>
+            <IconTile tone="white" label="Previous step" onClick={() => go(-1)} disabled={step === 0} size={60} data-sound="off">
               <ChevronLeft size={34} strokeWidth={2.4} />
             </IconTile>
           </div>
         )}
         {model && !done && (
           <div className="absolute bottom-6 right-6" style={{ marginRight: "var(--safe-right)", marginBottom: landscape ? "var(--safe-bottom)" : 0 }}>
-            <IconTile tone="white" label="Next step" onClick={() => go(1)} size={60}>
+            <IconTile tone="white" label="Next step" onClick={() => go(1)} size={60} data-sound="off">
               <ChevronRight size={34} strokeWidth={2.4} />
             </IconTile>
           </div>

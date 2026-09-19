@@ -1,5 +1,7 @@
 "use client";
 
+import { play } from "@/lib/sound";
+
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -47,6 +49,7 @@ export default function Scan() {
     const v = video.current;
     if (!v || !v.videoWidth) return;
     setShot(downscale(v, v.videoWidth, v.videoHeight));
+    play("connect");
   }, []);
 
   const onFile = (f: File | undefined) => {

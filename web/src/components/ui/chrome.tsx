@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Layers, ScanLine, Smile } from "lucide-react";
+import { useEffect, useRef } from "react";
+import { play } from "@/lib/sound";
 import { IsoBrick } from "./IsoBrick";
 
 /** Floating white tab pill + yellow scan button (IMG_1247). */
@@ -93,6 +95,11 @@ export function FloatingBricks({ tone = "colour", opacity = 1 }: { tone?: "colou
 /** Round-plate stack progress bar from the loading screen (IMG_1230). */
 export function PlateProgress({ value, count = 12 }: { value: number; count?: number }) {
   const active = Math.min(count - 1, Math.floor(value * count));
+  const lit = useRef(active);
+  useEffect(() => {
+    if (active > lit.current) play("tick", { volume: 0.6 });
+    lit.current = active;
+  }, [active]);
   return (
     <div className="flex items-center" role="progressbar" aria-valuenow={Math.round(value * 100)} aria-valuemin={0} aria-valuemax={100}>
       {Array.from({ length: count }, (_, i) => {
@@ -119,7 +126,7 @@ export function StudSlider({ value, max, stops = [], onChange, className = "" }:
   const passed = [0, ...stops].filter((s) => s <= value).pop() ?? 0;
   const donePct = (passed / Math.max(1, max)) * 100;
   return (
-    <div className={`relative h-[46px] rounded-full px-[14px] ${className}`} style={{ background: "rgba(90,90,90,0.55)" }}>
+    <div data-sound="off" className={`relative h-[46px] rounded-full px-[14px] ${className}`} style={{ background: "rgba(90,90,90,0.55)" }}>
       <div className="relative top-1/2 h-[20px] -translate-y-1/2 rounded-full bg-white">
         <div className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${pct}%`, background: "#e88b00" }} />
         <div className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${donePct}%`, background: "#ffd502" }} />
@@ -138,7 +145,10 @@ export function StudSlider({ value, max, stops = [], onChange, className = "" }:
         max={max}
         step={1}
         value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
+        onChange={(e) => {
+          play("tick");
+          onChange(Number(e.target.value));
+        }}
         aria-label="Build progress"
         className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
       />

@@ -1,5 +1,7 @@
 "use client";
 
+import { play } from "@/lib/sound";
+
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { FloatingBricks } from "@/components/ui/chrome";
@@ -13,7 +15,7 @@ const HeroBrick = dynamic(() => import("@/components/three/HeroBrick").then((m) 
 export default function Splash() {
   return (
     <main className="mx-auto flex min-h-dvh max-w-[520px] flex-col bg-page">
-      <Link href="/home" aria-label="Start" className="relative flex flex-1 flex-col">
+      <Link href="/home" aria-label="Start" className="relative flex flex-1 flex-col" onClick={() => play("connect", { delayMs: 60 })}>
         <div className="absolute inset-x-[18px] bottom-[-26px] top-0 rounded-b-[44px] bg-blue-under" />
         <div className="relative flex min-h-[calc(100dvh-110px)] flex-1 flex-col overflow-hidden rounded-b-[44px] pb-40" style={{ background: "linear-gradient(180deg,#141414 0%,#272727 50%,#3c3c3c 100%)" }}>
           <FloatingBricks tone="colour" />

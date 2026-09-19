@@ -1,5 +1,7 @@
 "use client";
 
+import { play } from "@/lib/sound";
+
 import { useMemo, useState } from "react";
 import { ArrowLeft, Check, Minus, Plus, Search, Trash2, X } from "lucide-react";
 import { ChunkyButton, IconTile, YellowBucket } from "@/components/ui/controls";
@@ -213,6 +215,7 @@ function Evidence({ item, all, onClose }: { item: InventoryItem; all: InventoryI
                 key={a.part}
                 onClick={() => {
                   updateItem(item.id, { part: a.part, title: a.title, status: "confident", confidence: 1, alternatives: [] });
+                  play("connect");
                   onClose();
                 }}
                 className="chunky flex flex-col items-center rounded-[16px] bg-white px-1 pb-2 pt-1 text-center"
@@ -245,6 +248,7 @@ function Evidence({ item, all, onClose }: { item: InventoryItem; all: InventoryI
           className="!text-[16px]"
           onClick={() => {
             updateItem(item.id, { status: "confident", confidence: Math.max(item.confidence, 0.99) });
+            play("connect");
             onClose();
           }}
           icon={<Check size={22} strokeWidth={3} />}
@@ -292,6 +296,7 @@ function AddSheet({ onClose }: { onClose: () => void }) {
       const item: InventoryItem = { id: `add-${Date.now()}`, part: pick.part, colour, title: pick.title, count, status: "confident", confidence: 1, crop: { x: 0.4, y: 0.4, w: 0.12, h: 0.12 }, alternatives: [] };
       return { inventory: [...sess.inventory, item], scanned: true };
     });
+    play("connect");
     onClose();
   };
 
@@ -310,6 +315,7 @@ function AddSheet({ onClose }: { onClose: () => void }) {
       }
       return { inventory: inv, scanned: true };
     });
+    play("connect", { volume: 0.6 });
     onClose();
   };
 

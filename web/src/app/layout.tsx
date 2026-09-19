@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Figtree } from "next/font/google";
 import { APP_NAME, APP_TAGLINE } from "@/lib/brand";
 import { ServiceWorker } from "@/components/ServiceWorker";
+import { SoundProvider } from "@/components/SoundProvider";
 import "./globals.css";
 
 const figtree = Figtree({
@@ -33,6 +34,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-dvh">
         {children}
         <ServiceWorker />
+        <SoundProvider />
       </body>
     </html>
   );

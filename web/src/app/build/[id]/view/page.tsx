@@ -1,5 +1,7 @@
 "use client";
 
+import { play, setMuted, useMuted } from "@/lib/sound";
+
 import { useBuild } from "@/lib/useBuild";
 import { BuildMissing } from "@/components/BuildMissing";
 import dynamic from "next/dynamic";
@@ -56,6 +58,7 @@ function Viewer() {
     replayTimer.current = setInterval(() => {
       v++;
       setValue(Math.min(v, total));
+      play("connect", { volume: 0.35 });
       if (v >= total) clearInterval(replayTimer.current ?? undefined);
     }, 260);
   };
@@ -159,7 +162,7 @@ function Viewer() {
 
 /** Two big tiles over a dimmed scene (IMG_1246). */
 function SettingsModal({ onClose, onPdf }: { onClose: () => void; onPdf: () => void }) {
-  const [sound, setSound] = useState(true);
+  const sound = !useMuted();
   return (
     <div className="absolute inset-0 z-50 grid place-items-center bg-black/65" style={{ animation: "fade-in 160ms ease-out" }} onClick={onClose}>
       <div className="absolute right-5 top-5" style={{ marginTop: "var(--safe-top)", marginRight: "var(--safe-right)" }}>
@@ -168,7 +171,7 @@ function SettingsModal({ onClose, onPdf }: { onClose: () => void; onPdf: () => v
         </IconTile>
       </div>
       <div className="flex gap-5" onClick={(e) => e.stopPropagation()}>
-        <BigTile label={sound ? "Sound on" : "Sound off"} onClick={() => setSound((s) => !s)}>
+        <BigTile label={sound ? "Sound on" : "Sound off"} onClick={() => setMuted(sound)}>
           {sound ? <Volume2 size={100} strokeWidth={2} /> : <VolumeX size={100} strokeWidth={2} />}
         </BigTile>
         <BigTile label="Download manual" onClick={onPdf}>

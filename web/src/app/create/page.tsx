@@ -1,5 +1,7 @@
 "use client";
 
+import { play } from "@/lib/sound";
+
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef } from "react";
@@ -38,6 +40,7 @@ function Create() {
   const valid = live.payload?.report?.ok !== false;
   useEffect(() => {
     if (live.status !== "ready" || live.prompt !== prompt || !valid) return;
+    play("connect", { volume: 0.6 });
     const t = setTimeout(() => router.replace(`/build/${LIVE_ID}`), 900);
     return () => clearTimeout(t);
   }, [live.status, live.prompt, prompt, router, valid]);
