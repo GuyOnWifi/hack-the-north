@@ -31,6 +31,11 @@ PART_META = {
     "3039": {"name": "Slope 45 2x2", "dx": 2, "dz": 2, "h": 3, "studs": False},
     # round 1x1 as a wheel/stud stand-in (no Technic — anti-goal)
     "4073": {"name": "Round Plate 1x1", "dx": 1, "dz": 1, "h": 1, "studs": True},
+    # extra brick sizes used by the StableText2Brick / BrickGPT dataset (recall)
+    "3622": {"name": "Brick 1x3", "dx": 1, "dz": 3, "h": 3, "studs": True},
+    "3008": {"name": "Brick 1x8", "dx": 1, "dz": 8, "h": 3, "studs": True},
+    "2456": {"name": "Brick 2x6", "dx": 2, "dz": 6, "h": 3, "studs": True},
+    "3007": {"name": "Brick 2x8", "dx": 2, "dz": 8, "h": 3, "studs": True},
 }
 
 # single-char palette for LLM/mock pixel-art masks -> LDraw colour codes
