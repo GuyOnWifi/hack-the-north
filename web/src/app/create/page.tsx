@@ -45,6 +45,9 @@ function Create() {
   // bricks are on screen in seconds instead of at the end.
   const isDraft = !done && !!live.partialUrl && live.prompt === prompt;
   const modelUrl = done ? live.modelUrl : isDraft ? live.partialUrl : null;
+  // the newest thing the designer "said", shown over the loading skeleton
+  const lastThink = [...events].reverse().find((e) => e.text)?.text ?? "designing in 3D…";
+  const showSkeleton = !modelUrl && live.status !== "error" && live.prompt === prompt;
 
   // once the model resolves, stream it together brick-by-brick on this screen
   const [mSteps, setMSteps] = useState<number | null>(null);
@@ -130,6 +133,29 @@ function Create() {
               {!valid && <span className="rounded-full bg-[#e02436] px-3 py-1 text-[13px] font-bold text-white shadow">⚠ won&apos;t stand</span>}
             </div>
             {!valid && <div className="pointer-events-none absolute inset-2 rounded-[18px] ring-2 ring-[#e02436]/70" style={{ animation: "pulse 1.4s ease-in-out infinite" }} />}
+          </div>
+        )}
+
+        {/* loading skeleton — fills the render while the LLM designs, so the
+            area is never blank. Ghost bricks materialise; NOT a real design. */}
+        {showSkeleton && (
+          <div className="relative mt-5 h-[268px] shrink-0 overflow-hidden rounded-[24px]" style={{ background: "linear-gradient(180deg,#0b1c22 0%,#376275 100%)", animation: "tape-in 300ms ease-out" }}>
+            <div className="absolute inset-0 flex items-center justify-center" style={{ perspective: "600px" }}>
+              <div className="grid grid-cols-4 gap-2.5" style={{ transform: "rotateX(58deg) rotateZ(45deg)" }}>
+                {Array.from({ length: 16 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="h-10 w-10 rounded-[5px] border border-white/15 bg-white/10"
+                    style={{ animation: "pulse 1.5s ease-in-out infinite", animationDelay: `${((i % 4) + Math.floor(i / 4)) * 0.13}s` }}
+                  />
+                ))}
+              </div>
+            </div>
+            <div className="absolute left-3 top-3 rounded-full bg-black/40 px-3 py-1 text-[12px] font-bold text-white/90 backdrop-blur">◐ designing in 3D…</div>
+            <div className="absolute inset-x-0 bottom-0 flex items-center gap-2 px-3 pb-3">
+              <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-[#2fd66f]" />
+              <span className="truncate text-[13px] font-semibold text-white/90">{lastThink}</span>
+            </div>
           </div>
         )}
 
