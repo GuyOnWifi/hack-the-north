@@ -29,6 +29,46 @@ def _weight(h, w):
     return float(h * w)          # mass ~ footprint area, one brick tall
 
 
+def stands(items):
+    """Lenient, real-world 'will it stand?' for the UI badge. The rigorous
+    force/torque LP (analyze) is too strict — it fails any slab spanning between
+    supports (a roof over walls, a tabletop over legs) because it only models
+    vertical stud joints, not the horizontal plate-bonding LEGO actually uses, so
+    it shows red on everything. This instead asks the two things that decide real
+    tipping/collapse: (1) is the centre of mass over the base footprint, and
+    (2) is almost everything supported (few free-floating bricks)?"""
+    from collections import deque
+    items = list(items)
+    if len(items) < 4:
+        return True
+    tot = sum(h * w for (h, w, x, y, z) in items) or 1
+    cx = sum((x + h / 2.0) * h * w for (h, w, x, y, z) in items) / tot
+    cy = sum((y + w / 2.0) * h * w for (h, w, x, y, z) in items) / tot
+    ground_z = min(z for (h, w, x, y, z) in items)
+    base = [(x + h / 2.0, y + w / 2.0) for (h, w, x, y, z) in items if z == ground_z]
+    xs = [p[0] for p in base]; ys = [p[1] for p in base]
+    # (1) tipping: is the centre of mass over the base footprint (tight margin)?
+    over_base = (min(xs) - 1.5 <= cx <= max(xs) + 1.5) and (min(ys) - 1.5 <= cy <= max(ys) + 1.5)
+    # (2) collapse: is (almost) everything connected to the ground THROUGH the
+    # structure? Face-adjacency (incl. same-layer) credits plate bonding, so a
+    # tabletop spanning legs or a roof over walls counts as held.
+    cell = {}
+    for i, b in enumerate(items):
+        for c in cells(*b):
+            cell[c] = i
+    seen = {i for i, (h, w, x, y, z) in enumerate(items) if z == ground_z}
+    q = deque(seen)
+    while q:
+        for (ax, ay, az) in cells(*items[q.popleft()]):
+            for nb in ((ax + 1, ay, az), (ax - 1, ay, az), (ax, ay + 1, az),
+                       (ax, ay - 1, az), (ax, ay, az + 1), (ax, ay, az - 1)):
+                j = cell.get(nb)
+                if j is not None and j not in seen:
+                    seen.add(j); q.append(j)
+    connected = len(seen) >= 0.9 * len(items)
+    return over_base and connected
+
+
 def broken_bricks(items):
     """Indices of bricks with no support beneath them — nothing below and not on
     the ground layer. These are the joints that fail (drawn red in the UI). A

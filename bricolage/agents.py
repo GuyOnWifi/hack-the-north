@@ -70,6 +70,12 @@ bloom on a 2-wide stem would float). If a band is much wider than the band below
 enough z-layers to widen GRADUALLY (about +3 studs of width per layer), OR insert a medium \
 transition band (a "calyx"/"crown"/"shoulders") between them. Each band's width should be at \
 most ~2x the width of the band directly below it.
+- STABILITY — the model must STAND on its own, not tip over: make the BOTTOM band a WIDE, solid \
+base, at least as wide as the widest band above it (a heavy low base keeps the centre of mass low \
+and inside the footprint). For a top-heavy shape (flower bloom, tree canopy), keep the top's size \
+modest AND run a solid vertical SPINE (a 2x2 armature column) straight up the centre from the base \
+to directly under the top, so the top's weight drops onto the base — name that band 'spine' or fold \
+it into the stem. Prefer a stable, grounded silhouette over an extreme cantilever.
 
 Output ONLY the plan, one band per line, bottom band FIRST, in EXACTLY this format:
 BAND z<z_from>-<z_to> | <cx>,<cy> | <sx>x<sy> | n=<brick_count> | <short_name>: <what it represents>
@@ -355,10 +361,11 @@ def build(prompt, name=None, tape=None, seed=0):
     colours = _colours_for(placed, bands, prompt)     # colour by band role (pre-normalize z)
     placed = harness._normalize(placed)
     res = physics.analyze(placed)
+    stable = physics.stands(placed)
     tape.emit("inspector", "physics",
-              f"force + torque check: {'stands up' if res['stable'] else 'top-heavy, may not stand'} "
+              f"stability check: {'stands up' if stable else 'top-heavy, may not stand'} "
               f"({res.get('studs', 0)} stud joints)",
-              status="ok" if res["stable"] else "warn", ms=45)
+              status="ok" if stable else "warn", ms=45)
     build = bricks.to_build(placed, name=name or prompt.title(), colors=colours)
     _log(f"assemble '{prompt}': DONE — {len(build.parts)} parts, stable={res['stable']}")
     return build
