@@ -14,10 +14,10 @@ def build_json(build):
         "subassemblies": {s.name: {"parent": s.parent, "gen": s.gen,
                                    "attach": s.attach, "sockets": list(s.sockets)}
                           for s in build.subs},
+        # drop internal, non-JSON provenance (voxels has tuple keys; it's only
+        # for replay). Keep composition (JSON-safe, useful to the UI).
         "provenance": {k: v for k, v in build.provenance.items()
-                       if k != "composition"} | (
-            {"composition": build.provenance["composition"]}
-            if "composition" in build.provenance else {}),
+                       if k not in ("voxels", "dropped")},
     }
 
 

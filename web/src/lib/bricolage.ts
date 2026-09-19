@@ -48,7 +48,7 @@ export interface Steps {
   steps: BuildStep[];
 }
 
-export type TapeActor = "designer" | "inspector" | "repair" | "scribe" | "router";
+export type TapeActor = "router" | "planner" | "designer" | "builder" | "inspector" | "critic" | "repair" | "scribe";
 export type TapeStatus = "ok" | "fail" | "warn" | "running";
 
 /** Contract 4: one agent-tape event. */
@@ -62,6 +62,21 @@ export interface TapeEvent {
   tokens: number;
 }
 
+/** Structural stability of the current build (from Lane B's physics engine). */
+export interface Physics {
+  stable: boolean;
+  com: [number, number] | null;
+  base: [number, number][];
+  topple_margin?: number;
+  sturdiness?: number;
+  weakest_layer?: number | null;
+  /** Number of stud joints the solver checked (harness builds). */
+  studs?: number;
+  /** Indices of bricks the force/torque solver couldn't hold — drawn red. */
+  broken?: number[];
+  failures: { code: string; human: string }[];
+}
+
 export interface Payload {
   version: string | null;
   name?: string;
@@ -71,10 +86,20 @@ export interface Payload {
   tape?: TapeEvent[];
   tree?: string;
   head?: string | null;
+  physics?: Physics;
 }
 
 const BASE = "/bricolage";
 const FIXTURES = "/bricolage-fixtures";
+
+// The SSE stream must skip the Next dev proxy (it buffers streaming responses),
+// so EventSource talks to the backend origin directly. Override with
+// NEXT_PUBLIC_STREAM_ORIGIN; otherwise assume the backend is on :8017 of the
+// same host (what run.sh launches). Non-stream REST calls keep using the proxy.
+const STREAM_ORIGIN =
+  process.env.NEXT_PUBLIC_STREAM_ORIGIN ||
+  (typeof window !== "undefined" ? `${window.location.protocol}//${window.location.hostname}:8017` : "");
+const STREAM_BASE = STREAM_ORIGIN ? `${STREAM_ORIGIN}/api` : BASE;
 
 async function request<T>(path: string, init?: RequestInit, timeoutMs = 60000): Promise<T> {
   const ctrl = new AbortController();
@@ -116,7 +141,11 @@ export const bricolage = {
   /** Live build: tape events arrive as they fire; resolves with the final payload. */
   stream(prompt: string, onEvent: (e: TapeEvent) => void): Promise<Payload> {
     return new Promise((resolve, reject) => {
-      const es = new EventSource(`${BASE}/build_stream?prompt=${encodeURIComponent(prompt)}`);
+      // Connect the SSE stream DIRECTLY to the backend, bypassing the Next dev
+      // proxy — that proxy buffers streaming responses for the browser, so live
+      // tape events never arrive until the build finishes. The backend sends
+      // Access-Control-Allow-Origin:* so cross-origin EventSource is fine.
+      const es = new EventSource(`${STREAM_BASE}/build_stream?prompt=${encodeURIComponent(prompt)}`);
       let settled = false;
       const done = (fn: () => void) => {
         if (settled) return;
@@ -127,6 +156,7 @@ export const bricolage = {
       es.onmessage = (m) => {
         const data = JSON.parse(m.data);
         if (data.event === "done") done(() => resolve(data as Payload));
+        else if (data.event === "error") done(() => reject(new ApiError(data.error ?? "The builder hit an error")));
         else onEvent(data as TapeEvent);
       };
       es.onerror = () => done(() => reject(new ApiError("Lost connection to the builder")));

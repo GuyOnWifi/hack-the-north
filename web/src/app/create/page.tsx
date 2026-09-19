@@ -1,19 +1,19 @@
 "use client";
 
-import { BrickLoader, LogoLockup } from "@/components/ui/Logo";
-
-
-import { play } from "@/lib/sound";
-
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useRef } from "react";
-import { X } from "lucide-react";
+import dynamic from "next/dynamic";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useRef, useState } from "react";
+import { Play, X } from "lucide-react";
 import { FloatingBricks, PlateProgress } from "@/components/ui/chrome";
 import { ChunkyButton, IconTile } from "@/components/ui/controls";
 import { AgentTape } from "@/components/AgentTape";
-import { designBuild, tryAnother, useLive } from "@/lib/live";
+import { BrickLoader, LogoLockup } from "@/components/ui/Logo";
+import { designBuild, getSteers, steer, tryAnother, useLive } from "@/lib/live";
 import { LIVE_ID } from "@/lib/useBuild";
+import { useAssembly } from "@/lib/useAssembly";
+
+const ModelView = dynamic(() => import("@/components/three/ModelView").then((m) => m.ModelView), { ssr: false });
 
 export default function CreatePage() {
   return (
@@ -29,7 +29,6 @@ const EXPECTED_EVENTS = 6;
 // routes, designs, inspects, repairs and sequences; then we open the build.
 function Create() {
   const params = useSearchParams();
-  const router = useRouter();
   const prompt = params.get("prompt")?.trim() || "build a rover";
   const live = useLive();
   const started = useRef<string | null>(null);
@@ -40,21 +39,43 @@ function Create() {
     designBuild(prompt);
   }, [prompt]);
 
-  const valid = live.payload?.report?.ok !== false;
-  useEffect(() => {
-    if (live.status !== "ready" || live.prompt !== prompt || !valid) return;
-    play("connect", { volume: 0.6 });
-    const t = setTimeout(() => router.replace(`/build/${LIVE_ID}`), 900);
-    return () => clearTimeout(t);
-  }, [live.status, live.prompt, prompt, router, valid]);
+  const valid = live.payload?.report?.ok !== false;       // renderable / openable
+  const stable = live.payload?.physics?.stable !== false;  // physically stands?
 
   const events = live.prompt === prompt ? live.tape : [];
   const done = live.status === "ready" && live.prompt === prompt;
+  // show the real model when done; while working, show the speculative draft so
+  // bricks are on screen in seconds instead of at the end.
+  const isDraft = !done && !!live.partialUrl && live.prompt === prompt;
+  const modelUrl = done ? live.modelUrl : isDraft ? live.partialUrl : null;
+  // the newest thing the designer "said", shown over the loading skeleton
+  const lastThink = [...events].reverse().find((e) => e.text)?.text ?? "designing in 3D…";
+  const showSkeleton = !modelUrl && live.status !== "error" && live.prompt === prompt;
+
+  // once the model resolves, stream it together brick-by-brick on this screen
+  const assembly = useAssembly(modelUrl);
+  const { steps: mSteps, step: astep, assembling } = assembly;
   const failed = live.status === "error" && live.prompt === prompt;
   const progress = done ? 1 : Math.min(0.92, events.length / EXPECTED_EVENTS);
 
+  // show the physics: connection nodes at every joint the solver checked.
+  // off by default (clean model); the toggle reveals the joint layer.
+  const [showJoints, setShowJoints] = useState(false);
+  const physicsJointCount = live.payload?.physics?.studs ?? 0;
+
+  // stop-and-steer: correct the build in natural language while it streams
+  const [steerText, setSteerText] = useState("");
+  const [steers, setSteers] = useState<string[]>([]);
+  const submitSteer = () => {
+    const t = steerText.trim();
+    if (!t) return;
+    steer(t);
+    setSteers(getSteers());
+    setSteerText("");
+  };
+
   return (
-    <main className="fixed inset-0 flex flex-col items-center overflow-hidden" style={{ background: "linear-gradient(180deg,#6e6e6e 0%,#838383 50%,#959595 100%)" }}>
+    <main className="fixed inset-0 flex flex-col items-center overflow-y-auto" style={{ background: "linear-gradient(180deg,#6e6e6e 0%,#838383 50%,#959595 100%)" }}>
       <FloatingBricks tone="grey" />
       <div className="absolute left-5 top-5 z-10" style={{ marginTop: "calc(var(--safe-top) + 14px)" }}>
         <LogoLockup size={26} ink="#ffffff" />
@@ -65,12 +86,94 @@ function Create() {
         </IconTile>
       </div>
 
-      <div className="relative z-10 flex w-full max-w-[520px] flex-1 flex-col px-5" style={{ paddingTop: "calc(var(--safe-top) + 96px)" }}>
+      <div className="relative z-10 flex w-full max-w-[520px] flex-col px-5" style={{ paddingTop: "calc(var(--safe-top) + 96px)" }}>
         <p className="text-center text-[15px] font-bold uppercase tracking-wide text-white/70">{done ? (valid ? "Designed" : "Almost") : "Designing"}</p>
         <h1 className="mt-1 text-center text-[28px] font-[900] leading-tight tracking-[-0.02em] text-white">&ldquo;{prompt}&rdquo;</h1>
         {live.source === "fixture" && live.prompt === prompt && <p className="mt-2 text-center text-[14px] font-semibold text-white/80">The builder is offline, so this is the saved sample.</p>}
 
-        <div className="no-scrollbar mt-6 min-h-0 flex-1 overflow-auto rounded-[24px] bg-[#eef0f2]/90 p-3 shadow-[0_18px_40px_rgba(0,0,0,0.25)]">
+        {/* the model streams itself together, brick by brick, right here */}
+        {modelUrl && (
+          <div className="relative mt-5 h-[268px] shrink-0 overflow-hidden rounded-[24px]" style={{ background: "linear-gradient(180deg,#0b1c22 0%,#376275 100%)", animation: "tape-in 300ms ease-out" }}>
+            <ModelView url={modelUrl} mode={assembling ? "timeline" : "display"} step={astep} spin={assembling ? 0 : 0.15} joints={showJoints} broken={live.payload?.physics?.broken} shadow onLoaded={(m) => assembly.start(m.stepCount)} onError={() => {}} />
+            {/* joints toggle — see the physics: a node at every connection the
+                solver checked, red where it couldn't hold. */}
+            <button
+              onClick={() => setShowJoints((v) => !v)}
+              className={`pointer-events-auto absolute left-3 top-3 flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-bold backdrop-blur active:scale-95 ${showJoints ? "bg-[#2fd66f] text-ink" : "bg-black/45 text-white"}`}
+            >
+              <span className="text-[14px] leading-none">◉</span> {physicsJointCount ? `${physicsJointCount} joints` : "joints"}
+            </button>
+            {isDraft && (
+              <span className="absolute right-3 top-3 rounded-full bg-[#3bb34a] px-3 py-1 text-[12px] font-bold text-white shadow">◍ building layer-by-layer…</span>
+            )}
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-between px-3 pb-2.5">
+              {assembling ? (
+                <span className="rounded-full bg-black/45 px-3 py-1 text-[13px] font-semibold text-white backdrop-blur">{isDraft ? "building" : "assembling"} · brick {Math.min(astep, mSteps ?? 0)}/{mSteps ?? "…"}</span>
+              ) : (
+                <button onClick={assembly.replay} className="pointer-events-auto flex items-center gap-1 rounded-full bg-white/90 px-3 py-1 text-[13px] font-bold text-ink active:scale-95">
+                  <Play size={14} fill="#1a1a1a" /> replay
+                </button>
+              )}
+              {!stable && <span className="rounded-full bg-[#e02436] px-3 py-1 text-[13px] font-bold text-white shadow">⚠ won&apos;t stand</span>}
+            </div>
+            {!stable && <div className="pointer-events-none absolute inset-2 rounded-[18px] ring-2 ring-[#e02436]/70" style={{ animation: "pulse 1.4s ease-in-out infinite" }} />}
+          </div>
+        )}
+
+        {/* loading skeleton — fills the render while the LLM designs, so the
+            area is never blank. Ghost bricks materialise; NOT a real design. */}
+        {showSkeleton && (
+          <div className="relative mt-5 h-[268px] shrink-0 overflow-hidden rounded-[24px]" style={{ background: "linear-gradient(180deg,#0b1c22 0%,#376275 100%)", animation: "tape-in 300ms ease-out" }}>
+            <div className="absolute inset-0 flex items-center justify-center" style={{ perspective: "600px" }}>
+              <div className="grid grid-cols-4 gap-2.5" style={{ transform: "rotateX(58deg) rotateZ(45deg)" }}>
+                {Array.from({ length: 16 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="h-10 w-10 rounded-[5px] border border-white/15 bg-white/10"
+                    style={{ animation: "pulse 1.5s ease-in-out infinite", animationDelay: `${((i % 4) + Math.floor(i / 4)) * 0.13}s` }}
+                  />
+                ))}
+              </div>
+            </div>
+            <div className="absolute left-3 top-3 rounded-full bg-black/40 px-3 py-1 text-[12px] font-bold text-white/90 backdrop-blur">◐ designing in 3D…</div>
+            <div className="absolute inset-x-0 bottom-0 flex items-center gap-2 px-3 pb-3">
+              <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-[#2fd66f]" />
+              <span className="truncate text-[13px] font-semibold text-white/90">{lastThink}</span>
+            </div>
+          </div>
+        )}
+
+        {/* stop-and-steer — sits right under the render so you always steer the
+            thing you're looking at, mid-build or after. */}
+        <div className="mt-4 shrink-0">
+          {steers.length > 0 && (
+            <div className="mb-2 flex flex-wrap gap-1.5">
+              {steers.map((s, i) => (
+                <span key={i} className="rounded-full bg-purple/85 px-2.5 py-1 text-[12px] font-semibold text-white backdrop-blur">
+                  ↳ {s}
+                </span>
+              ))}
+            </div>
+          )}
+          <div className="flex items-center gap-2 rounded-[18px] bg-white p-1.5 pl-4 shadow-[0_10px_30px_rgba(0,0,0,0.3)] ring-2 ring-purple/40">
+            <input
+              value={steerText}
+              onChange={(e) => setSteerText(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && submitSteer()}
+              placeholder="Steer it — “not a 2d flower, a 3d one”"
+              className="min-w-0 flex-1 bg-transparent text-[15px] font-semibold text-ink outline-none placeholder:text-ink-soft/70"
+            />
+            <button
+              onClick={submitSteer}
+              disabled={!steerText.trim()}
+              className="shrink-0 rounded-[13px] bg-purple px-5 py-2 text-[15px] font-[800] text-white active:scale-95 disabled:opacity-40"
+            >
+              Steer
+            </button>
+          </div>
+        </div>
+
+        <div className="no-scrollbar mt-4 min-h-[240px] rounded-[24px] bg-[#eef0f2]/90 p-3 shadow-[0_18px_40px_rgba(0,0,0,0.25)]">
           {failed ? (
             <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
               <p className="text-[19px] font-[800] text-ink">The builder didn&apos;t answer</p>

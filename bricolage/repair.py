@@ -38,19 +38,24 @@ class FixResult:
     degraded: bool = False
 
 
-SIZE_ARGS = ("length", "width", "depth", "height", "span", "footprint")
+# per-arg minimums: below these a generator collapses into self-overlap.
+# A chassis shorter than 4 makes underside_front and underside_rear coincide,
+# so the two axle_pairs' wheels land in the same cell (the truck overlap bug).
+SIZE_MIN = {"length": 4, "depth": 3, "width": 2, "height": 2,
+            "span": 2, "footprint": 2}
 
 
 def _shrink_composition(comp):
-    """rung 1: reduce numeric size args by one step (min 2). Socket NAMES are
-    unchanged, so children stay attached — same mechanism as the edit loop."""
+    """rung 1: reduce numeric size args by one step, never past the minimum that
+    keeps a generator geometrically valid. Socket NAMES are unchanged, so
+    children stay attached — same mechanism as the edit loop."""
     import copy
     comp = copy.deepcopy(comp)
 
     def walk(node):
         args = node.setdefault("args", {})
-        for k in SIZE_ARGS:
-            if k in args and isinstance(args[k], int) and args[k] > 2:
+        for k, mn in SIZE_MIN.items():
+            if k in args and isinstance(args[k], int) and args[k] > mn:
                 args[k] -= 1
         for c in node.get("children", []):
             walk(c)
@@ -67,6 +72,9 @@ def fix(build, inventory, budget, tape, client=None):
         tape.emit("inspector", "verify", "build is valid on first try",
                   status="ok", ms=40)
         return FixResult(build, report, hits, 0, 0)
+    # track the best build seen (fewest errors) — a rung can regress, and we
+    # must never hand back something worse than we already had.
+    best_build, best_report = build, report
 
     while attempts < budget.max_attempts and not report.ok:
         attempts += 1
@@ -88,13 +96,26 @@ def fix(build, inventory, budget, tape, client=None):
                           f"rung 2: swapped {len(swaps)} part(s) for smaller "
                           f"pieces the bin has ({swaps[0]['from']} -> "
                           f"{'+'.join(swaps[0]['to'])})", status="ok", ms=8)
+            if not resolved:
+                # rung 2b — recolour to the palette the bin has (works for
+                # sculpt mosaics, which have no composition to shrink)
+                refit, n = substitute.refit_palette(build.parts, inventory)
+                if n:
+                    build = build.with_parts(refit)
+                    applied_rung = 2
+                    tape.emit("repair", "recolour",
+                              f"rung 2: recoloured {n} part(s) to colours your "
+                              f"bin actually has", status="ok", ms=10)
+                    resolved = not any(
+                        e["code"] == "OUT_OF_BUDGET"
+                        for e in validate(build, inventory).errors)
             if not resolved or not swaps:
                 # rung 1 — shrink to fit
                 comp = build.provenance.get("composition")
                 if comp:
                     build = expand(_shrink_composition(comp),
                                    build_id=build.id, name=build.name,
-                                   seed=budget.seed)
+                                   seed=budget.seed, lenient=True)
                     applied_rung = applied_rung or 1
                     tape.emit("repair", "regenerate",
                               "rung 1: re-ran generators one size smaller to fit "
@@ -119,23 +140,23 @@ def fix(build, inventory, budget, tape, client=None):
             if comp:
                 budget.seed += 1
                 build = expand(comp, build_id=build.id, name=build.name,
-                               seed=budget.seed)
+                               seed=budget.seed, lenient=True)
                 applied_rung = 1
                 tape.emit("repair", "reseed",
                           "rung 1: regenerated with a new seam offset", ms=10)
 
         if applied_rung is None:
-            # rung 3/4 — escalate to the model (mock). Only reached when the
-            # deterministic rungs cannot help.
+            # rung 3 — aggressive deterministic shrink (last resort before we
+            # degrade). Honest: no model call here, so the whole repair loop is
+            # deterministic and replay stays byte-identical.
             comp = build.provenance.get("composition")
-            if comp and client and client.calls < budget.max_llm_calls:
-                shrunk = _shrink_composition(_shrink_composition(comp))
+            shrunk = comp and _shrink_composition(_shrink_composition(comp))
+            if shrunk and shrunk != comp:
                 build = expand(shrunk, build_id=build.id, name=build.name,
-                               seed=budget.seed)
-                applied_rung = 4
-                tape.emit("designer", "re-propose",
-                          "rung 4: model re-proposed a smaller build",
-                          status="warn", ms=1900, tokens=2200)
+                               seed=budget.seed, lenient=True)
+                applied_rung = 3
+                tape.emit("repair", "shrink-hard",
+                          "rung 3: shrank the design aggressively to fit", ms=14)
             else:
                 break  # nothing more to try -> degrade
 
@@ -144,11 +165,17 @@ def fix(build, inventory, budget, tape, client=None):
         if after < before:
             hits[applied_rung] += (before - after)
             closed += (before - after)
+        if report.ok or len(report.errors) < len(best_report.errors):
+            best_build, best_report = build, report
+        if report.ok:
+            break
 
+    # return the BEST build we ever produced, not the last (a late rung can regress)
+    build, report = best_build, best_report
     degraded = not report.ok
     if degraded:
         tape.emit("inspector", "degrade",
-                  f"budget spent; returning best build with {len(report.errors)} "
+                  f"budget spent; returning the best build with {len(report.errors)} "
                   f"honest issue(s) rather than spinning", status="warn", ms=20)
     else:
         tape.emit("inspector", "verify", "all issues resolved — build stands up",

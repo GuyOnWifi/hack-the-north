@@ -99,17 +99,20 @@ class Inventory:
     """The user's bin. element = (part, color). The AI never sees raw qty
     prose — it sees a capability summary (see summarize())."""
     counts: dict  # {(part, color): qty}
+    unlimited: bool = False   # "infinite bricks" — for pure shape design
 
     def copy(self):
-        return Inventory(copy.deepcopy(self.counts))
+        return Inventory(copy.deepcopy(self.counts), self.unlimited)
 
     def have(self, part, color):
-        return self.counts.get((part, color), 0)
+        return 9999 if self.unlimited else self.counts.get((part, color), 0)
 
     def summarize(self):
         """Capability vocabulary for the LLM — NOT a parts list.
         The LLM reasons in 'plenty of 2x4 brick in red', never in qty=6."""
         from meta import PART_META, COLOR_NAME
+        if self.unlimited:
+            return "unlimited bricks and plates in every colour"
         buckets = {}
         for (part, color), qty in self.counts.items():
             name = PART_META.get(part, {}).get("name", part)

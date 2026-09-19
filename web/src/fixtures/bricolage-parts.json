@@ -17,7 +17,7 @@
  },
  {
   "part": "2456",
-  "name": null
+  "name": "Brick 2x6"
  },
  {
   "part": "3001",
@@ -41,11 +41,11 @@
  },
  {
   "part": "3007",
-  "name": null
+  "name": "Brick 2x8"
  },
  {
   "part": "3008",
-  "name": null
+  "name": "Brick 1x8"
  },
  {
   "part": "3009",
@@ -113,7 +113,7 @@
  },
  {
   "part": "3622",
-  "name": null
+  "name": "Brick 1x3"
  },
  {
   "part": "3623",

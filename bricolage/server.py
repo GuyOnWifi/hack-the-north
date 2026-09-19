@@ -19,11 +19,14 @@ import os
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 from demo import rich_bin
+from model import Inventory
 from session import Session
 from serialize import build_json, report_json
 from ldraw import to_ldr
 
-SESSION = Session(rich_bin())
+# IMAGINE mode by default (unlimited bricks, any request). Posting a scanned
+# inventory switches to SOLVE mode (design within a real, finite bin).
+SESSION = Session(Inventory({}, unlimited=True))
 
 
 def _payload(vid=None):
@@ -38,12 +41,20 @@ def _payload(vid=None):
         except Unbuildable:
             pass
     tape = v.tape.events if v.tape else []
-    import stability
+    prov = v.build.provenance
+    if prov.get("backend") == "harness" and prov.get("bricks"):
+        import physics
+        ph = physics.analyze(prov["bricks"])
+        phys = {"stable": physics.stands(prov["bricks"]), "studs": ph.get("studs", 0),
+                "broken": physics.broken_bricks(prov["bricks"]),
+                "backend": "harness", "com": None, "base": [], "failures": []}
+    else:
+        import stability
+        phys = stability.report(v.build.parts)
     return {"version": v.id, "name": v.build.name,
             "build": build_json(v.build), "report": report_json(v.report),
             "steps": steps, "tape": tape, "tree": SESSION.tree_ascii(),
-            "physics": stability.report(v.build.parts),   # COM + support polygon to draw
-            "head": SESSION.head}
+            "physics": phys, "head": SESSION.head}
 
 
 class H(BaseHTTPRequestHandler):
@@ -77,21 +88,55 @@ class H(BaseHTTPRequestHandler):
         if u.path == "/api/build_stream":
             prompt = parse_qs(u.query).get("prompt", ["build a rover"])[0]
             return self._stream_build(prompt)
+        if u.path == "/api/compare":
+            # split-screen: 'LLM places bricks' (floats/topples) vs our solver
+            from pipeline import compare
+            prompt = parse_qs(u.query).get("prompt", ["build me a flower"])[0]
+            return self._send(200, compare(prompt, SESSION.inv))
         self._send(404, {"error": "not found"})
 
     def _stream_build(self, prompt):
         """Run a build and stream each tape event live as Server-Sent Events.
         Synchronous: the handler thread writes as Tape.emit fires."""
+        import threading
         from tape import Tape
         self.send_response(200)
         self.send_header("Content-Type", "text/event-stream")
         self.send_header("Cache-Control", "no-cache")
+        self.send_header("X-Accel-Buffering", "no")   # tell proxies not to buffer
         self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
+        # a 2KB comment preamble forces the proxy to flush its buffer so events
+        # stream live instead of arriving batched when the first LLM call returns.
+        self.wfile.write(b": " + b" " * 2048 + b"\n\n")
+        self.wfile.flush()
+
+        lock = threading.Lock()
 
         def push(ev):
-            self.wfile.write(f"data: {json.dumps(ev)}\n\n".encode())
-            self.wfile.flush()
+            with lock:
+                self.wfile.write(f"data: {json.dumps(ev)}\n\n".encode())
+                self.wfile.flush()
+
+        # HEARTBEAT: a real `claude -p` design takes 60-130s, and a proxy/browser
+        # will drop an SSE connection that goes silent that long — the client then
+        # falls back to the stale fixture. A comment ping every 5s keeps the
+        # connection alive through the long LLM call (comments are ignored by the
+        # EventSource, so they never show up as tape events).
+        alive = threading.Event(); alive.set()
+
+        def heartbeat():
+            while alive.is_set():
+                if alive.wait(5):
+                    break
+                try:
+                    with lock:
+                        self.wfile.write(b": ping\n\n")
+                        self.wfile.flush()
+                except (BrokenPipeError, ConnectionResetError, OSError):
+                    break
+        hb = threading.Thread(target=heartbeat, daemon=True)
+        hb.start()
 
         tape = Tape()
         tape.listeners.append(push)
@@ -99,10 +144,18 @@ class H(BaseHTTPRequestHandler):
             SESSION.build(prompt, tape=tape)
             done = _payload()
             done["event"] = "done"
-            self.wfile.write(f"data: {json.dumps(done)}\n\n".encode())
-            self.wfile.flush()
+            push(done)
         except (BrokenPipeError, ConnectionResetError):
             pass
+        except Exception as e:
+            # never leave the stream hanging: emit a terminal error frame so the
+            # frontend can show a failure instead of spinning forever.
+            try:
+                push({"event": "error", "error": str(e)})
+            except (BrokenPipeError, ConnectionResetError):
+                pass
+        finally:
+            alive.clear()
 
     def do_POST(self):
         n = int(self.headers.get("Content-Length", 0))
@@ -119,14 +172,15 @@ class H(BaseHTTPRequestHandler):
             elif self.path == "/api/redo":
                 SESSION.redo()
             elif self.path == "/api/inventory":
-                # The scanned bin (Lane A -> UI -> here). Empty list restores the demo bin.
-                from model import Inventory
+                # Scanned bin (Lane A -> UI -> here) = SOLVE mode. Empty list =
+                # back to IMAGINE mode (unlimited bricks).
                 counts = {}
                 for item in body.get("items", []):
                     key = (str(item["part"]), int(item["color"]))
                     counts[key] = counts.get(key, 0) + int(item["count"])
-                SESSION.inv = Inventory(counts) if counts else rich_bin()
-                return self._send(200, {"ok": True, "elements": len(counts)})
+                SESSION.inv = Inventory(counts) if counts else Inventory({}, unlimited=True)
+                return self._send(200, {"ok": True, "elements": len(counts),
+                                        "mode": "solve" if counts else "imagine"})
             else:
                 return self._send(404, {"error": "not found"})
         except Exception as e:

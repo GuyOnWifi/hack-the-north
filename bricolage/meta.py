@@ -31,6 +31,23 @@ PART_META = {
     "3039": {"name": "Slope 45 2x2", "dx": 2, "dz": 2, "h": 3, "studs": False},
     # round 1x1 as a wheel/stud stand-in (no Technic — anti-goal)
     "4073": {"name": "Round Plate 1x1", "dx": 1, "dz": 1, "h": 1, "studs": True},
+    # extra brick sizes used by the StableText2Brick / BrickGPT dataset (recall)
+    "3622": {"name": "Brick 1x3", "dx": 1, "dz": 3, "h": 3, "studs": True},
+    "3008": {"name": "Brick 1x8", "dx": 1, "dz": 8, "h": 3, "studs": True},
+    "2456": {"name": "Brick 2x6", "dx": 2, "dz": 6, "h": 3, "studs": True},
+    "3007": {"name": "Brick 2x8", "dx": 2, "dz": 8, "h": 3, "studs": True},
+}
+
+# single-char palette for LLM/mock pixel-art masks -> LDraw colour codes
+MASK_PALETTE = {
+    "r": 4, "o": 25, "y": 14, "g": 2, "b": 1, "w": 15, "k": 0,
+    "n": 70, "t": 19, "a": 71, "d": 72, "s": 71, "p": 4,
+}
+# reverse, for naming a colour word back to a code (recolour edits)
+NAME_TO_CODE = {
+    "red": 4, "orange": 25, "yellow": 14, "green": 2, "blue": 1, "white": 15,
+    "black": 0, "brown": 70, "tan": 19, "gray": 71, "grey": 71,
+    "gold": 14, "lime": 2, "navy": 1, "purple": 1, "pink": 4,
 }
 
 COLOR_NAME = {
@@ -39,12 +56,13 @@ COLOR_NAME = {
     25: "orange", 7: "gray",
 }
 
-# LDraw colour code -> approx sRGB (for any local preview / debug)
+# LDraw colour code -> sRGB. Exact values baked from the real LDraw LDConfig.ldr
+# (via the VALUE hex per !COLOUR), so renders match official part colours.
 COLOR_RGB = {
-    0: (33, 33, 33), 1: (0, 85, 191), 2: (35, 120, 65), 4: (201, 26, 9),
-    14: (245, 205, 47), 15: (244, 244, 244), 71: (160, 165, 169),
-    72: (108, 110, 104), 70: (91, 47, 20), 19: (228, 205, 158),
-    25: (254, 138, 24), 7: (155, 161, 157),
+    0: (27, 42, 52), 1: (30, 90, 168), 2: (0, 133, 43), 4: (180, 0, 0),
+    14: (250, 200, 10), 15: (244, 244, 244), 71: (150, 150, 150),
+    72: (100, 100, 100), 70: (95, 49, 9), 19: (215, 186, 140),
+    25: (214, 121, 35), 7: (138, 146, 141),
 }
 
 
@@ -72,6 +90,12 @@ SUBSTITUTIONS = {
     ],
     "3022": [  # Plate 2x2  ->  two Plate 1x2
         [("3023", 0, 0), ("3023", 1, 0)],
+    ],
+    "3023": [  # Plate 1x2  ->  two Plate 1x1  (bottoms out the recursion)
+        [("3024", 0, 0), ("3024", 0, 1)],
+    ],
+    "3004": [  # Brick 1x2  ->  two Brick 1x1
+        [("3005", 0, 0), ("3005", 0, 1)],
     ],
     "3795": [  # Plate 2x6  ->  Plate 2x4 + Plate 2x2
         [("3020", 0, 0), ("3022", 0, 4)],

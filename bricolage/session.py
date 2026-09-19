@@ -12,8 +12,10 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from pipeline import build_from_prompt
-from edit import apply_edit, parse_edit
+from edit import apply_edit, parse_edit, describe as _describe_edit
 from validate import validate
+from repair import Budget, fix
+from tape import Tape
 
 
 @dataclass
@@ -47,22 +49,34 @@ class Session:
         return v
 
     # ---- operations ----------------------------------------------------
-    def build(self, prompt, seed=0, tape=None):
-        res = build_from_prompt(prompt, self.inv, seed, tape=tape)
-        return self._commit(None, {"kind": "build", "prompt": prompt, "seed": seed},
+    def build(self, prompt, seed=0, tape=None, recipe=None):
+        res = build_from_prompt(prompt, self.inv, seed, tape=tape, recipe=recipe)
+        # record the resolved LLM proposal so replay reproduces it without the model
+        return self._commit(None, {"kind": "build", "prompt": prompt, "seed": seed,
+                                   "recipe": res["recipe"]},
                             res["build"], res["report"], res["tape"])
+
+    def _run_edit(self, base_build, ops, seed):
+        """Apply the edit ops and run through the same FIX loop as a build, so it
+        streams a tape and self-heals inventory/physics issues."""
+        tape = Tape()
+        tape.emit("designer", "edit",
+                  f"{_describe_edit(ops)} — keeping everything else fixed", ms=200)
+        nb = apply_edit(base_build, ops, seed=seed)
+        if nb.parts == base_build.parts:
+            tape.emit("inspector", "edit", "that edit doesn't apply to this "
+                      "build — nothing changed", status="warn", ms=8)
+        result = fix(nb, self.inv, Budget(seed=seed), tape)
+        return result.build, result.report, tape
 
     def edit(self, text, seed=0):
         cur = self.versions[self.head]
-        parsed = parse_edit(text, cur.build)
-        if not parsed:
+        op = parse_edit(text, cur.build)
+        if not op:
             return cur
-        sub, arg, delta = parsed
-        nb = apply_edit(cur.build, sub, arg, delta, seed=seed)
-        rep = validate(nb, self.inv)
-        return self._commit(self.head,
-                            {"kind": "edit", "sub": sub, "arg": arg,
-                             "delta": delta, "seed": seed}, nb, rep)
+        nb, rep, tape = self._run_edit(cur.build, op, seed)
+        return self._commit(self.head, {"kind": "edit", "edit": op, "seed": seed},
+                            nb, rep, tape)
 
     def try_another(self):
         """Re-run the head's op with a new seed as a SIBLING (same parent)."""
@@ -70,12 +84,13 @@ class Session:
         op = dict(cur.op)
         op["seed"] = op.get("seed", 0) + 1
         if op["kind"] == "build":
-            res = build_from_prompt(op["prompt"], self.inv, op["seed"])
+            res = build_from_prompt(op["prompt"], self.inv, op["seed"])  # fresh sample
+            op["recipe"] = res["recipe"]                                 # its own recipe
             return self._commit(cur.parent, op, res["build"], res["report"], res["tape"])
         else:  # edit — re-apply against the parent's build
             base = self.versions[cur.parent].build
-            nb = apply_edit(base, op["sub"], op["arg"], op["delta"], seed=op["seed"])
-            return self._commit(cur.parent, op, nb, validate(nb, self.inv))
+            nb, rep, tape = self._run_edit(base, op["edit"], op["seed"])
+            return self._commit(cur.parent, op, nb, rep, tape)
 
     # ---- navigation ----------------------------------------------------
     def undo(self):
@@ -102,15 +117,15 @@ class Session:
         fresh = Session(self.inv)
         for op in chain:
             if op["kind"] == "build":
-                fresh.build(op["prompt"], op["seed"])
+                fresh.build(op["prompt"], op["seed"], recipe=op.get("recipe"))
             else:
                 fresh.edit_direct(op)
         return fresh.versions[fresh.head].build
 
     def edit_direct(self, op):
         cur = self.versions[self.head]
-        nb = apply_edit(cur.build, op["sub"], op["arg"], op["delta"], seed=op["seed"])
-        return self._commit(self.head, op, nb, validate(nb, self.inv))
+        nb, rep, tape = self._run_edit(cur.build, op["edit"], op["seed"])
+        return self._commit(self.head, op, nb, rep, tape)
 
     def tree_ascii(self):
         """Render the version tree for the UI/tape."""
@@ -123,8 +138,10 @@ class Session:
             v = self.versions[vid]
             mark = " <- HEAD" if vid == self.head else ""
             ok = "ok" if v.report.ok else "DEGRADED"
-            op = v.op["kind"] + (f" {v.op.get('prompt','')}" if v.op["kind"] == "build"
-                                 else f" {v.op['sub']}.{v.op['arg']}{v.op['delta']:+d}")
+            if v.op["kind"] == "build":
+                op = "build " + v.op.get("prompt", "")
+            else:
+                op = _describe_edit(v.op["edit"])
             lines.append(f"    {'  '*depth}{vid} [{op}] {ok}{mark}")
             for c in children.get(vid, []):
                 walk(c, depth + 1)

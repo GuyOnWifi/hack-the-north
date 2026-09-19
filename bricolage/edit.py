@@ -1,14 +1,15 @@
-"""The EDIT loop (L2) — the best 20 seconds of the demo. "make the chassis
-longer" re-runs ONE generator with new args; because the child attaches by
-SOCKET NAME (not coordinate), the cabin and wheels reattach automatically even
-though every coordinate under them moved. Attachment points are frozen; only
-the edited node's args change.
+"""The EDIT loop (L2). Natural-language edits to an existing build:
+  - resize   "make the chassis longer"  -> re-run one generator (compose builds)
+  - recolour "make the flower orange"    -> recolour the shape (any build)
+Attachment points are frozen; children reattach by socket name.
 """
 from __future__ import annotations
 import copy
 import re
+from dataclasses import replace
 
 from generators import expand
+from meta import NAME_TO_CODE
 
 _DELTA = {"longer": ("length", +2), "shorter": ("length", -2),
           "wider": ("width", +1), "narrower": ("width", -1),
@@ -17,41 +18,64 @@ _DELTA = {"longer": ("length", +2), "shorter": ("length", -2),
 
 
 def parse_edit(text, build):
-    """Very small NL parser: '<make the> <gen> <longer|wider|taller>'. Returns
-    (gen_name, arg, delta) or None. Targets a GENERATOR name (chassis, cabin)
-    since that's how composition nodes are keyed."""
+    """Parse an edit into a LIST of ops (so 'make it bigger and blue' applies
+    both), or None if nothing recognisable."""
     t = text.lower()
-    target = None
-    for s in build.subs:
-        if s.gen in t:
-            target = s.gen
+    ops = []
+    # recolour: any colour word (whole word, so "rendered" != "red")
+    for word, code in NAME_TO_CODE.items():
+        if re.search(rf"\b{word}\b", t):
+            ops.append({"kind": "recolor", "color": code, "word": word})
             break
+    # resize: a delta word, targeting a generator by name (compose builds)
+    target = next((s.gen for s in build.subs if s.gen in t), None)
     for word, (arg, d) in _DELTA.items():
         if word in t:
-            return target or (build.subs[0].gen if build.subs else None), arg, d
-    return None
+            ops.append({"kind": "resize",
+                        "gen": target or (build.subs[0].gen if build.subs else None),
+                        "arg": arg, "delta": d})
+            break
+    return ops or None
 
 
-def apply_edit(build, gen_name, arg, delta, seed=0):
-    """Freeze attachment points, mutate one node's arg, re-expand. Returns a new
-    Build. Attachment is by socket NAME, so children reattach even though every
-    coordinate under them moved. If the target generator doesn't take `arg`
-    (e.g. chassis has no height), the edit is a no-op — never an error."""
-    from dataclasses import replace
-    comp = copy.deepcopy(build.provenance["composition"])
+def describe(ops):
+    return " + ".join("recolour → " + o["word"] if o["kind"] == "recolor"
+                      else f"{o['gen']}.{o['arg']}{o['delta']:+d}" for o in ops)
+
+
+def apply_edit(build, ops, seed=0):
+    """Apply edit ops -> new Build. Resize FIRST (it regenerates geometry),
+    recolour LAST (so it paints the final parts and isn't wiped by a re-expand)."""
+    for op in sorted(ops, key=lambda o: 0 if o["kind"] == "resize" else 1):
+        build = _apply_one(build, op, seed)
+    return build
+
+
+def _apply_one(build, op, seed=0):
+    if op["kind"] == "recolor":
+        # repaint every non-base part; the baseplate/stand stays neutral
+        parts = tuple(p if p.sub == "base" else replace(p, color=op["color"])
+                      for p in build.parts)
+        return replace(build, parts=parts, version=build.version + 1)
+
+    # resize — only meaningful for generator (compose) builds
+    comp = build.provenance.get("composition")
+    if not comp:
+        return replace(build, version=build.version + 1)   # no-op on a mosaic
+    comp = copy.deepcopy(comp)
     applied = [False]
 
     def walk(node):
-        if node["gen"] == gen_name:
+        if node["gen"] == op["gen"]:
             args = node.setdefault("args", {})
-            if arg in args:                       # only knobs this gen exposes
-                args[arg] = max(2, args[arg] + delta)
+            if op["arg"] in args:
+                args[op["arg"]] = max(2, args[op["arg"]] + op["delta"])
                 applied[0] = True
             return True
         return any(walk(c) for c in node.get("children", []))
 
     walk(comp["root"])
     if not applied[0]:
-        return replace(build, version=build.version + 1)   # nothing to change
-    nb = expand(comp, build_id=build.id, name=build.name, seed=seed)
+        return replace(build, version=build.version + 1)
+    nb = expand(comp, build_id=build.id, name=build.name, seed=seed, lenient=True)
     return replace(nb, version=build.version + 1)

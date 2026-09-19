@@ -1,11 +1,12 @@
 "use client";
 
 import { useBuild } from "@/lib/useBuild";
+import { useAssembly } from "@/lib/useAssembly";
 import { BuildMissing } from "@/components/BuildMissing";
 import dynamic from "next/dynamic";
 import { useParams } from "next/navigation";
 import { useState } from "react";
-import { ArrowLeft, Layers, ListOrdered, Plus, Sparkles, Users } from "lucide-react";
+import { ArrowLeft, Layers, ListOrdered, Play, Plus, Sparkles, Users } from "lucide-react";
 import { ChunkyButton, IconTile } from "@/components/ui/controls";
 import { FloatingBricks } from "@/components/ui/chrome";
 import { BrickGlyph } from "@/components/ui/IsoBrick";
@@ -20,8 +21,12 @@ export default function BuildDetail() {
   const { id } = useParams<{ id: string }>();
   const { build, live, pending, report } = useBuild(id);
   const session = useSession();
-  const [steps, setSteps] = useState<number | null>(null);
   const [failed, setFailed] = useState(false);
+  // brick-by-brick assembly playback: reveal one step at a time, then settle
+  const assembly = useAssembly(build?.id, 360);
+  const { steps, step: astep, assembling } = assembly;
+  const broken = live && report != null && !report.ok;
+
   if (!build) return <BuildMissing pending={pending} live={live} />;
   const cov = coverage(build, session.inventory);
 
@@ -43,7 +48,38 @@ export default function BuildDetail() {
           ) : (
             <>
               {steps === null && <div className="absolute inset-10 skeleton rounded-3xl opacity-40" />}
-              <ModelView url={build.model} mode="display" spin={0.15} shadow onLoaded={(m) => setSteps(m.stepCount)} onError={() => setFailed(true)} />
+              <ModelView
+                url={build.model}
+                mode={assembling ? "timeline" : "display"}
+                step={astep}
+                spin={assembling ? 0 : 0.15}
+                shadow
+                onLoaded={(m) => assembly.start(m.stepCount)}
+                onError={() => setFailed(true)}
+              />
+              {/* live assembly HUD */}
+              {steps !== null && (
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-between px-2">
+                  {assembling ? (
+                    <span className="rounded-full bg-black/45 px-3 py-1 text-[13px] font-semibold text-white backdrop-blur">
+                      assembling · brick {Math.min(astep, steps)}/{steps}
+                    </span>
+                  ) : (
+                    <button
+                      onClick={assembly.replay}
+                      className="pointer-events-auto flex items-center gap-1 rounded-full bg-white/85 px-3 py-1 text-[13px] font-bold text-ink active:scale-95"
+                    >
+                      <Play size={14} fill="#1a1a1a" /> replay
+                    </button>
+                  )}
+                  {broken && (
+                    <span className="rounded-full bg-[#e02436] px-3 py-1 text-[13px] font-bold text-white shadow">
+                      ⚠ won&apos;t stand
+                    </span>
+                  )}
+                </div>
+              )}
+              {broken && <div className="pointer-events-none absolute inset-2 rounded-3xl ring-2 ring-[#e02436]/70" style={{ animation: "pulse 1.4s ease-in-out infinite" }} />}
             </>
           )}
         </div>

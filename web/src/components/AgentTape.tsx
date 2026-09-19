@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useEffectEvent, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useState } from "react";
 import { parseSse, type TapeActor, type TapeEvent } from "@/lib/bricolage";
 import { tapeCopy } from "@/lib/tapeCopy";
 
@@ -12,7 +12,10 @@ import { tapeCopy } from "@/lib/tapeCopy";
 // Actor colours are real LDraw colours so the tower looks like actual bricks.
 const ACTOR: Record<TapeActor, { brick: string; ink: string; label: string }> = {
   router: { brick: "#0055bf", ink: "#ffffff", label: "Router" },
+  planner: { brick: "#4b0082", ink: "#ffffff", label: "Planner" },
   designer: { brick: "#00838f", ink: "#ffffff", label: "Designer" },
+  builder: { brick: "#1e5aa8", ink: "#ffffff", label: "Builder" },
+  critic: { brick: "#923978", ink: "#ffffff", label: "Critic" },
   inspector: { brick: "#c91a09", ink: "#ffffff", label: "Inspector" },
   repair: { brick: "#f2cd37", ink: "#1a1a1a", label: "Repair" },
   scribe: { brick: "#237841", ink: "#ffffff", label: "Scribe" },
@@ -73,17 +76,14 @@ function fixedFailures(events: TapeEvent[]) {
 
 /** The agent's working log, stacked as a tower of bricks (newest on top). */
 export function AgentTape({ events, live }: { events: TapeEvent[]; live?: boolean; compact?: boolean }) {
-  const top = useRef<HTMLDivElement>(null);
+  // No auto-scroll: newest bricks land on top, and scrolling into view dragged
+  // the whole page (and the 3D render beside it) as events streamed.
   const [details, setDetails] = useState(false);
-  useEffect(() => {
-    top.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  }, [events.length, live]);
   const fixed = fixedFailures(events);
   const order = events.map((e, i) => ({ e, i })).reverse();
 
   return (
     <div className="flex min-w-0 flex-col" aria-live="polite">
-      <div ref={top} />
       {live && <PendingBrick />}
       {order.map(({ e, i }) => (
         <TapeBrick key={`${e.t}-${i}`} event={e} index={i} fixed={fixed.has(i)} details={details} />

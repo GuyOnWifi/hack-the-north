@@ -45,7 +45,7 @@ async function locate(name) {
 
 async function sourceParts() {
   // Lane B's build system, plus brickify's catalog (mesh-to-bricks).
-  const files = ["meta.py", "generators.py", "sculpt.py", "demo.py", "substitute.py"].map((f) => path.join(bricolage, f));
+  const files = ["meta.py", "bricks.py", "generators.py", "sculpt.py", "demo.py", "substitute.py"].map((f) => path.join(bricolage, f));
   files.push(path.resolve(web, "../brickify/brickify/parts.py"), path.resolve(web, "../brickify/brickify/kit.py"));
   const found = new Set();
   for (const p of files) {

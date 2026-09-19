@@ -187,6 +187,37 @@ def test_physics():
     check("PHYSICS: a normal rover is stable", not stability.analyze(rover.parts))
 
 
+def test_stabilize():
+    import stability
+    from generators import bonded
+    corbel = []
+    for k in range(8):
+        for p in bonded(2, 2, 0, 4, 0, courses=1):
+            corbel.append(Part(f"c{k}_{p.id}", p.part, p.color,
+                               (p.pos[0] + k, 3 * k, p.pos[2]), 0, "c"))
+    assert any(f.code == "TOPPLE" for f in stability.analyze(corbel))
+    fixed, added = stability.stabilize(corbel, 0)
+    check("PHYSICS: self-repair adds a foundation that removes the topple",
+          added > 0 and not any(f.code == "TOPPLE" for f in stability.analyze(fixed)))
+
+
+def test_repair_survives_bad_composition():
+    from model import Inventory
+    from generators import expand
+    from repair import Budget, fix
+    from tape import Tape
+    comp = {"root": {"gen": "chassis", "args": {"length": 8, "width": 4},
+            "children": [{"gen": "tower", "attach": "underside_front", "args": {}},
+                         {"gen": "cabin", "attach": "deck_front", "args": {"width": 4}}]}}
+    b = expand(comp, lenient=True, seed=0)
+    try:
+        fix(b, Inventory({("3003", 72): 2}), Budget(seed=0), Tape())
+        ok = True
+    except Exception:
+        ok = False
+    check("REPAIR: a bad LLM composition degrades, never crashes the loop", ok)
+
+
 def test_voxel_shapes():
     from demo import rich_bin
     from pipeline import build_from_prompt
@@ -234,7 +265,8 @@ def main():
     print("\n\x1b[1mgenerators\x1b[0m")
     test_generator_ids_unique(); test_lenient_expand(); test_meta_parser()
     print("\n\x1b[1mphysics & arbitrary shapes\x1b[0m")
-    test_physics(); test_voxel_shapes()
+    test_physics(); test_stabilize(); test_repair_survives_bad_composition()
+    test_voxel_shapes()
     print("\n\x1b[1mversion tree\x1b[0m")
     test_version_tree(); test_replay_identical()
     print("\n\x1b[1mend-to-end\x1b[0m")

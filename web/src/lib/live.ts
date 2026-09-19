@@ -1,7 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { bricolage, fixturePayload, type Payload, type TapeEvent } from "./bricolage";
+import { bricolage, type Payload, type TapeEvent } from "./bricolage";
 import { registerModelText } from "./ldraw";
 import type { InventoryItem } from "./types";
 
@@ -17,13 +17,15 @@ export interface LiveState {
   payload: Payload | null;
   /** Model URL for ModelView (changes whenever the version does). */
   modelUrl: string | null;
+  /** A speculative-draft model shown WHILE the real build streams in. */
+  partialUrl: string | null;
   tape: TapeEvent[];
   /** "live" = the API answered; "fixture" = offline fallback. */
   source: "live" | "fixture" | null;
   error: string | null;
 }
 
-const initial: LiveState = { status: "idle", prompt: null, payload: null, modelUrl: null, tape: [], source: null, error: null };
+const initial: LiveState = { status: "idle", prompt: null, payload: null, modelUrl: null, partialUrl: null, tape: [], source: null, error: null };
 let state = initial;
 const listeners = new Set<() => void>();
 
@@ -47,7 +49,7 @@ async function adopt(payload: Payload, source: "live" | "fixture", ldrText?: str
   if (!payload.version) throw new Error("The builder has no model yet");
   const text = ldrText ?? (await bricolage.ldr());
   const modelUrl = registerModelText(`${source}-${payload.version}`, text);
-  set({ status: "ready", payload, modelUrl, source, error: null, tape: payload.tape ?? state.tape });
+  set({ status: "ready", payload, modelUrl, partialUrl: null, source, error: null, tape: payload.tape ?? state.tape });
 }
 
 async function run(prompt: string | null, op: () => Promise<Payload>) {
@@ -60,31 +62,46 @@ async function run(prompt: string | null, op: () => Promise<Payload>) {
   }
 }
 
+/** The steering corrections layered on top of the base prompt this session. */
+let steers: string[] = [];
+export const getSteers = () => steers;
+
 /** Designs a new build, streaming the agent tape. Falls back to the fixtures offline. */
 export async function designBuild(prompt: string) {
-  set({ status: "working", prompt, tape: [], error: null });
-  try {
-    const payload = await bricolage.stream(prompt, (e) => set({ tape: [...state.tape, e] }));
-    await adopt(payload, "live");
-  } catch {
-    try {
-      const { payload, ldr } = await fixturePayload();
-      await replayTape(payload.tape ?? []);
-      await adopt(payload, "fixture", ldr);
-    } catch (e) {
-      set({ status: "error", error: e instanceof Error ? e.message : "The builder is offline" });
-    }
-  }
+  steers = []; // a fresh request clears prior corrections
+  return streamDesign(prompt, prompt);
 }
 
-/** Offline: play the fixture tape with its recorded timing (compressed). */
-async function replayTape(events: TapeEvent[]) {
-  set({ tape: [] });
-  let last = 0;
-  for (const e of events) {
-    await new Promise((r) => setTimeout(r, Math.min(900, Math.max(180, (e.t - last) * 0.4))));
-    last = e.t;
-    set({ tape: [...state.tape, e] });
+/** Stop-and-steer: re-run the SAME request with a natural-language correction
+ * layered on ("oi, not a 2d flower — a 3d one"). The display prompt stays put;
+ * only the instruction the harness sees changes. Corrections accumulate. */
+export async function steer(instruction: string) {
+  const base = state.prompt;
+  if (!base || !instruction.trim()) return;
+  steers = [...steers, instruction.trim()];
+  const full = `${base}. Corrections from the user (apply all): ${steers.join("; ")}. Rebuild it as a real 3D model that addresses every correction.`;
+  return streamDesign(base, full);
+}
+
+async function streamDesign(displayPrompt: string, fullPrompt: string) {
+  set({ status: "working", prompt: displayPrompt, tape: [], partialUrl: null, error: null });
+  try {
+    const payload = await bricolage.stream(fullPrompt, (e) => {
+      // a "geometry" event carries an LDraw blob (the speculative draft, or a
+      // partial). Render it immediately instead of showing it as a tape row.
+      const g = e as TapeEvent & { kind?: string; ldr?: string };
+      if (g.kind === "geometry" && g.ldr) {
+        const url = registerModelText(`partial-${state.tape.length}-${g.ldr.length}`, g.ldr);
+        set({ partialUrl: url });
+        return;
+      }
+      set({ tape: [...state.tape, e] });
+    });
+    await adopt(payload, "live");
+  } catch (e) {
+    // NO canned fallback. If the live builder fails, say so — never show a
+    // hardcoded design. Everything on screen is real LLM output or nothing.
+    set({ status: "error", error: e instanceof Error ? e.message : "The builder is offline" });
   }
 }
 

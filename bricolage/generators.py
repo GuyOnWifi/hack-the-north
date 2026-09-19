@@ -252,12 +252,32 @@ class AttachError(Exception):
 
 
 def _run_gen(node, seed):
+    """Run a generator from LLM-chosen args, SANITISED: unknown kwargs dropped,
+    numeric args coerced (a string 'long' or a bad value falls back to the
+    default), and any failure surfaced as AttachError so the lenient/fallback
+    machinery absorbs it. Malformed model output must degrade, never crash."""
+    import inspect
     name = node["gen"]
     if name not in GENERATORS:
         raise AttachError(f"unknown generator {name!r}")
-    args = dict(node.get("args", {}))
+    fn = GENERATORS[name]
+    params = inspect.signature(fn).parameters
+    args = {}
+    for k, v in dict(node.get("args", {})).items():
+        if k not in params:
+            continue                       # drop kwargs this generator doesn't take
+        default = params[k].default
+        if isinstance(default, int) and not isinstance(default, bool) and not isinstance(v, bool):
+            try:
+                v = int(v)
+            except (TypeError, ValueError):
+                continue                   # unusable number -> use the default
+        args[k] = v
     args["seed"] = args.get("seed", seed)
-    return GENERATORS[name](**args)
+    try:
+        return fn(**args)
+    except Exception as e:                  # never let a bad arg crash the pipeline
+        raise AttachError(f"{name} rejected args {args}: {e}")
 
 
 def expand(composition, build_id="bld_demo", name="model", seed=0, lenient=False):
@@ -269,6 +289,7 @@ def expand(composition, build_id="bld_demo", name="model", seed=0, lenient=False
     recorded in provenance['dropped'] rather than sinking the whole build — we
     keep the model's good ideas and drop only the impossible ones."""
     parts, subs, dropped = [], [], []
+    occupied = set()
     counter = [0]
 
     def uid(prefix):
@@ -304,10 +325,19 @@ def expand(composition, build_id="bld_demo", name="model", seed=0, lenient=False
             ty = sock.pos[1] - res.mount.pos[1]
             tz = sock.pos[2] - res.mount.pos[2]
 
-        for p in res.parts:
-            parts.append(Part(uid("p"), p.part, p.color,
-                              (p.pos[0] + tx, p.pos[1] + ty, p.pos[2] + tz),
-                              p.rot, sub_name))
+        placed = [Part(uid("p"), p.part, p.color,
+                       (p.pos[0] + tx, p.pos[1] + ty, p.pos[2] + tz),
+                       p.rot, sub_name) for p in res.parts]
+        cells = set().union(*(pp.cells() for pp in placed)) if placed else set()
+        # overlap guard: a child whose geometry collides with what's already
+        # placed (the LLM picked two colliding sockets) is dropped in lenient
+        # mode — same philosophy as dropping a bad socket, keeps the rest valid.
+        if parent_res is not None and lenient and cells & occupied:
+            dropped.append({"gen": gen_name, "attach": attach_name,
+                            "why": "overlaps existing geometry"})
+            return
+        parts.extend(placed)
+        occupied.update(cells)
 
         subs.append(SubAssembly(sub_name,
                                 None if parent_sub is None else parent_sub,

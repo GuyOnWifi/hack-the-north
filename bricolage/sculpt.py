@@ -23,6 +23,21 @@ SHAPES = {
 SUPPORT = 71   # light gray for auto-generated support columns
 
 
+def parse_mask(rows, cap=24):
+    """A 2D colour pixel-art grid (list of equal-length strings, palette chars)
+    -> a flat mosaic of voxels {(x,0,z): colour}. This is the sculpt shape now:
+    a picture laid flat, which reads clearly and colours naturally. `cap` bounds
+    the grid so a runaway model response can't tile thousands of parts."""
+    from meta import MASK_PALETTE
+    v = {}
+    for z, row in enumerate(list(rows)[:cap]):
+        for x, ch in enumerate(str(row)[:cap]):
+            c = MASK_PALETTE.get(ch.lower())
+            if c is not None:
+                v[(x, 0, z)] = c
+    return v
+
+
 def legalize_voxels(voxels, tape=None):
     """The SOLVER. Take an arbitrary target shape (a dict cell->colour) the LLM
     imagined and make it physically real: add support columns under any cell
@@ -69,21 +84,25 @@ def tile_voxels(cells, tape=None):
         # pass 1: place 2x2 plates on a parity-offset grid. Alternating the grid
         # per layer means a 2x2 above STRADDLES the seams of the layer below ->
         # the columns bond into one mass (real masonry bond, in 2D).
+        def same(cs, col):
+            return all(c in occ and c not in used and occ[c] == col for c in cs)
+
         for (x, z) in sorted(occ):
             if (x - phase) % 2 or (z - phase) % 2 or (x, z) in used:
                 continue
+            col = occ[(x, z)]
             quad = [(x, z), (x + 1, z), (x, z + 1), (x + 1, z + 1)]
-            if free(quad):
-                parts.append(Part(f"v{n}", "3022", occ[(x, z)], (x, y, z), 0, "hull"))
+            if same(quad, col):          # merge only cells of the SAME colour
+                parts.append(Part(f"v{n}", "3022", col, (x, y, z), 0, "hull"))
                 used |= set(quad); n += 1
-        # pass 2: fill leftovers with 1x2 then 1x1
+        # pass 2: fill leftovers with 1x2 then 1x1 (same colour only)
         for (x, z) in sorted(occ):
             if (x, z) in used:
                 continue
             col = occ[(x, z)]
-            if free([(x, z), (x, z + 1)]):
+            if same([(x, z), (x, z + 1)], col):
                 parts.append(Part(f"v{n}", "3023", col, (x, y, z), 0, "hull")); used |= {(x, z), (x, z + 1)}
-            elif free([(x, z), (x + 1, z)]):
+            elif same([(x, z), (x + 1, z)], col):
                 parts.append(Part(f"v{n}", "3023", col, (x, y, z), 90, "hull")); used |= {(x, z), (x + 1, z)}
             else:
                 parts.append(Part(f"v{n}", "3024", col, (x, y, z), 0, "hull")); used.add((x, z))
@@ -93,16 +112,51 @@ def tile_voxels(cells, tape=None):
     return parts
 
 
-def build_voxels(voxels, name="Model", tape=None, seed=0):
-    """arbitrary target shape -> legalised, tiled, connected Build."""
-    from model import Build, SubAssembly
-    cells, _ = legalize_voxels(voxels, tape)
+def build_voxels(voxels, name="Model", tape=None, seed=0, legalize=True, base=True):
+    """arbitrary target shape -> legalised, tiled, connected Build. `base` mounts
+    the shape on a bonded plate baseplate (a display stand): every cell then
+    connects DOWN to the base, so even a FLAT silhouette (a heart, a letter) is
+    one connected, stable mass — otherwise side-by-side plates in one layer don't
+    bond and the shape falls apart."""
+    from model import Build, SubAssembly, Part
+    cells = legalize_voxels(voxels, tape)[0] if legalize else dict(voxels)
     parts = tile_voxels(cells, tape)
+
+    if base and cells:
+        xs = [x for (x, _, _) in cells]; zs = [z for (_, _, z) in cells]
+        gy = min(y for (_, y, _) in cells)
+        x0, z0 = min(xs) - 1, min(zs) - 1
+        # bonded plate bases only stay fully connected at EVEN dimensions
+        W, D = max(xs) - min(xs) + 3, max(zs) - min(zs) + 3
+        W += W % 2; D += D % 2
+        for p in bonded(W, D, 0, 71, seed, plates=True, courses=2, sub="base"):
+            parts.append(Part(p.id, p.part, p.color,
+                              (p.pos[0] + x0, gy - 2 + p.pos[1], p.pos[2] + z0),
+                              0, "base"))
+        if tape:
+            tape.emit("scribe", "base", "solver: mounted the shape on a baseplate "
+                      "so it holds together and stands", ms=4)
+
     parts = [type(p)(f"p{i}", p.part, p.color, p.pos, p.rot, p.sub)
              for i, p in enumerate(parts)]
     sub = SubAssembly("hull", None, "sculpt", (), None, ())
+    # stash the source mosaic so replay/compare can rebuild without the LLM
     return Build(id="bld_sculpt", version=0, name=name, parts=tuple(parts),
-                 subs=(sub,), provenance={"backend": "sculpt", "seed": seed})
+                 subs=(sub,), provenance={"backend": "sculpt", "seed": seed,
+                                          "voxels": dict(voxels)})
+
+
+def build_voxels_naive(voxels, name="Model", seed=0):
+    """What you get if the model just PLACES what it imagined — one 1x1 plate per
+    cell, no support legalisation, no bond. This is the 'LLM places bricks'
+    baseline: overhangs float, the mass isn't connected, it can't be built. The
+    contrast with build_voxels() is the whole thesis, made visible."""
+    from model import Build, SubAssembly, Part
+    parts = [Part(f"p{i}", "3024", col, (x, y, z), 0, "hull")
+             for i, ((x, y, z), col) in enumerate(sorted(voxels.items()))]
+    sub = SubAssembly("hull", None, "sculpt-naive", (), None, ())
+    return Build(id="bld_naive", version=0, name=name, parts=tuple(parts),
+                 subs=(sub,), provenance={"backend": "naive", "seed": seed})
 
 
 def build_sculpt(noun, size=1.0, seed=0, color=4):
