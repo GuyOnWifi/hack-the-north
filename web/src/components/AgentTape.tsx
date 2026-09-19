@@ -90,7 +90,7 @@ export function AgentTape({ events, live, compact }: { events: TapeEvent[]; live
           </li>
         );
       })}
-      <li ref={end} className="flex items-center gap-2 px-3 py-1 text-[13px] font-semibold text-ink-soft" style={{ visibility: live ? "visible" : "hidden" }}>
+      <li className="flex items-center gap-2 px-3 py-1 text-[13px] font-semibold text-ink-soft" style={{ visibility: live ? "visible" : "hidden" }}>
         <span className="h-2 w-2 animate-pulse rounded-full bg-purple" /> Working…
       </li>
     </ol>
