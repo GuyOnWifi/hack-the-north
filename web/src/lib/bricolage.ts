@@ -88,6 +88,15 @@ export interface Payload {
 const BASE = "/bricolage";
 const FIXTURES = "/bricolage-fixtures";
 
+// The SSE stream must skip the Next dev proxy (it buffers streaming responses),
+// so EventSource talks to the backend origin directly. Override with
+// NEXT_PUBLIC_STREAM_ORIGIN; otherwise assume the backend is on :8017 of the
+// same host (what run.sh launches). Non-stream REST calls keep using the proxy.
+const STREAM_ORIGIN =
+  process.env.NEXT_PUBLIC_STREAM_ORIGIN ||
+  (typeof window !== "undefined" ? `${window.location.protocol}//${window.location.hostname}:8017` : "");
+const STREAM_BASE = STREAM_ORIGIN ? `${STREAM_ORIGIN}/api` : BASE;
+
 async function request<T>(path: string, init?: RequestInit, timeoutMs = 60000): Promise<T> {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), timeoutMs);
@@ -128,7 +137,11 @@ export const bricolage = {
   /** Live build: tape events arrive as they fire; resolves with the final payload. */
   stream(prompt: string, onEvent: (e: TapeEvent) => void): Promise<Payload> {
     return new Promise((resolve, reject) => {
-      const es = new EventSource(`${BASE}/build_stream?prompt=${encodeURIComponent(prompt)}`);
+      // Connect the SSE stream DIRECTLY to the backend, bypassing the Next dev
+      // proxy — that proxy buffers streaming responses for the browser, so live
+      // tape events never arrive until the build finishes. The backend sends
+      // Access-Control-Allow-Origin:* so cross-origin EventSource is fine.
+      const es = new EventSource(`${STREAM_BASE}/build_stream?prompt=${encodeURIComponent(prompt)}`);
       let settled = false;
       const done = (fn: () => void) => {
         if (settled) return;
