@@ -94,8 +94,13 @@ class H(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header("Content-Type", "text/event-stream")
         self.send_header("Cache-Control", "no-cache")
+        self.send_header("X-Accel-Buffering", "no")   # tell proxies not to buffer
         self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
+        # a 2KB comment preamble forces the proxy to flush its buffer so events
+        # stream live instead of arriving batched when the first LLM call returns.
+        self.wfile.write(b": " + b" " * 2048 + b"\n\n")
+        self.wfile.flush()
 
         def push(ev):
             self.wfile.write(f"data: {json.dumps(ev)}\n\n".encode())

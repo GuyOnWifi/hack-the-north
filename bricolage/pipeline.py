@@ -49,7 +49,7 @@ def build_from_prompt(prompt, inventory, seed=0, tape=None, recipe=None):
             import tempfile
             rd = os.path.join(tempfile.gettempdir(), "bricolage_renders")
             os.makedirs(rd, exist_ok=True)
-            build = vision.refine(build, voxels, prompt, tape, rd, rounds=2, seed=seed)
+            build = vision.refine(build, voxels, prompt, tape, rd, rounds=1, seed=seed)
         # record the FINAL mosaic (post-vision) so replay skips the model
         recipe = {"backend": "sculpt", "name": model_name,
                   "voxels": dict(build.provenance.get("voxels", voxels))}
