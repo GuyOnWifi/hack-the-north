@@ -151,25 +151,31 @@ class LLMClient:
         return voxel_shape(noun, size)
 
     def _claude_shape(self, prompt, noun):  # pragma: no cover (needs CLI)
-        import subprocess, json
-        user = (f"Design '{prompt}' as a small LEGO voxel model, ~5-8 layers.\n"
-                "Output ONE JSON object, no prose: "
-                '{"name": str, "layers": [["....","..#.",...], ...]} where each '
-                "layer is a list of equal-length rows of '#' (brick) or '.' "
-                "(empty), bottom layer first. Keep it under 8x8. Colours are "
-                "chosen by the host.")
+        """Ask the designer to draw the request as a flat COLOUR PIXEL-ART grid
+        (a mosaic). Reads clearly and colours naturally — far better than blind
+        3D voxels. The vision loop then corrects it by looking at the render."""
+        import subprocess
+        from sculpt import parse_mask
+        user = (f"Draw \"{prompt}\" as LEGO pixel art: a single flat grid, "
+                "8-14 rows, like a mosaic picture facing the viewer.\n"
+                "Output ONE JSON object, no prose: {\"name\": str, "
+                "\"grid\": [\"row\", \"row\", ...]}. Each row is a string of "
+                "equal length. Each character is a colour or empty:\n"
+                "  r=red o=orange y=yellow g=green b=blue w=white k=black "
+                "n=brown t=tan a=gray  .=empty\n"
+                "Use colour to make it recognisable (a flower: green stem, "
+                "coloured petals, yellow centre). Draw the whole SOLID silhouette "
+                "of the object, centred, filling most of the grid.")
         try:
             out = subprocess.run(["claude", "-p", user], capture_output=True,
-                                 text=True, timeout=90)
+                                 text=True, timeout=110)
             data = _first_json(out.stdout)
-            if not data or "layers" not in data:
+            grid = data and (data.get("grid") or data.get("rows") or data.get("layers"))
+            if not grid:
                 return None
-            v = {}
-            for y, layer in enumerate(data["layers"]):
-                for z, row in enumerate(layer):
-                    for x, ch in enumerate(row):
-                        if ch == "#":
-                            v[(x, y, z)] = 4
+            if grid and isinstance(grid[0], list):     # tolerate nested [[...]]
+                grid = grid[0]
+            v = parse_mask(grid)
             return (v, data.get("name", noun.title())) if v else None
         except Exception:
             return None

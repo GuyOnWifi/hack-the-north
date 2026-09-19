@@ -19,11 +19,14 @@ import os
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 from demo import rich_bin
+from model import Inventory
 from session import Session
 from serialize import build_json, report_json
 from ldraw import to_ldr
 
-SESSION = Session(rich_bin())
+# IMAGINE mode by default (unlimited bricks, any request). Posting a scanned
+# inventory switches to SOLVE mode (design within a real, finite bin).
+SESSION = Session(Inventory({}, unlimited=True))
 
 
 def _payload(vid=None):
@@ -124,14 +127,15 @@ class H(BaseHTTPRequestHandler):
             elif self.path == "/api/redo":
                 SESSION.redo()
             elif self.path == "/api/inventory":
-                # The scanned bin (Lane A -> UI -> here). Empty list restores the demo bin.
-                from model import Inventory
+                # Scanned bin (Lane A -> UI -> here) = SOLVE mode. Empty list =
+                # back to IMAGINE mode (unlimited bricks).
                 counts = {}
                 for item in body.get("items", []):
                     key = (str(item["part"]), int(item["color"]))
                     counts[key] = counts.get(key, 0) + int(item["count"])
-                SESSION.inv = Inventory(counts) if counts else rich_bin()
-                return self._send(200, {"ok": True, "elements": len(counts)})
+                SESSION.inv = Inventory(counts) if counts else Inventory({}, unlimited=True)
+                return self._send(200, {"ok": True, "elements": len(counts),
+                                        "mode": "solve" if counts else "imagine"})
             else:
                 return self._send(404, {"error": "not found"})
         except Exception as e:

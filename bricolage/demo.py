@@ -25,7 +25,8 @@ def rich_bin():
     but finite — the validator still has to fit the build inside them."""
     bricks = ["3001", "3003", "3004", "3005", "3009", "3010"]
     plates = ["3020", "3022", "3023", "3024"]
-    colors = [15, 19, 72, 71, 70, 4, 14, 0, 2, 1]  # white tan grays brown red yellow black green blue
+    # full mosaic palette: white tan grays brown red yellow black green blue orange
+    colors = [15, 19, 72, 71, 70, 4, 14, 0, 2, 1, 25]
     counts = {}
     for c in colors:
         for part in bricks:
@@ -34,6 +35,12 @@ def rich_bin():
             counts[(part, c)] = 24
         counts[("4073", c)] = 16                    # wheels / round studs
     return Inventory(counts)
+
+
+def unlimited_bin():
+    """Imagine mode: infinite bricks in every colour — pure shape design, no
+    inventory constraint. (Solve mode uses rich_bin / a scanned bin instead.)"""
+    return Inventory({}, unlimited=True)
 
 
 def adversarial_bin():

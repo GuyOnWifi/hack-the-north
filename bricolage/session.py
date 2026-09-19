@@ -54,27 +54,25 @@ class Session:
         return self._commit(None, {"kind": "build", "prompt": prompt, "seed": seed},
                             res["build"], res["report"], res["tape"])
 
-    def _run_edit(self, base_build, sub, arg, delta, seed):
-        """Apply one edit and run it through the same FIX loop as a build, so it
-        streams a tape and self-heals inventory/physics issues."""
+    def _run_edit(self, base_build, op, seed):
+        """Apply one edit op and run it through the same FIX loop as a build, so
+        it streams a tape and self-heals inventory/physics issues."""
         tape = Tape()
-        tape.emit("designer", "edit",
-                  f"{sub}.{arg} {'+' if delta >= 0 else ''}{delta} — attachment "
-                  f"points frozen, children reattach by socket name", ms=200)
-        nb = apply_edit(base_build, sub, arg, delta, seed=seed)
+        desc = (f"recolour → {op['word']}" if op["kind"] == "recolor"
+                else f"{op['gen']}.{op['arg']} {op['delta']:+d}")
+        tape.emit("designer", "edit", f"{desc} — keeping everything else fixed", ms=200)
+        nb = apply_edit(base_build, op, seed=seed)
         result = fix(nb, self.inv, Budget(seed=seed), tape)
         return result.build, result.report, tape
 
     def edit(self, text, seed=0):
         cur = self.versions[self.head]
-        parsed = parse_edit(text, cur.build)
-        if not parsed:
+        op = parse_edit(text, cur.build)
+        if not op:
             return cur
-        sub, arg, delta = parsed
-        nb, rep, tape = self._run_edit(cur.build, sub, arg, delta, seed)
-        return self._commit(self.head,
-                            {"kind": "edit", "sub": sub, "arg": arg,
-                             "delta": delta, "seed": seed}, nb, rep, tape)
+        nb, rep, tape = self._run_edit(cur.build, op, seed)
+        return self._commit(self.head, {"kind": "edit", "edit": op, "seed": seed},
+                            nb, rep, tape)
 
     def try_another(self):
         """Re-run the head's op with a new seed as a SIBLING (same parent)."""
@@ -86,7 +84,7 @@ class Session:
             return self._commit(cur.parent, op, res["build"], res["report"], res["tape"])
         else:  # edit — re-apply against the parent's build
             base = self.versions[cur.parent].build
-            nb, rep, tape = self._run_edit(base, op["sub"], op["arg"], op["delta"], op["seed"])
+            nb, rep, tape = self._run_edit(base, op["edit"], op["seed"])
             return self._commit(cur.parent, op, nb, rep, tape)
 
     # ---- navigation ----------------------------------------------------
@@ -121,8 +119,7 @@ class Session:
 
     def edit_direct(self, op):
         cur = self.versions[self.head]
-        nb, rep, tape = self._run_edit(cur.build, op["sub"], op["arg"],
-                                       op["delta"], op["seed"])
+        nb, rep, tape = self._run_edit(cur.build, op["edit"], op["seed"])
         return self._commit(self.head, op, nb, rep, tape)
 
     def tree_ascii(self):
@@ -136,8 +133,12 @@ class Session:
             v = self.versions[vid]
             mark = " <- HEAD" if vid == self.head else ""
             ok = "ok" if v.report.ok else "DEGRADED"
-            op = v.op["kind"] + (f" {v.op.get('prompt','')}" if v.op["kind"] == "build"
-                                 else f" {v.op['sub']}.{v.op['arg']}{v.op['delta']:+d}")
+            if v.op["kind"] == "build":
+                op = "build " + v.op.get("prompt", "")
+            else:
+                e = v.op["edit"]
+                op = ("recolor " + e["word"] if e["kind"] == "recolor"
+                      else f"{e['gen']}.{e['arg']}{e['delta']:+d}")
             lines.append(f"    {'  '*depth}{vid} [{op}] {ok}{mark}")
             for c in children.get(vid, []):
                 walk(c, depth + 1)

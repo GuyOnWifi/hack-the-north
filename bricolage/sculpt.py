@@ -23,6 +23,20 @@ SHAPES = {
 SUPPORT = 71   # light gray for auto-generated support columns
 
 
+def parse_mask(rows):
+    """A 2D colour pixel-art grid (list of equal-length strings, palette chars)
+    -> a flat mosaic of voxels {(x,0,z): colour}. This is the sculpt shape now:
+    a picture laid flat, which reads clearly and colours naturally."""
+    from meta import MASK_PALETTE
+    v = {}
+    for z, row in enumerate(rows):
+        for x, ch in enumerate(str(row)):
+            c = MASK_PALETTE.get(ch.lower())
+            if c is not None:
+                v[(x, 0, z)] = c
+    return v
+
+
 def legalize_voxels(voxels, tape=None):
     """The SOLVER. Take an arbitrary target shape (a dict cell->colour) the LLM
     imagined and make it physically real: add support columns under any cell
@@ -69,21 +83,25 @@ def tile_voxels(cells, tape=None):
         # pass 1: place 2x2 plates on a parity-offset grid. Alternating the grid
         # per layer means a 2x2 above STRADDLES the seams of the layer below ->
         # the columns bond into one mass (real masonry bond, in 2D).
+        def same(cs, col):
+            return all(c in occ and c not in used and occ[c] == col for c in cs)
+
         for (x, z) in sorted(occ):
             if (x - phase) % 2 or (z - phase) % 2 or (x, z) in used:
                 continue
+            col = occ[(x, z)]
             quad = [(x, z), (x + 1, z), (x, z + 1), (x + 1, z + 1)]
-            if free(quad):
-                parts.append(Part(f"v{n}", "3022", occ[(x, z)], (x, y, z), 0, "hull"))
+            if same(quad, col):          # merge only cells of the SAME colour
+                parts.append(Part(f"v{n}", "3022", col, (x, y, z), 0, "hull"))
                 used |= set(quad); n += 1
-        # pass 2: fill leftovers with 1x2 then 1x1
+        # pass 2: fill leftovers with 1x2 then 1x1 (same colour only)
         for (x, z) in sorted(occ):
             if (x, z) in used:
                 continue
             col = occ[(x, z)]
-            if free([(x, z), (x, z + 1)]):
+            if same([(x, z), (x, z + 1)], col):
                 parts.append(Part(f"v{n}", "3023", col, (x, y, z), 0, "hull")); used |= {(x, z), (x, z + 1)}
-            elif free([(x, z), (x + 1, z)]):
+            elif same([(x, z), (x + 1, z)], col):
                 parts.append(Part(f"v{n}", "3023", col, (x, y, z), 90, "hull")); used |= {(x, z), (x + 1, z)}
             else:
                 parts.append(Part(f"v{n}", "3024", col, (x, y, z), 0, "hull")); used.add((x, z))

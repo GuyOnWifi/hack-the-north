@@ -33,6 +33,18 @@ PART_META = {
     "4073": {"name": "Round Plate 1x1", "dx": 1, "dz": 1, "h": 1, "studs": True},
 }
 
+# single-char palette for LLM/mock pixel-art masks -> LDraw colour codes
+MASK_PALETTE = {
+    "r": 4, "o": 25, "y": 14, "g": 2, "b": 1, "w": 15, "k": 0,
+    "n": 70, "t": 19, "a": 71, "d": 72, "s": 71, "p": 4,
+}
+# reverse, for naming a colour word back to a code (recolour edits)
+NAME_TO_CODE = {
+    "red": 4, "orange": 25, "yellow": 14, "green": 2, "blue": 1, "white": 15,
+    "black": 0, "brown": 70, "tan": 19, "gray": 71, "grey": 71,
+    "gold": 14, "lime": 2, "navy": 1, "purple": 1, "pink": 4,
+}
+
 COLOR_NAME = {
     0: "black", 1: "blue", 2: "green", 4: "red", 14: "yellow", 15: "white",
     71: "light gray", 72: "dark gray", 70: "reddish brown", 19: "tan",
