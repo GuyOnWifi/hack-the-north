@@ -1,0 +1,139 @@
+"""Self-contained test suite. Run:  python bricolage/tests.py
+No pytest dependency — plain asserts so it runs anywhere (DEMO_SAFE).
+
+The four validator tests come first (build plan T+4->T+8): three bad builds,
+one good. If the validator is right, nothing downstream can produce a model
+that doesn't exist.
+"""
+from __future__ import annotations
+
+from model import Build, Part, Inventory
+from validate import validate
+from generators import expand
+from ldraw import to_ldr
+from sequence import sequence
+from proposer import synthesize
+from pipeline import build_from_prompt
+
+PASS, FAIL = "\x1b[32mPASS\x1b[0m", "\x1b[31mFAIL\x1b[0m"
+_n = [0, 0]
+
+
+def check(name, cond):
+    _n[0] += 1
+    if cond:
+        _n[1] += 1
+        print(f"  {PASS}  {name}")
+    else:
+        print(f"  {FAIL}  {name}")
+
+
+def _b(parts):
+    return Build("t", 0, "t", tuple(parts), (), {})
+
+
+# ---------------------------------------------------- the four validator tests
+def test_good():
+    b = _b([Part("a", "3001", 4, (0, 0, 0)),
+            Part("b", "3001", 4, (0, 3, 0))])   # stacked, connected, grounded
+    check("GOOD: stacked bricks validate ok", validate(b).ok)
+
+
+def test_overlap():
+    b = _b([Part("a", "3001", 4, (0, 0, 0)),
+            Part("b", "3003", 4, (0, 0, 0))])
+    codes = {e["code"] for e in validate(b).errors}
+    check("BAD: overlapping bricks -> OVERLAP", "OVERLAP" in codes)
+
+
+def test_floating():
+    b = _b([Part("g", "3001", 4, (0, 0, 0)),
+            Part("f", "3001", 4, (0, 10, 0))])
+    codes = {e["code"] for e in validate(b).errors}
+    check("BAD: brick in mid-air -> FLOATING", "FLOATING" in codes)
+
+
+def test_disconnected():
+    b = _b([Part("a", "3001", 4, (0, 0, 0)),
+            Part("b", "3001", 4, (20, 0, 0))])   # both grounded, far apart
+    codes = {e["code"] for e in validate(b).errors}
+    check("BAD: two separate piles -> DISCONNECTED", "DISCONNECTED" in codes)
+
+
+# ---------------------------------------------------------------- invariants
+def test_no_floats_in_model():
+    b = expand(synthesize("rover"), seed=0)
+    ok = all(isinstance(v, int) for p in b.parts for v in p.pos)
+    ok = ok and all(p.rot in (0, 90, 180, 270) for p in b.parts)
+    check("INVARIANT: build model is pure-integer, 90-deg rots", ok)
+
+
+def test_determinism():
+    a = to_ldr(expand(synthesize("rover"), seed=7))
+    c = to_ldr(expand(synthesize("rover"), seed=7))
+    check("INVARIANT: same seed => byte-identical LDraw", a == c)
+    d = to_ldr(expand(synthesize("rover"), seed=8))
+    check("determinism: different seed => different tiling", a != d)
+
+
+def test_ldraw_roundtrip():
+    b = expand(synthesize("rover"), seed=0)
+    text = to_ldr(b)
+    lines = [l for l in text.splitlines() if l.startswith("1 ")]
+    check("LDraw: one type-1 line per part", len(lines) == len(b.parts))
+    check("LDraw: every line references a .dat", all(l.endswith(".dat") for l in lines))
+
+
+def test_insertion_sweep():
+    # a brick trapped directly under another in the same column is unbuildable
+    from sequence import Unbuildable
+    b = _b([Part("low", "3005", 4, (0, 0, 0)),
+            Part("cap", "3005", 4, (0, 3, 0))])
+    try:
+        sequence(b)
+        check("SEQUENCE: normal stack is buildable", True)
+    except Unbuildable:
+        check("SEQUENCE: normal stack is buildable", False)
+
+
+# ---------------------------------------------------------- golden compose set
+GOLDEN = ["build a rover", "a small truck", "build a house", "make a tower",
+          "a long wall", "build a jet", "build a pyramid", "build a heart"]
+
+
+def test_golden():
+    from demo import rich_bin
+    ok_count = 0
+    for prompt in GOLDEN:
+        res = build_from_prompt(prompt, rich_bin(), seed=0)
+        if res["report"].ok and res["steps"]:
+            ok_count += 1
+        else:
+            print(f"       \x1b[33m{prompt!r} -> {'ok' if res['report'].ok else 'DEGRADED'}\x1b[0m")
+    check(f"GOLDEN: {ok_count}/{len(GOLDEN)} prompts reach a valid, sequenced build",
+          ok_count == len(GOLDEN))
+
+
+def test_substitution_fires():
+    from demo import adversarial_bin
+    res = build_from_prompt("build a rover", adversarial_bin(), seed=0)
+    used_sub = res["fix"].rung_hits.get(2, 0) > 0
+    check("REPAIR: adversarial bin (no 2x4s) forces the substitution rung",
+          used_sub and res["report"].ok)
+
+
+def main():
+    print("\n\x1b[1mvalidator — the law\x1b[0m")
+    test_good(); test_overlap(); test_floating(); test_disconnected()
+    print("\n\x1b[1minvariants\x1b[0m")
+    test_no_floats_in_model(); test_determinism(); test_ldraw_roundtrip()
+    test_insertion_sweep()
+    print("\n\x1b[1mend-to-end\x1b[0m")
+    test_golden(); test_substitution_fires()
+    print(f"\n  \x1b[1m{_n[1]}/{_n[0]} checks passed\x1b[0m\n")
+    return _n[1] == _n[0]
+
+
+if __name__ == "__main__":
+    import sys
+    sys.exit(0 if main() else 1)

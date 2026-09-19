@@ -1,0 +1,613 @@
+{
+  "id": "bld_demo",
+  "version": 0,
+  "name": "Rover",
+  "parts": [
+    {
+      "id": "p1",
+      "part": "3001",
+      "color": 72,
+      "pos": [
+        0,
+        0,
+        0
+      ],
+      "rot": 0,
+      "sub": "chassis"
+    },
+    {
+      "id": "p2",
+      "part": "3001",
+      "color": 72,
+      "pos": [
+        0,
+        0,
+        4
+      ],
+      "rot": 0,
+      "sub": "chassis"
+    },
+    {
+      "id": "p3",
+      "part": "3001",
+      "color": 72,
+      "pos": [
+        2,
+        0,
+        0
+      ],
+      "rot": 0,
+      "sub": "chassis"
+    },
+    {
+      "id": "p4",
+      "part": "3001",
+      "color": 72,
+      "pos": [
+        2,
+        0,
+        4
+      ],
+      "rot": 0,
+      "sub": "chassis"
+    },
+    {
+      "id": "p5",
+      "part": "3010",
+      "color": 72,
+      "pos": [
+        0,
+        3,
+        0
+      ],
+      "rot": 0,
+      "sub": "chassis"
+    },
+    {
+      "id": "p6",
+      "part": "3010",
+      "color": 72,
+      "pos": [
+        0,
+        3,
+        4
+      ],
+      "rot": 0,
+      "sub": "chassis"
+    },
+    {
+      "id": "p7",
+      "part": "3001",
+      "color": 72,
+      "pos": [
+        1,
+        3,
+        0
+      ],
+      "rot": 0,
+      "sub": "chassis"
+    },
+    {
+      "id": "p8",
+      "part": "3001",
+      "color": 72,
+      "pos": [
+        1,
+        3,
+        4
+      ],
+      "rot": 0,
+      "sub": "chassis"
+    },
+    {
+      "id": "p9",
+      "part": "3009",
+      "color": 72,
+      "pos": [
+        3,
+        3,
+        0
+      ],
+      "rot": 0,
+      "sub": "chassis"
+    },
+    {
+      "id": "p10",
+      "part": "3004",
+      "color": 72,
+      "pos": [
+        3,
+        3,
+        6
+      ],
+      "rot": 0,
+      "sub": "chassis"
+    },
+    {
+      "id": "p12",
+      "part": "3005",
+      "color": 15,
+      "pos": [
+        0,
+        6,
+        0
+      ],
+      "rot": 0,
+      "sub": "cabin_11"
+    },
+    {
+      "id": "p13",
+      "part": "3005",
+      "color": 15,
+      "pos": [
+        0,
+        6,
+        3
+      ],
+      "rot": 0,
+      "sub": "cabin_11"
+    },
+    {
+      "id": "p14",
+      "part": "3005",
+      "color": 15,
+      "pos": [
+        1,
+        6,
+        0
+      ],
+      "rot": 0,
+      "sub": "cabin_11"
+    },
+    {
+      "id": "p15",
+      "part": "3005",
+      "color": 15,
+      "pos": [
+        1,
+        6,
+        3
+      ],
+      "rot": 0,
+      "sub": "cabin_11"
+    },
+    {
+      "id": "p16",
+      "part": "3005",
+      "color": 15,
+      "pos": [
+        2,
+        6,
+        0
+      ],
+      "rot": 0,
+      "sub": "cabin_11"
+    },
+    {
+      "id": "p17",
+      "part": "3005",
+      "color": 15,
+      "pos": [
+        2,
+        6,
+        3
+      ],
+      "rot": 0,
+      "sub": "cabin_11"
+    },
+    {
+      "id": "p18",
+      "part": "3005",
+      "color": 15,
+      "pos": [
+        3,
+        6,
+        0
+      ],
+      "rot": 0,
+      "sub": "cabin_11"
+    },
+    {
+      "id": "p19",
+      "part": "3005",
+      "color": 15,
+      "pos": [
+        3,
+        6,
+        3
+      ],
+      "rot": 0,
+      "sub": "cabin_11"
+    },
+    {
+      "id": "p20",
+      "part": "3005",
+      "color": 15,
+      "pos": [
+        0,
+        6,
+        1
+      ],
+      "rot": 0,
+      "sub": "cabin_11"
+    },
+    {
+      "id": "p21",
+      "part": "3005",
+      "color": 15,
+      "pos": [
+        3,
+        6,
+        1
+      ],
+      "rot": 0,
+      "sub": "cabin_11"
+    },
+    {
+      "id": "p22",
+      "part": "3005",
+      "color": 15,
+      "pos": [
+        0,
+        6,
+        2
+      ],
+      "rot": 0,
+      "sub": "cabin_11"
+    },
+    {
+      "id": "p23",
+      "part": "3005",
+      "color": 15,
+      "pos": [
+        3,
+        6,
+        2
+      ],
+      "rot": 0,
+      "sub": "cabin_11"
+    },
+    {
+      "id": "p24",
+      "part": "3005",
+      "color": 15,
+      "pos": [
+        0,
+        9,
+        0
+      ],
+      "rot": 0,
+      "sub": "cabin_11"
+    },
+    {
+      "id": "p25",
+      "part": "3005",
+      "color": 15,
+      "pos": [
+        0,
+        9,
+        3
+      ],
+      "rot": 0,
+      "sub": "cabin_11"
+    },
+    {
+      "id": "p26",
+      "part": "3005",
+      "color": 15,
+      "pos": [
+        1,
+        9,
+        0
+      ],
+      "rot": 0,
+      "sub": "cabin_11"
+    },
+    {
+      "id": "p27",
+      "part": "3005",
+      "color": 15,
+      "pos": [
+        1,
+        9,
+        3
+      ],
+      "rot": 0,
+      "sub": "cabin_11"
+    },
+    {
+      "id": "p28",
+      "part": "3005",
+      "color": 15,
+      "pos": [
+        2,
+        9,
+        0
+      ],
+      "rot": 0,
+      "sub": "cabin_11"
+    },
+    {
+      "id": "p29",
+      "part": "3005",
+      "color": 15,
+      "pos": [
+        2,
+        9,
+        3
+      ],
+      "rot": 0,
+      "sub": "cabin_11"
+    },
+    {
+      "id": "p30",
+      "part": "3005",
+      "color": 15,
+      "pos": [
+        3,
+        9,
+        0
+      ],
+      "rot": 0,
+      "sub": "cabin_11"
+    },
+    {
+      "id": "p31",
+      "part": "3005",
+      "color": 15,
+      "pos": [
+        3,
+        9,
+        3
+      ],
+      "rot": 0,
+      "sub": "cabin_11"
+    },
+    {
+      "id": "p32",
+      "part": "3005",
+      "color": 15,
+      "pos": [
+        0,
+        9,
+        1
+      ],
+      "rot": 0,
+      "sub": "cabin_11"
+    },
+    {
+      "id": "p33",
+      "part": "3005",
+      "color": 15,
+      "pos": [
+        3,
+        9,
+        1
+      ],
+      "rot": 0,
+      "sub": "cabin_11"
+    },
+    {
+      "id": "p34",
+      "part": "3005",
+      "color": 15,
+      "pos": [
+        0,
+        9,
+        2
+      ],
+      "rot": 0,
+      "sub": "cabin_11"
+    },
+    {
+      "id": "p35",
+      "part": "3005",
+      "color": 15,
+      "pos": [
+        3,
+        9,
+        2
+      ],
+      "rot": 0,
+      "sub": "cabin_11"
+    },
+    {
+      "id": "p36",
+      "part": "3023",
+      "color": 15,
+      "pos": [
+        0,
+        12,
+        0
+      ],
+      "rot": 0,
+      "sub": "cabin_11"
+    },
+    {
+      "id": "p37",
+      "part": "3023",
+      "color": 15,
+      "pos": [
+        0,
+        12,
+        2
+      ],
+      "rot": 0,
+      "sub": "cabin_11"
+    },
+    {
+      "id": "p38",
+      "part": "3020",
+      "color": 15,
+      "pos": [
+        1,
+        12,
+        0
+      ],
+      "rot": 0,
+      "sub": "cabin_11"
+    },
+    {
+      "id": "p39",
+      "part": "3024",
+      "color": 15,
+      "pos": [
+        3,
+        12,
+        0
+      ],
+      "rot": 0,
+      "sub": "cabin_11"
+    },
+    {
+      "id": "p40",
+      "part": "3023",
+      "color": 15,
+      "pos": [
+        3,
+        12,
+        1
+      ],
+      "rot": 0,
+      "sub": "cabin_11"
+    },
+    {
+      "id": "p41",
+      "part": "3024",
+      "color": 15,
+      "pos": [
+        3,
+        12,
+        3
+      ],
+      "rot": 0,
+      "sub": "cabin_11"
+    },
+    {
+      "id": "p43",
+      "part": "4073",
+      "color": 72,
+      "pos": [
+        0,
+        -1,
+        0
+      ],
+      "rot": 0,
+      "sub": "axle_pair_42"
+    },
+    {
+      "id": "p44",
+      "part": "4073",
+      "color": 72,
+      "pos": [
+        3,
+        -1,
+        0
+      ],
+      "rot": 0,
+      "sub": "axle_pair_42"
+    },
+    {
+      "id": "p46",
+      "part": "4073",
+      "color": 72,
+      "pos": [
+        0,
+        -1,
+        6
+      ],
+      "rot": 0,
+      "sub": "axle_pair_45"
+    },
+    {
+      "id": "p47",
+      "part": "4073",
+      "color": 72,
+      "pos": [
+        3,
+        -1,
+        6
+      ],
+      "rot": 0,
+      "sub": "axle_pair_45"
+    }
+  ],
+  "subassemblies": {
+    "chassis": {
+      "parent": null,
+      "gen": "chassis",
+      "attach": null,
+      "sockets": [
+        "deck_front",
+        "deck_rear",
+        "deck_center",
+        "nose",
+        "tail",
+        "underside_front",
+        "underside_rear"
+      ]
+    },
+    "cabin_11": {
+      "parent": "chassis",
+      "gen": "cabin",
+      "attach": "deck_front",
+      "sockets": [
+        "roof"
+      ]
+    },
+    "axle_pair_42": {
+      "parent": "chassis",
+      "gen": "axle_pair",
+      "attach": "underside_front",
+      "sockets": []
+    },
+    "axle_pair_45": {
+      "parent": "chassis",
+      "gen": "axle_pair",
+      "attach": "underside_rear",
+      "sockets": []
+    }
+  },
+  "provenance": {
+    "backend": "compose",
+    "seed": 0,
+    "composition": {
+      "name": "Rover",
+      "root": {
+        "gen": "chassis",
+        "args": {
+          "length": 8,
+          "width": 4,
+          "color": 72
+        },
+        "children": [
+          {
+            "gen": "cabin",
+            "attach": "deck_front",
+            "args": {
+              "style": "closed",
+              "width": 4,
+              "depth": 4,
+              "height": 2,
+              "color": 15
+            }
+          },
+          {
+            "gen": "axle_pair",
+            "attach": "underside_front",
+            "args": {
+              "width": 4
+            }
+          },
+          {
+            "gen": "axle_pair",
+            "attach": "underside_rear",
+            "args": {
+              "width": 4
+            }
+          }
+        ]
+      }
+    }
+  }
+}

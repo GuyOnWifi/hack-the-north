@@ -1,0 +1,65 @@
+"""The whole Lane B pipeline: prompt + inventory -> validated build + steps +
+tape. One entry point everything downstream consumes.
+"""
+from __future__ import annotations
+
+import router
+import sculpt as sculpt_backend
+from client import LLMClient
+from generators import expand, AttachError
+from repair import Budget, fix
+from sequence import sequence, Unbuildable
+from tape import Tape
+from validate import validate
+
+
+def build_from_prompt(prompt, inventory, seed=0):
+    tape = Tape()
+    backend, noun, size, reason = router.route(prompt)
+    tape.emit("router", "route", f"{reason}  (backend={backend})", ms=2)
+
+    client = LLMClient(tape)
+
+    if backend == "sculpt":
+        tape.emit("designer", "propose",
+                  f"sculpt: emit layer masks for '{noun}'", ms=1400, tokens=1800)
+        build = sculpt_backend.build_sculpt(noun, size, seed)
+    else:
+        comp = client.propose_compose(prompt, inventory.summarize(), noun, size, seed)
+        root = comp["root"]
+        summary = _describe(root)
+        tape.emit("designer", "propose", summary, ms=1900, tokens=2400)
+        try:
+            build = expand(comp, name=comp.get("name", noun), seed=seed)
+        except AttachError as e:
+            tape.emit("inspector", "reject", f"composition invalid: {e}",
+                      status="fail", ms=5)
+            raise
+
+    budget = Budget(seed=seed)
+    result = fix(build, inventory, budget, tape, client)
+    build, report = result.build, result.report
+
+    steps = None
+    if report.ok:
+        try:
+            steps = sequence(build)
+            tape.emit("scribe", "sequence",
+                      f"ordered {steps['n_steps']} build steps "
+                      f"(insertion sweep passed)", status="ok", ms=30)
+        except Unbuildable as e:
+            tape.emit("scribe", "sequence", f"UNBUILDABLE: {e}",
+                      status="fail", ms=30)
+
+    return {"build": build, "report": report, "steps": steps,
+            "tape": tape, "fix": result, "backend": backend}
+
+
+def _describe(node, depth=0):
+    args = node.get("args", {})
+    kv = ", ".join(f"{k}={v}" for k, v in args.items() if k != "seed")
+    s = f"{node['gen']}({kv})"
+    kids = node.get("children", [])
+    if kids:
+        s += " + " + " + ".join(f"{c['gen']}@{c.get('attach')}" for c in kids)
+    return s

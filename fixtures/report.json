@@ -1,0 +1,17 @@
+{
+  "ok": true,
+  "errors": [],
+  "warnings": [
+    {
+      "code": "WEAK_BOND",
+      "sub": null,
+      "human": "Many vertical seams line up; staggering the bricks would make it much stronger."
+    }
+  ],
+  "stats": {
+    "parts": 44,
+    "studs_used": 108,
+    "subs": 4,
+    "inventory_remaining": 2004
+  }
+}
