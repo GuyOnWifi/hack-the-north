@@ -8,7 +8,7 @@ import { Play, X } from "lucide-react";
 import { FloatingBricks, PlateProgress } from "@/components/ui/chrome";
 import { ChunkyButton, IconTile } from "@/components/ui/controls";
 import { AgentTape } from "@/components/AgentTape";
-import { designBuild, tryAnother, useLive } from "@/lib/live";
+import { designBuild, getSteers, steer, tryAnother, useLive } from "@/lib/live";
 import { LIVE_ID } from "@/lib/useBuild";
 
 const ModelView = dynamic(() => import("@/components/three/ModelView").then((m) => m.ModelView), { ssr: false });
@@ -70,6 +70,17 @@ function Create() {
   }, [mSteps, playToken]);
   const failed = live.status === "error" && live.prompt === prompt;
   const progress = done ? 1 : Math.min(0.92, events.length / EXPECTED_EVENTS);
+
+  // stop-and-steer: correct the build in natural language while it streams
+  const [steerText, setSteerText] = useState("");
+  const [steers, setSteers] = useState<string[]>([]);
+  const submitSteer = () => {
+    const t = steerText.trim();
+    if (!t) return;
+    steer(t);
+    setSteers(getSteers());
+    setSteerText("");
+  };
 
   return (
     <main className="fixed inset-0 flex flex-col items-center overflow-hidden" style={{ background: "linear-gradient(180deg,#6e6e6e 0%,#838383 50%,#959595 100%)" }}>
@@ -150,6 +161,35 @@ function Create() {
             Open the build
           </Link>
         )}
+
+        {/* stop-and-steer — correct the harness in plain language, any time */}
+        <div className="mt-4">
+          {steers.length > 0 && (
+            <div className="mb-2 flex flex-wrap gap-1.5">
+              {steers.map((s, i) => (
+                <span key={i} className="rounded-full bg-white/20 px-2.5 py-1 text-[12px] font-semibold text-white/90 backdrop-blur">
+                  ↳ {s}
+                </span>
+              ))}
+            </div>
+          )}
+          <div className="flex items-center gap-2 rounded-[18px] bg-white/95 p-1.5 pl-4 shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
+            <input
+              value={steerText}
+              onChange={(e) => setSteerText(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && submitSteer()}
+              placeholder={done ? "Steer it — e.g. “taller, and make it red”" : "Steer it as it builds…"}
+              className="min-w-0 flex-1 bg-transparent text-[15px] font-semibold text-ink outline-none placeholder:text-ink-soft/70"
+            />
+            <button
+              onClick={submitSteer}
+              disabled={!steerText.trim()}
+              className="shrink-0 rounded-[13px] bg-purple px-4 py-2 text-[15px] font-[800] text-white active:scale-95 disabled:opacity-40"
+            >
+              Steer
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className="relative z-10 pt-6" style={{ paddingBottom: "calc(var(--safe-bottom) + 30px)" }}>
