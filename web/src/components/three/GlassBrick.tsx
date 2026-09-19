@@ -38,7 +38,7 @@ type Props = {
 
 export function GlassBrick({ className, active = true, brick = { at: [0, 0], size: 0.62 }, rings = { at: [0, 0], size: 0.92 }, ringFade = 0.17, spin = 0.32, onReady }: Props) {
   return (
-    <Canvas className={className} dpr={[1, 2]} frameloop={active ? "always" : "demand"} gl={{ alpha: true, antialias: true }} camera={{ fov: 30, position: [0, 0, 12], near: 0.1, far: 100 }}>
+    <Canvas className={className} dpr={[1, 1.5]} frameloop={active ? "always" : "demand"} gl={{ alpha: true, antialias: true }} camera={{ fov: 30, position: [0, 0, 12], near: 0.1, far: 100 }}>
       <GlassStudio />
       <pointLight position={[-2.5, 3, 4]} intensity={40} color="#ffffff" />
       <pointLight position={[3, 1.5, 3]} intensity={24} color="#fff3c4" />
@@ -137,9 +137,9 @@ function Brick({ placement, spin, onReady }: { placement: Placement; spin: numbe
             temporalDistortion={0.13}
             envMapIntensity={1.1}
             backsideEnvMapIntensity={0.25}
-            samples={8}
-            resolution={512}
-            backsideResolution={256}
+            samples={4}
+            resolution={256}
+            backsideResolution={128}
           />
         </mesh>
       </group>

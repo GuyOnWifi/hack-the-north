@@ -29,6 +29,22 @@ export interface PreparedModel {
 
 const sourceCache = new Map<string, Promise<THREE.Group>>();
 
+/**
+ * Keeps a cache to its most recent `max` entries (Map order = insertion
+ * order, so re-inserting on use makes it LRU). Without this, every live design
+ * version (each edit, try-another) kept its parsed model and pictures forever.
+ */
+function remember<V>(cache: Map<string, V>, key: string, value: V, max: number) {
+  cache.delete(key);
+  cache.set(key, value);
+  while (cache.size > max) cache.delete(cache.keys().next().value as string);
+}
+
+/** Parsed models kept: the three samples plus a few recent live versions. */
+const MAX_MODELS = 6;
+/** Rendered pictures kept (data URLs of a few hundred KB each). */
+const MAX_SNAPSHOTS = 48;
+
 // Models that arrive as text (Lane B's /api/ldr) are registered under a
 // pseudo-URL so every consumer keeps passing a plain string around.
 const TEXT_SCHEME = "ldraw-text:";
@@ -36,7 +52,7 @@ const texts = new Map<string, string>();
 let pack: Promise<{ colours: string; files: string }> | null = null;
 
 export function registerModelText(key: string, text: string) {
-  texts.set(key, text);
+  remember(texts, key, text, MAX_MODELS);
   return `${TEXT_SCHEME}${key}`;
 }
 
@@ -77,7 +93,7 @@ function loadSource(url: string) {
       p = newLoader().loadAsync(url) as Promise<THREE.Group>;
     }
     p.catch(() => sourceCache.delete(url));
-    sourceCache.set(url, p);
+    remember(sourceCache, url, p, MAX_MODELS);
   }
   return p;
 }
@@ -243,7 +259,7 @@ function snapper() {
     snapCache.clear();
   }
   if (snap) return snap;
-  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setPixelRatio(1);
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.setClearColor(0x000000, 0);
@@ -276,7 +292,11 @@ function render(object: THREE.Object3D, width: number, height: number, direction
   camera.updateProjectionMatrix();
   renderer.render(scene, camera);
   scene.remove(object);
-  return renderer.domElement.toDataURL("image/png");
+  // Read synchronously (no preserveDrawingBuffer needed), then drop the big
+  // backbuffer: the PDF renders at 1500x1100, which otherwise stays allocated.
+  const url = renderer.domElement.toDataURL("image/png");
+  renderer.setSize(1, 1, false);
+  return url;
 }
 
 /** Thumbnail of a single part in its world orientation (fallback for missing Rebrickable images). */
@@ -309,7 +329,7 @@ export function partThumbnail(node: PartNode, size = 200) {
       wrapper.add(clone);
       resolve(render(wrapper, size, size, new THREE.Vector3(-1, 0.9, 1.25)));
     });
-    snapCache.set(key, p);
+    remember(snapCache, key, p, MAX_SNAPSHOTS);
   }
   return p;
 }
@@ -321,7 +341,7 @@ export function modelSnapshot(url: string, width = 640, height = 480) {
   if (!p) {
     p = prepareModel(url).then((m) => render(m.root, width, height, new THREE.Vector3(-1.6, 1.05, 1.9)));
     p.catch(() => snapCache.delete(key));
-    snapCache.set(key, p);
+    remember(snapCache, key, p, MAX_SNAPSHOTS);
   }
   return p;
 }
@@ -355,5 +375,9 @@ function renderFramed(object: THREE.Object3D, box: THREE.Box3, width: number, he
   camera.updateProjectionMatrix();
   renderer.render(scene, camera);
   scene.remove(object);
-  return renderer.domElement.toDataURL("image/png");
+  // Read synchronously (no preserveDrawingBuffer needed), then drop the big
+  // backbuffer: the PDF renders at 1500x1100, which otherwise stays allocated.
+  const url = renderer.domElement.toDataURL("image/png");
+  renderer.setSize(1, 1, false);
+  return url;
 }
