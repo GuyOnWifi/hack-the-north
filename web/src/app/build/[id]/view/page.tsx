@@ -9,8 +9,8 @@ import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { ArrowUp, Check, FileDown, Home, Loader2, Redo2, Settings, Shapes, Shuffle, Sparkles, TriangleAlert, Undo2, Volume2, VolumeX, X } from "lucide-react";
-import { IconTile } from "@/components/ui/controls";
-import { BagGlyph, StudSlider } from "@/components/ui/chrome";
+import { BrickChip, IconTile } from "@/components/ui/controls";
+import { BagGlyph, GhostBricks, StudSlider } from "@/components/ui/chrome";
 import { BrickGlyph } from "@/components/ui/IsoBrick";
 import { AgentTape, useFixtureTape, useTapePlayback } from "@/components/AgentTape";
 import { editBuild, getLive, redo, tryAnother, undo, useLive } from "@/lib/live";
@@ -70,7 +70,8 @@ function Viewer() {
   if (!build) return <BuildMissing pending={pending} live={live} />;
 
   return (
-    <main className="fixed inset-0 overflow-hidden select-none" style={{ background: "linear-gradient(180deg,#5f5f5f 0%,#9a9b9b 38%,#c4c5c5 70%,#d0d1d1 100%)" }}>
+    <main className="fixed inset-0 overflow-hidden select-none" style={{ background: "linear-gradient(180deg,#8dbbe7 0%,#acd0f0 42%,#c9e2f6 100%)" }}>
+      <GhostBricks seed={419} cols={5} rows={3} scale={1.5} color="#123a8c" opacity={0.1} skip={0.25} />
       {failed ? (
         <div className="grid h-full place-items-center text-center text-white">
           <div>
@@ -108,13 +109,13 @@ function Viewer() {
         <IconTile tone="white" label="Home" href={`/build/${id}`} size={60}>
           <Home size={30} strokeWidth={2.2} />
         </IconTile>
-        <IconTile tone="glass" label="Settings" size={60} onClick={() => setSettings(true)}>
+        <IconTile tone="white" label="Settings" size={60} onClick={() => setSettings(true)}>
           <Settings size={30} strokeWidth={2.2} />
         </IconTile>
-        <IconTile tone="glass" label="All pieces" size={60} href={`/build/${id}/parts`}>
+        <IconTile tone="white" label="All pieces" size={60} href={`/build/${id}/parts`}>
           <Shapes size={30} strokeWidth={2.2} />
         </IconTile>
-        <IconTile tone="glass" label="Change it" size={60} onClick={() => setEditing(true)}>
+        <IconTile tone="white" label="Change it" size={60} onClick={() => setEditing(true)}>
           <Sparkles size={28} strokeWidth={2.2} />
         </IconTile>
       </div>
@@ -125,13 +126,15 @@ function Viewer() {
           <div className="mb-[-6px] shrink-0">
             <BagGlyph label={timeline ? `${Math.floor(Math.max(0, value - 1) / bagSize) + 1} / ${bags}` : `1 - ${bags}`} size={62} />
           </div>
-          <div className="relative mb-[17px] flex-1" onPointerDown={() => setScrubbing(true)} onPointerUp={() => setScrubbing(false)} onPointerCancel={() => setScrubbing(false)}>
+          <div className={`relative mb-[17px] flex-1 ${landscape ? "max-w-[640px]" : ""}`} onPointerDown={() => setScrubbing(true)} onPointerUp={() => setScrubbing(false)} onPointerCancel={() => setScrubbing(false)}>
             {timeline && (
-              <div className="pointer-events-none absolute bottom-[52px] -translate-x-1/2 rounded-full bg-white px-3 py-1 text-[15px] font-[800] text-ink shadow-[0_3px_0_rgba(0,0,0,0.12)]" style={{ left: `calc(14px + (100% - 28px) * ${value / Math.max(1, count)})` }}>
-                Step {Math.max(1, value)}
+              <div className="pointer-events-none absolute bottom-[50px] -translate-x-1/2" style={{ left: `calc(14px + (100% - 28px) * ${value / Math.max(1, count)})` }}>
+                <BrickChip bg="#ffffff" studs={2} className="!h-8 !px-3">
+                  Step {Math.max(1, value)}
+                </BrickChip>
               </div>
             )}
-            <StudSlider value={value} max={count} stops={stops} onChange={setValue} className={landscape ? "max-w-[640px]" : ""} />
+            <StudSlider value={value} max={count} stops={stops} onChange={setValue} />
           </div>
           <Link
             href={`/build/${id}/steps${timeline ? `?step=${Math.max(0, value - 1)}` : ""}`}
@@ -251,7 +254,7 @@ function EditPanel({ live, landscape, onClose, onChanged }: { live: boolean; lan
     >
       <header className="flex items-center justify-between px-5 pb-2 pt-4">
         <div className="flex items-center gap-2">
-          <span className="grid h-9 w-9 place-items-center rounded-full bg-purple">
+          <span className="grid h-9 w-9 place-items-center rounded-full bg-ai">
             <Sparkles size={18} color="#fff" fill="#fff" />
           </span>
           <span className="text-[19px] font-[800] text-ink">Change it</span>
@@ -306,11 +309,11 @@ function EditPanel({ live, landscape, onClose, onChanged }: { live: boolean; lan
         )}
       </div>
       <div className="px-4 pb-[calc(var(--safe-bottom)+14px)]">
-        <div className="no-scrollbar -mx-4 mb-3 flex gap-2 overflow-x-auto px-4">
+        <div className="no-scrollbar -mx-4 mb-3 flex gap-2 overflow-x-auto px-4 pt-1">
           {chips.map((c) => (
-            <button key={c} onClick={() => submit(c)} disabled={busy} className="shrink-0 rounded-full border-2 border-white bg-white/70 px-4 py-2 text-[14px] font-bold text-ink active:scale-95 disabled:opacity-50">
+            <BrickChip key={c} onClick={() => submit(c)} disabled={busy} bg="#ffffff" className="!text-[14px]">
               {c}
-            </button>
+            </BrickChip>
           ))}
         </div>
         <form
@@ -321,7 +324,7 @@ function EditPanel({ live, landscape, onClose, onChanged }: { live: boolean; lan
           }}
         >
           <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Hmm, I don't like the chassis…" aria-label="Describe a change" className="min-w-0 flex-1 bg-transparent text-[16px] outline-none placeholder:text-[#9a9a9a]" />
-          <button type="submit" aria-label="Send" disabled={!text.trim() || busy} className="grid h-11 w-11 place-items-center rounded-[14px] bg-purple text-white transition-opacity disabled:opacity-35">
+          <button type="submit" aria-label="Send" disabled={!text.trim() || busy} className="grid h-11 w-11 place-items-center rounded-[14px] bg-ai text-white transition-opacity disabled:opacity-35">
             {busy ? <Loader2 size={22} className="animate-spin" /> : <ArrowUp size={24} strokeWidth={2.8} />}
           </button>
         </form>
