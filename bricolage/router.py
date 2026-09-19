@@ -12,7 +12,8 @@ COMPOSE_NOUNS = {
 }
 SCULPT_NOUNS = {
     "heart", "tree", "dog", "cat", "pikachu", "duck", "star", "pyramid",
-    "mushroom", "apple", "flower", "snake", "letter", "brick",
+    "mushroom", "apple", "flower", "rose", "tulip", "snake", "letter",
+    "fish", "bird", "crown", "sword", "key", "cactus", "ghost", "skull",
 }
 SIZE = {"tiny": 0.5, "small": 0.7, "little": 0.7, "big": 1.5, "large": 1.5,
         "huge": 2.0, "long": 1.4, "mini": 0.6}

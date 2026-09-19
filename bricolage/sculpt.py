@@ -20,6 +20,91 @@ SHAPES = {
 }
 
 
+SUPPORT = 71   # light gray for auto-generated support columns
+
+
+def legalize_voxels(voxels, tape=None):
+    """The SOLVER. Take an arbitrary target shape (a dict cell->colour) the LLM
+    imagined and make it physically real: add support columns under any cell
+    that would float, so nothing is left hanging. This is visible, non-trivial
+    work — the agent 'noticing the petals would fall and propping them up'.
+    Returns (cells, n_support)."""
+    cells = dict(voxels)
+    if not cells:
+        return cells, 0
+    ground = min(y for _, y, _ in cells)
+    added = 0
+    for (x, y, z), col in sorted(voxels.items()):
+        yy = y - 1
+        while yy >= ground and (x, yy, z) not in cells:
+            cells[(x, yy, z)] = col        # column inherits the colour above it
+            added += 1
+            yy -= 1
+    if tape and added:
+        tape.emit("repair", "support",
+                  f"solver: added {added} support brick(s) under overhangs so "
+                  f"nothing floats", status="ok", ms=6)
+    return cells, added
+
+
+def tile_voxels(cells, tape=None):
+    """Tile a voxel field (cell->colour) into real plates. Uses 2x2 plates where
+    they fit (they span 4 cells and BOND them horizontally), then 1x2, then 1x1.
+    The scan order alternates per layer so seams stagger -> upper plates bridge
+    the seams below -> the whole mass is connected (real masonry bond)."""
+    from model import Part
+    parts, n = [], 0
+    by_layer = {}
+    for (x, y, z), col in cells.items():
+        by_layer.setdefault(y, {})[(x, z)] = col
+
+    for y in sorted(by_layer):
+        occ = by_layer[y]
+        used = set()
+        phase = y % 2                 # offset the 2x2 grid on odd layers...
+
+        def free(cs):
+            return all(c in occ and c not in used for c in cs)
+
+        # pass 1: place 2x2 plates on a parity-offset grid. Alternating the grid
+        # per layer means a 2x2 above STRADDLES the seams of the layer below ->
+        # the columns bond into one mass (real masonry bond, in 2D).
+        for (x, z) in sorted(occ):
+            if (x - phase) % 2 or (z - phase) % 2 or (x, z) in used:
+                continue
+            quad = [(x, z), (x + 1, z), (x, z + 1), (x + 1, z + 1)]
+            if free(quad):
+                parts.append(Part(f"v{n}", "3022", occ[(x, z)], (x, y, z), 0, "hull"))
+                used |= set(quad); n += 1
+        # pass 2: fill leftovers with 1x2 then 1x1
+        for (x, z) in sorted(occ):
+            if (x, z) in used:
+                continue
+            col = occ[(x, z)]
+            if free([(x, z), (x, z + 1)]):
+                parts.append(Part(f"v{n}", "3023", col, (x, y, z), 0, "hull")); used |= {(x, z), (x, z + 1)}
+            elif free([(x, z), (x + 1, z)]):
+                parts.append(Part(f"v{n}", "3023", col, (x, y, z), 90, "hull")); used |= {(x, z), (x + 1, z)}
+            else:
+                parts.append(Part(f"v{n}", "3024", col, (x, y, z), 0, "hull")); used.add((x, z))
+            n += 1
+        if tape:
+            tape.emit("scribe", "tile", f"solver: tiled layer {y} ({len(occ)} cells)", ms=3)
+    return parts
+
+
+def build_voxels(voxels, name="Model", tape=None, seed=0):
+    """arbitrary target shape -> legalised, tiled, connected Build."""
+    from model import Build, SubAssembly
+    cells, _ = legalize_voxels(voxels, tape)
+    parts = tile_voxels(cells, tape)
+    parts = [type(p)(f"p{i}", p.part, p.color, p.pos, p.rot, p.sub)
+             for i, p in enumerate(parts)]
+    sub = SubAssembly("hull", None, "sculpt", (), None, ())
+    return Build(id="bld_sculpt", version=0, name=name, parts=tuple(parts),
+                 subs=(sub,), provenance={"backend": "sculpt", "seed": seed})
+
+
 def build_sculpt(noun, size=1.0, seed=0, color=4):
     layers = SHAPES.get(noun, SHAPES["pyramid"])
     base = max(w for w, _ in layers)

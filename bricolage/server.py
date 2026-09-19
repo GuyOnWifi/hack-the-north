@@ -37,9 +37,11 @@ def _payload(vid=None):
         except Unbuildable:
             pass
     tape = v.tape.events if v.tape else []
+    import stability
     return {"version": v.id, "name": v.build.name,
             "build": build_json(v.build), "report": report_json(v.report),
             "steps": steps, "tape": tape, "tree": SESSION.tree_ascii(),
+            "physics": stability.report(v.build.parts),   # COM + support polygon to draw
             "head": SESSION.head}
 
 

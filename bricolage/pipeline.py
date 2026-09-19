@@ -21,9 +21,13 @@ def build_from_prompt(prompt, inventory, seed=0, tape=None):
     client = LLMClient(tape)
 
     if backend == "sculpt":
+        tape.emit("designer", "imagine",
+                  f"sketching '{prompt}' as a voxel shape…", ms=1400, tokens=1800)
+        voxels, model_name = client.propose_shape(prompt, noun, size, seed)
         tape.emit("designer", "propose",
-                  f"sculpt: emit layer masks for '{noun}'", ms=1400, tokens=1800)
-        build = sculpt_backend.build_sculpt(noun, size, seed)
+                  f"proposed a {len(voxels)}-cell shape across "
+                  f"{len({y for _, y, _ in voxels})} layers", ms=200)
+        build = sculpt_backend.build_voxels(voxels, name=model_name, tape=tape, seed=seed)
     else:
         comp = client.propose_compose(prompt, inventory.summarize(), noun, size, seed)
         tape.emit("designer", "propose", _describe(comp["root"]), ms=1900, tokens=2400)

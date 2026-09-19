@@ -139,6 +139,41 @@ class LLMClient:
         from proposer import synthesize
         return synthesize(noun, size, seed)
 
+    def propose_shape(self, prompt, noun, size, seed):
+        """For open-ended shapes: the designer imagines a voxel field for ANY
+        noun. Mock is procedural; claude_cli asks the real model for layer masks
+        (a CHOICE of shape — the solver still legalises + verifies it)."""
+        if provider() in ("claude_cli", "claude-cli", "cli"):
+            v = self._claude_shape(prompt, noun)
+            if v:
+                return v
+        from proposer import voxel_shape
+        return voxel_shape(noun, size)
+
+    def _claude_shape(self, prompt, noun):  # pragma: no cover (needs CLI)
+        import subprocess, json
+        user = (f"Design '{prompt}' as a small LEGO voxel model, ~5-8 layers.\n"
+                "Output ONE JSON object, no prose: "
+                '{"name": str, "layers": [["....","..#.",...], ...]} where each '
+                "layer is a list of equal-length rows of '#' (brick) or '.' "
+                "(empty), bottom layer first. Keep it under 8x8. Colours are "
+                "chosen by the host.")
+        try:
+            out = subprocess.run(["claude", "-p", user], capture_output=True,
+                                 text=True, timeout=90)
+            data = _first_json(out.stdout)
+            if not data or "layers" not in data:
+                return None
+            v = {}
+            for y, layer in enumerate(data["layers"]):
+                for z, row in enumerate(layer):
+                    for x, ch in enumerate(row):
+                        if ch == "#":
+                            v[(x, y, z)] = 4
+            return (v, data.get("name", noun.title())) if v else None
+        except Exception:
+            return None
+
 
 # catalog the real system prompt would carry (generators + sockets)
 _CATALOG = """CATALOG (generators -> sockets offered to children):

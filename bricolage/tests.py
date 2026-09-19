@@ -168,6 +168,36 @@ def test_meta_parser():
           redirect_target("0 ~Moved to 3023b\n0 Name: 3023.dat\n") == "3023b")
 
 
+def test_physics():
+    import stability
+    from generators import bonded, expand
+    from proposer import synthesize
+    # a leaning corbel: each 2x2 course overlaps the one below by 1 stud (so it
+    # stays CONNECTED) but keeps stepping out until its COM leaves the base.
+    corbel = []
+    for k in range(8):
+        for p in bonded(2, 2, 0, 4, 0, courses=1):
+            corbel.append(Part(f"c{k}_{p.id}", p.part, p.color,
+                               (p.pos[0] + k, 3 * k, p.pos[2]), 0, "c"))
+    conn_ok = validate(_b(corbel), physics=False).ok      # connectivity passes
+    phys = [f.code for f in stability.analyze(corbel)]
+    check("PHYSICS: a connected-but-leaning tower is caught (TOPPLE)",
+          conn_ok and "TOPPLE" in phys)
+    rover = expand(synthesize("rover"), seed=0)
+    check("PHYSICS: a normal rover is stable", not stability.analyze(rover.parts))
+
+
+def test_voxel_shapes():
+    from demo import rich_bin
+    from pipeline import build_from_prompt
+    import stability
+    for prompt in ("build me a flower", "build a tree", "build a mushroom"):
+        res = build_from_prompt(prompt, rich_bin(), seed=0)
+        ok = (res["report"].ok and res["steps"] and
+              stability.report(res["build"].parts)["stable"])
+        check(f"SHAPE: '{prompt}' -> valid, stable, sequenced build", ok)
+
+
 def test_version_tree():
     from demo import rich_bin
     from session import Session
@@ -203,6 +233,8 @@ def main():
     test_insertion_sweep()
     print("\n\x1b[1mgenerators\x1b[0m")
     test_generator_ids_unique(); test_lenient_expand(); test_meta_parser()
+    print("\n\x1b[1mphysics & arbitrary shapes\x1b[0m")
+    test_physics(); test_voxel_shapes()
     print("\n\x1b[1mversion tree\x1b[0m")
     test_version_tree(); test_replay_identical()
     print("\n\x1b[1mend-to-end\x1b[0m")
