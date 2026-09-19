@@ -1,18 +1,18 @@
 "use client";
 
-import { play } from "@/lib/sound";
-
 import Link from "next/link";
 import dynamic from "next/dynamic";
+import { useState } from "react";
 import { FloatingBricks } from "@/components/ui/chrome";
 import { LogoTile, Wordmark } from "@/components/ui/Logo";
-import { Rings } from "@/components/three/HeroBrick";
+import { play } from "@/lib/sound";
 
-const HeroBrick = dynamic(() => import("@/components/three/HeroBrick").then((m) => m.HeroBrick), { ssr: false });
+const GlassBrick = dynamic(() => import("@/components/three/GlassBrick").then((m) => m.GlassBrick), { ssr: false });
 
 // Splash (IMG_1223): dark display card over a blue card, floating bricks,
 // glowing rings and a slowly turning smoked brick.
 export default function Splash() {
+  const [ready, setReady] = useState(false);
   return (
     <main className="mx-auto flex min-h-dvh max-w-[520px] flex-col bg-page">
       <Link href="/home" aria-label="Start" className="relative flex flex-1 flex-col" onClick={() => play("connect", { delayMs: 60 })}>
@@ -23,9 +23,8 @@ export default function Splash() {
             <LogoTile size={66} />
             <Wordmark size={44} />
           </div>
-          <div className="relative z-10 mx-auto my-2 aspect-square w-full max-w-[380px]">
-            <Rings size={330} />
-            <HeroBrick className="!absolute inset-0" />
+          <div className="relative z-10 mx-auto my-2 aspect-square w-full max-w-[380px] transition-opacity duration-700" style={{ opacity: ready ? 1 : 0 }}>
+            <GlassBrick brick={{ at: [0, 0], size: 0.6 }} rings={{ at: [0, 0], size: 0.9 }} onReady={() => setReady(true)} />
           </div>
           <div className="relative z-10 mb-auto -mt-2 flex flex-col items-center text-white">
             <span className="text-[26px] font-[900] italic leading-none tracking-tight">SNAP &amp;</span>
