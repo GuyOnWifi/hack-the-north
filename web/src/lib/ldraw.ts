@@ -235,6 +235,13 @@ let snap: { renderer: THREE.WebGLRenderer; scene: THREE.Scene; camera: THREE.Per
 const snapCache = new Map<string, Promise<string>>();
 
 function snapper() {
+  // Browsers cap live WebGL contexts (~16) and silently drop the oldest; long
+  // sessions with many 3D views can take ours. Rebuild instead of rendering blank.
+  if (snap && snap.renderer.getContext().isContextLost()) {
+    snap.renderer.dispose();
+    snap = null;
+    snapCache.clear();
+  }
   if (snap) return snap;
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
   renderer.setPixelRatio(1);
@@ -285,6 +292,20 @@ export function partThumbnail(node: PartNode, size = 200) {
       clone.position.set(0, 0, 0);
       clone.quaternion.copy(q);
       clone.scale.setScalar(LDU);
+      // The live model hides future steps' parts and swaps in ghost materials
+      // on the timeline; the clone copies that state, so reset it or the
+      // picture comes out blank or washed out. The real materials are read
+      // from the original (clone() turns userData into plain JSON), walking
+      // both trees in the same order.
+      const originals: THREE.Object3D[] = [];
+      node.object.traverse((o) => originals.push(o));
+      let k = 0;
+      clone.traverse((c) => {
+        const real = originals[k++]?.userData.realMaterial;
+        c.visible = true;
+        if (real) (c as THREE.Mesh).material = real;
+        delete c.userData.realMaterial;
+      });
       wrapper.add(clone);
       resolve(render(wrapper, size, size, new THREE.Vector3(-1, 0.9, 1.25)));
     });

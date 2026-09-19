@@ -11,12 +11,21 @@ export function ModelSnapshot({ url, className = "", alt, width = 640, height = 
   const [failed, setFailed] = useState(false);
   useEffect(() => {
     let alive = true;
-    modelSnapshot(url, width, height).then(
-      (s) => alive && setSrc(s),
-      () => alive && setFailed(true),
-    );
+    let retry: ReturnType<typeof setTimeout>;
+    // One retry after a pause: a lost WebGL context usually recovers.
+    const attempt = (left: number) =>
+      modelSnapshot(url, width, height).then(
+        (s) => alive && setSrc(s),
+        () => {
+          if (!alive) return;
+          if (left > 0) retry = setTimeout(() => attempt(left - 1), 1200);
+          else setFailed(true);
+        },
+      );
+    attempt(1);
     return () => {
       alive = false;
+      clearTimeout(retry);
     };
   }, [url, width, height]);
   if (failed) return <div className={`grid place-items-center ${className}`}><IsoBrick w={2} d={2} h={3} color="#9a9a9a" size={80} /></div>;
