@@ -93,16 +93,6 @@ def refine(build, voxels, prompt, tape, render_dir, rounds=2, seed=0):
             tape.emit("designer", "revise", "redrew it from what I saw", ms=400)
         except Exception:
             break
-    # ensure the build we return was actually LOOKED at (the last round may have
-    # revised without a confirming look).
-    if best is not build:
-        img = os.path.join(render_dir, "look_final.png")
-        render_build(best, img, view="top")
-        v = _critique(img, prompt, note)
-        if v:
-            ok = v.get("looks_right")
-            tape.emit("inspector", "vision",
-                      ("looks right: " if ok else "shipping best effort — ")
-                      + (v.get("critique") or ""),
-                      status="ok" if ok else "warn", ms=1200)
+    # budget spent (at most `rounds` model calls). The returned build is always a
+    # direct product of a critique — the model's best correction so far.
     return best

@@ -12,7 +12,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from pipeline import build_from_prompt
-from edit import apply_edit, parse_edit
+from edit import apply_edit, parse_edit, describe as _describe_edit
 from validate import validate
 from repair import Budget, fix
 from tape import Tape
@@ -56,14 +56,13 @@ class Session:
                                    "recipe": res["recipe"]},
                             res["build"], res["report"], res["tape"])
 
-    def _run_edit(self, base_build, op, seed):
-        """Apply one edit op and run it through the same FIX loop as a build, so
-        it streams a tape and self-heals inventory/physics issues."""
+    def _run_edit(self, base_build, ops, seed):
+        """Apply the edit ops and run through the same FIX loop as a build, so it
+        streams a tape and self-heals inventory/physics issues."""
         tape = Tape()
-        desc = (f"recolour → {op['word']}" if op["kind"] == "recolor"
-                else f"{op['gen']}.{op['arg']} {op['delta']:+d}")
-        tape.emit("designer", "edit", f"{desc} — keeping everything else fixed", ms=200)
-        nb = apply_edit(base_build, op, seed=seed)
+        tape.emit("designer", "edit",
+                  f"{_describe_edit(ops)} — keeping everything else fixed", ms=200)
+        nb = apply_edit(base_build, ops, seed=seed)
         if nb.parts == base_build.parts:
             tape.emit("inspector", "edit", "that edit doesn't apply to this "
                       "build — nothing changed", status="warn", ms=8)
@@ -142,9 +141,7 @@ class Session:
             if v.op["kind"] == "build":
                 op = "build " + v.op.get("prompt", "")
             else:
-                e = v.op["edit"]
-                op = ("recolor " + e["word"] if e["kind"] == "recolor"
-                      else f"{e['gen']}.{e['arg']}{e['delta']:+d}")
+                op = _describe_edit(v.op["edit"])
             lines.append(f"    {'  '*depth}{vid} [{op}] {ok}{mark}")
             for c in children.get(vid, []):
                 walk(c, depth + 1)

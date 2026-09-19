@@ -18,26 +18,40 @@ _DELTA = {"longer": ("length", +2), "shorter": ("length", -2),
 
 
 def parse_edit(text, build):
-    """Parse an edit into an op dict, or None if nothing recognisable."""
+    """Parse an edit into a LIST of ops (so 'make it bigger and blue' applies
+    both), or None if nothing recognisable."""
     t = text.lower()
-
+    ops = []
     # recolour: any colour word (whole word, so "rendered" != "red")
     for word, code in NAME_TO_CODE.items():
         if re.search(rf"\b{word}\b", t):
-            return {"kind": "recolor", "color": code, "word": word}
-
+            ops.append({"kind": "recolor", "color": code, "word": word})
+            break
     # resize: a delta word, targeting a generator by name (compose builds)
     target = next((s.gen for s in build.subs if s.gen in t), None)
     for word, (arg, d) in _DELTA.items():
         if word in t:
-            return {"kind": "resize",
-                    "gen": target or (build.subs[0].gen if build.subs else None),
-                    "arg": arg, "delta": d}
-    return None
+            ops.append({"kind": "resize",
+                        "gen": target or (build.subs[0].gen if build.subs else None),
+                        "arg": arg, "delta": d})
+            break
+    return ops or None
 
 
-def apply_edit(build, op, seed=0):
-    """Apply a parsed edit op -> new Build (new version)."""
+def describe(ops):
+    return " + ".join("recolour → " + o["word"] if o["kind"] == "recolor"
+                      else f"{o['gen']}.{o['arg']}{o['delta']:+d}" for o in ops)
+
+
+def apply_edit(build, ops, seed=0):
+    """Apply edit ops -> new Build. Resize FIRST (it regenerates geometry),
+    recolour LAST (so it paints the final parts and isn't wiped by a re-expand)."""
+    for op in sorted(ops, key=lambda o: 0 if o["kind"] == "resize" else 1):
+        build = _apply_one(build, op, seed)
+    return build
+
+
+def _apply_one(build, op, seed=0):
     if op["kind"] == "recolor":
         # repaint every non-base part; the baseplate/stand stays neutral
         parts = tuple(p if p.sub == "base" else replace(p, color=op["color"])

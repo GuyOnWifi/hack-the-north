@@ -32,14 +32,10 @@ def _render_top(build, d, img, path, w, h):
         x, _, z = p.pos
         dx, dz = p.footprint()
         base = COLOR_RGB.get(p.color, (150, 150, 150))
+        # no studs in the plan view — keep the silhouette clean so the vision
+        # model reads the SHAPE, not a grid of circles.
         d.rectangle([x * s + ox, z * s + oy, (x + dx) * s + ox, (z + dz) * s + oy],
-                    fill=base, outline=_shade(base, 0.4))
-        if p.has_studs():
-            for i in range(dx):
-                for j in range(dz):
-                    cx, cy = (x + i + 0.5) * s + ox, (z + j + 0.5) * s + oy
-                    r = s * 0.22
-                    d.ellipse([cx - r, cy - r, cx + r, cy + r], outline=_shade(base, 0.55))
+                    fill=base, outline=_shade(base, 0.42))
     img.save(path)
     return path
 
