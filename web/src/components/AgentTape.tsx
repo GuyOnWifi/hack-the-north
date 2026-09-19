@@ -5,10 +5,13 @@ import { Check, Loader2, TriangleAlert, X } from "lucide-react";
 import { parseSse, type TapeActor, type TapeEvent, type TapeStatus } from "@/lib/bricolage";
 
 // Actor colours follow Lane B's dev console so the two read the same.
-const ACTOR: Record<TapeActor, { bg: string; ink: string; label: string }> = {
+const ACTOR: Record<string, { bg: string; ink: string; label: string }> = {
   router: { bg: "#e5efff", ink: "#2458ca", label: "Router" },
+  planner: { bg: "#e8ecff", ink: "#3b3ec9", label: "Planner" },
   designer: { bg: "#dff7fb", ink: "#0e7c8c", label: "Designer" },
+  builder: { bg: "#e2f6ff", ink: "#0b6ea8", label: "Builder" },
   inspector: { bg: "#f3e8fb", ink: "#6e13bc", label: "Inspector" },
+  critic: { bg: "#ffe9f2", ink: "#b41a67", label: "Critic" },
   repair: { bg: "#fff4d6", ink: "#946200", label: "Repair" },
   scribe: { bg: "#e3f5e8", ink: "#1f7a3a", label: "Scribe" },
 };
