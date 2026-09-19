@@ -17,13 +17,15 @@ export interface LiveState {
   payload: Payload | null;
   /** Model URL for ModelView (changes whenever the version does). */
   modelUrl: string | null;
+  /** A speculative-draft model shown WHILE the real build streams in. */
+  partialUrl: string | null;
   tape: TapeEvent[];
   /** "live" = the API answered; "fixture" = offline fallback. */
   source: "live" | "fixture" | null;
   error: string | null;
 }
 
-const initial: LiveState = { status: "idle", prompt: null, payload: null, modelUrl: null, tape: [], source: null, error: null };
+const initial: LiveState = { status: "idle", prompt: null, payload: null, modelUrl: null, partialUrl: null, tape: [], source: null, error: null };
 let state = initial;
 const listeners = new Set<() => void>();
 
@@ -47,7 +49,7 @@ async function adopt(payload: Payload, source: "live" | "fixture", ldrText?: str
   if (!payload.version) throw new Error("The builder has no model yet");
   const text = ldrText ?? (await bricolage.ldr());
   const modelUrl = registerModelText(`${source}-${payload.version}`, text);
-  set({ status: "ready", payload, modelUrl, source, error: null, tape: payload.tape ?? state.tape });
+  set({ status: "ready", payload, modelUrl, partialUrl: null, source, error: null, tape: payload.tape ?? state.tape });
 }
 
 async function run(prompt: string | null, op: () => Promise<Payload>) {
@@ -82,9 +84,19 @@ export async function steer(instruction: string) {
 }
 
 async function streamDesign(displayPrompt: string, fullPrompt: string) {
-  set({ status: "working", prompt: displayPrompt, tape: [], error: null });
+  set({ status: "working", prompt: displayPrompt, tape: [], partialUrl: null, error: null });
   try {
-    const payload = await bricolage.stream(fullPrompt, (e) => set({ tape: [...state.tape, e] }));
+    const payload = await bricolage.stream(fullPrompt, (e) => {
+      // a "geometry" event carries an LDraw blob (the speculative draft, or a
+      // partial). Render it immediately instead of showing it as a tape row.
+      const g = e as TapeEvent & { kind?: string; ldr?: string };
+      if (g.kind === "geometry" && g.ldr) {
+        const url = registerModelText(`partial-${state.tape.length}-${g.ldr.length}`, g.ldr);
+        set({ partialUrl: url });
+        return;
+      }
+      set({ tape: [...state.tape, e] });
+    });
     await adopt(payload, "live");
   } catch {
     try {

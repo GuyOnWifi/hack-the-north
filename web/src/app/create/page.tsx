@@ -41,7 +41,10 @@ function Create() {
 
   const events = live.prompt === prompt ? live.tape : [];
   const done = live.status === "ready" && live.prompt === prompt;
-  const modelUrl = done ? live.modelUrl : null;
+  // show the real model when done; while working, show the speculative draft so
+  // bricks are on screen in seconds instead of at the end.
+  const isDraft = !done && !!live.partialUrl && live.prompt === prompt;
+  const modelUrl = done ? live.modelUrl : isDraft ? live.partialUrl : null;
 
   // once the model resolves, stream it together brick-by-brick on this screen
   const [mSteps, setMSteps] = useState<number | null>(null);
@@ -113,9 +116,12 @@ function Create() {
             >
               <span className="text-[14px] leading-none">◉</span> {physicsJointCount ? `${physicsJointCount} joints` : "joints"}
             </button>
+            {isDraft && (
+              <span className="absolute right-3 top-3 rounded-full bg-[#f5a623] px-3 py-1 text-[12px] font-bold text-ink shadow">◐ rough draft — refining…</span>
+            )}
             <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-between px-3 pb-2.5">
               {assembling ? (
-                <span className="rounded-full bg-black/45 px-3 py-1 text-[13px] font-semibold text-white backdrop-blur">assembling · brick {Math.min(astep, mSteps ?? 0)}/{mSteps ?? "…"}</span>
+                <span className="rounded-full bg-black/45 px-3 py-1 text-[13px] font-semibold text-white backdrop-blur">{isDraft ? "drafting" : "assembling"} · brick {Math.min(astep, mSteps ?? 0)}/{mSteps ?? "…"}</span>
               ) : (
                 <button onClick={() => setPlayToken((t) => t + 1)} className="pointer-events-auto flex items-center gap-1 rounded-full bg-white/90 px-3 py-1 text-[13px] font-bold text-ink active:scale-95">
                   <Play size={14} fill="#1a1a1a" /> replay

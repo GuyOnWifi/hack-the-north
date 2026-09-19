@@ -170,12 +170,35 @@ def _stabilize(items, tape=None):
     return kept
 
 
+def _emit_geometry(tape, items, label, draft):
+    """Push a partial 3D model down the tape as an LDraw blob so the UI can place
+    bricks NOW, before the (slow) real design returns. Speed-reality: a fast
+    speculative draft first, replaced by the verified build when it lands."""
+    try:
+        from sequence import sequence
+        from ldraw import to_ldr
+        b = bricks.to_build(items, name="draft", color=71)
+        try:
+            steps = sequence(b)
+        except Exception:
+            steps = None
+        tape.emit("designer", "geometry", label, status="running", ms=0,
+                  ldr=to_ldr(b, steps), draft=draft)
+    except Exception:
+        pass
+
+
 def build(prompt, name=None, tape=None, seed=0):
     """prompt -> a validated, stable, coloured 3D Build."""
     from tape import Tape
     tape = tape or Tape()
     tape.emit("designer", "think", f"planning a 3D build for '{prompt}'…",
               ms=1600, tokens=2000)
+    # speed-reality: while the real designer thinks (30-90s), place a fast
+    # speculative draft so the first bricks land in seconds, not at the end.
+    if available():
+        _emit_geometry(tape, _normalize(_propose_mock(prompt)),
+                       "rough draft placed — the designer is refining it…", draft=True)
     items = _normalize(_propose(prompt, tape))
     tape.emit("designer", "propose", f"proposed {len(items)} bricks in 3D", ms=300)
 
