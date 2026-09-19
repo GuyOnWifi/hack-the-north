@@ -97,6 +97,7 @@ class H(BaseHTTPRequestHandler):
     def _stream_build(self, prompt):
         """Run a build and stream each tape event live as Server-Sent Events.
         Synchronous: the handler thread writes as Tape.emit fires."""
+        import threading
         from tape import Tape
         self.send_response(200)
         self.send_header("Content-Type", "text/event-stream")
@@ -109,9 +110,32 @@ class H(BaseHTTPRequestHandler):
         self.wfile.write(b": " + b" " * 2048 + b"\n\n")
         self.wfile.flush()
 
+        lock = threading.Lock()
+
         def push(ev):
-            self.wfile.write(f"data: {json.dumps(ev)}\n\n".encode())
-            self.wfile.flush()
+            with lock:
+                self.wfile.write(f"data: {json.dumps(ev)}\n\n".encode())
+                self.wfile.flush()
+
+        # HEARTBEAT: a real `claude -p` design takes 60-130s, and a proxy/browser
+        # will drop an SSE connection that goes silent that long — the client then
+        # falls back to the stale fixture. A comment ping every 5s keeps the
+        # connection alive through the long LLM call (comments are ignored by the
+        # EventSource, so they never show up as tape events).
+        alive = threading.Event(); alive.set()
+
+        def heartbeat():
+            while alive.is_set():
+                if alive.wait(5):
+                    break
+                try:
+                    with lock:
+                        self.wfile.write(b": ping\n\n")
+                        self.wfile.flush()
+                except (BrokenPipeError, ConnectionResetError, OSError):
+                    break
+        hb = threading.Thread(target=heartbeat, daemon=True)
+        hb.start()
 
         tape = Tape()
         tape.listeners.append(push)
@@ -119,18 +143,18 @@ class H(BaseHTTPRequestHandler):
             SESSION.build(prompt, tape=tape)
             done = _payload()
             done["event"] = "done"
-            self.wfile.write(f"data: {json.dumps(done)}\n\n".encode())
-            self.wfile.flush()
+            push(done)
         except (BrokenPipeError, ConnectionResetError):
             pass
         except Exception as e:
             # never leave the stream hanging: emit a terminal error frame so the
             # frontend can show a failure instead of spinning forever.
             try:
-                self.wfile.write(f"data: {json.dumps({'event': 'error', 'error': str(e)})}\n\n".encode())
-                self.wfile.flush()
+                push({"event": "error", "error": str(e)})
             except (BrokenPipeError, ConnectionResetError):
                 pass
+        finally:
+            alive.clear()
 
     def do_POST(self):
         n = int(self.headers.get("Content-Length", 0))

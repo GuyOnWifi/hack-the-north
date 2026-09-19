@@ -49,11 +49,39 @@ def _propose_claude(prompt):
     return bricks.parse(out.stdout)
 
 
+# shown one-by-one while the (slow) LLM call runs, so the tape looks alive
+# instead of frozen. Illustrative of what the designer is doing, not real tokens.
+_THINKING = [
+    "sketching the silhouette in 3D…",
+    "blocking out the base layer on the grid…",
+    "choosing brick sizes to match the shape…",
+    "stacking upward, keeping every brick connected…",
+    "shaping the profile so it reads from any angle…",
+    "checking proportions against the request…",
+    "closing gaps and locking the seams…",
+]
+
+
+def _think_while(prompt, tape, stop):
+    """Emit a rolling 'designer is thinking' trace every few seconds until the
+    LLM call returns, so a 60-130s claude -p wait shows life, not a spinner."""
+    i = 0
+    while not stop.wait(6.0):
+        tape.emit("designer", "think", _THINKING[i % len(_THINKING)],
+                  ms=0, tokens=180)
+        i += 1
+
+
 def _propose(prompt, tape=None):
     """Get a brick proposal, degrading gracefully: real LLM if available, else
     the offline 3D fallback. A failed/empty LLM call never propagates — it falls
     back so the stream always finishes with a real structure."""
     if available():
+        import threading
+        stop = threading.Event()
+        if tape:
+            threading.Thread(target=_think_while, args=(prompt, tape, stop),
+                             daemon=True).start()
         try:
             items = _propose_claude(prompt)
             if items:
@@ -66,6 +94,8 @@ def _propose(prompt, tape=None):
                 tape.emit("designer", "propose", f"designer call failed "
                           f"({type(e).__name__}) — using the offline 3D fallback",
                           status="warn", ms=2)
+        finally:
+            stop.set()          # halt the thinking trace the moment the LLM returns
     return _propose_mock(prompt)
 
 
