@@ -1,0 +1,22 @@
+{
+  "name": "brick-sim",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 3220",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "score": "node scripts/score.mjs"
+  },
+  "dependencies": {
+    "@dimforge/rapier3d-compat": "^0.14.0",
+    "three": "^0.186.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/three": "^0.186.0",
+    "typescript": "^5",
+    "vite": "^6"
+  }
+}
