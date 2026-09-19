@@ -13,8 +13,8 @@ from tape import Tape
 from validate import validate
 
 
-def build_from_prompt(prompt, inventory, seed=0):
-    tape = Tape()
+def build_from_prompt(prompt, inventory, seed=0, tape=None):
+    tape = tape or Tape()
     backend, noun, size, reason = router.route(prompt)
     tape.emit("router", "route", f"{reason}  (backend={backend})", ms=2)
 
@@ -28,10 +28,14 @@ def build_from_prompt(prompt, inventory, seed=0):
         comp = client.propose_compose(prompt, inventory.summarize(), noun, size, seed)
         tape.emit("designer", "propose", _describe(comp["root"]), ms=1900, tokens=2400)
         try:
-            build = expand(comp, name=comp.get("name", noun), seed=seed)
+            # lenient: keep the model's valid children, drop only the impossible
+            build = expand(comp, name=comp.get("name", noun), seed=seed, lenient=True)
+            for d in build.provenance.get("dropped", []):
+                tape.emit("inspector", "reject",
+                          f"dropped {d['gen']}@{d['attach']}: {d['why']}",
+                          status="warn", ms=4)
         except AttachError as e:
-            # a live model can emit an invalid tree — the inspector catches it
-            # pre-geometry; degrade to the deterministic mock rather than crash
+            # even the root won't attach — degrade to a known-good template
             tape.emit("inspector", "reject",
                       f"composition invalid ({e}); falling back to a known-good "
                       f"template", status="warn", ms=5)

@@ -123,6 +123,48 @@ def test_substitution_fires():
           used_sub and res["report"].ok)
 
 
+def test_generator_ids_unique():
+    from generators import bonded, roof
+    ps = bonded(6, 6, 0, 4, 0, plates=True, courses=2)
+    check("GEN: bonded emits unique part ids across courses",
+          len({p.id for p in ps}) == len(ps))
+    for pitch in ("flat", "hip", "gable"):
+        r = roof(6, 6, pitch)
+        check(f"GEN: roof pitch={pitch} is internally valid",
+              validate(_b(list(r.parts))).ok)
+
+
+def test_lenient_expand():
+    from generators import expand
+    comp = {"root": {"gen": "chassis", "args": {"length": 8, "width": 4},
+            "children": [
+                {"gen": "cabin", "attach": "deck_front", "args": {"width": 4, "depth": 4}},
+                {"gen": "wall", "attach": "deck_rear", "args": {"length": 6}},  # too big
+                {"gen": "cabin", "attach": "bogus_socket", "args": {}}]}}       # unknown
+    b = expand(comp, lenient=True, seed=0)
+    kept = {s.gen for s in b.subs}
+    check("LENIENT: keeps valid children, drops the impossible ones",
+          kept == {"chassis", "cabin"} and len(b.provenance["dropped"]) == 2
+          and validate(b).ok)
+
+
+def test_meta_parser():
+    import os, sys
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(
+        os.path.abspath(__file__))), "scripts"))
+    from build_part_meta import parse_description, derive_meta
+    b = parse_description("Brick 2 x 4")
+    check("META: 'Brick 2 x 4' -> 2x4 h3 studs",
+          b == {"name": "Brick 2 x 4", "dx": 2, "dz": 4, "h": 3, "studs": True})
+    t = parse_description("Tile 2 x 2 with Groove")
+    check("META: 'Tile ...' -> h1, no studs", t["h"] == 1 and t["studs"] is False)
+    p = parse_description("Plate 1 x 2")
+    check("META: 'Plate 1 x 2' -> h1 studs", p["h"] == 1 and p["studs"] is True)
+    d = derive_meta("0 Brick 2 x 2\n0 Name: 3003.dat\n1 16 0 0 0 ...\n")
+    check("META: derive_meta reads the description line",
+          d["dx"] == 2 and d["dz"] == 2)
+
+
 def test_version_tree():
     from demo import rich_bin
     from session import Session
@@ -156,6 +198,8 @@ def main():
     print("\n\x1b[1minvariants\x1b[0m")
     test_no_floats_in_model(); test_determinism(); test_ldraw_roundtrip()
     test_insertion_sweep()
+    print("\n\x1b[1mgenerators\x1b[0m")
+    test_generator_ids_unique(); test_lenient_expand(); test_meta_parser()
     print("\n\x1b[1mversion tree\x1b[0m")
     test_version_tree(); test_replay_identical()
     print("\n\x1b[1mend-to-end\x1b[0m")

@@ -3,4 +3,4 @@ data: {"t": 1902, "actor": "designer", "kind": "propose", "text": "chassis(lengt
 data: {"t": 1937, "actor": "inspector", "kind": "reject", "text": "OUT_OF_BUDGET: Needs 6x Brick 2x4 in dark gray; you have 0.", "status": "fail", "ms": 35, "tokens": 0}
 data: {"t": 1945, "actor": "repair", "kind": "substitute", "text": "rung 2: swapped 6 part(s) for smaller pieces the bin has (3001 -> 3003+3003)", "status": "ok", "ms": 8, "tokens": 0}
 data: {"t": 1985, "actor": "inspector", "kind": "verify", "text": "all issues resolved \u2014 build stands up", "status": "ok", "ms": 40, "tokens": 0}
-data: {"t": 2015, "actor": "scribe", "kind": "sequence", "text": "ordered 12 build steps (insertion sweep passed)", "status": "ok", "ms": 30, "tokens": 0}
+data: {"t": 2015, "actor": "scribe", "kind": "sequence", "text": "ordered 11 build steps (insertion sweep passed)", "status": "ok", "ms": 30, "tokens": 0}

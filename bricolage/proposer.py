@@ -32,7 +32,7 @@ def synthesize(noun, size=1.0, seed=0):
                                      "height": _scale(2, size, 2), "color": 19},
             "children": [
                 {"gen": "roof", "attach": "roof",
-                 "args": {"width": w, "depth": d, "color": 4}},
+                 "args": {"width": w, "depth": d, "pitch": "hip", "color": 4}},
             ]}}
 
     if noun in ("tower", "castle", "robot"):
@@ -57,8 +57,10 @@ def synthesize(noun, size=1.0, seed=0):
                 {"gen": "cabin", "attach": "deck_center",
                  "args": {"style": "cab", "width": width, "depth": 2,
                           "height": 1, "color": 15}},
-                {"gen": "wing", "attach": "deck_front", "args": {"span": 3, "color": 71}},
-                {"gen": "wing", "attach": "deck_rear", "args": {"span": 3, "color": 71}},
+                {"gen": "wing", "attach": "deck_front",
+                 "args": {"span": 3, "sweep": "swept", "color": 71}},
+                {"gen": "wing", "attach": "deck_rear",
+                 "args": {"span": 3, "sweep": "swept", "color": 71}},
             ]}}
 
     # LLM fallback default

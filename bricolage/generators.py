@@ -93,7 +93,10 @@ def bonded(w, d, y0, color, seed, plates=False, courses=2, sub="root"):
     parts = []
     for c in range(courses):
         parts += tile_box(w, d, y0 + c * ch, color, seed + c, plates, sub, phase=c)
-    return parts
+    # tile_box restarts its counter per course, so re-id to keep ids unique
+    # across the whole subassembly (occupancy/adjacency are keyed by id).
+    from dataclasses import replace
+    return [replace(p, id=f"{sub}.{i}") for i, p in enumerate(parts)]
 
 
 # kept name for sculpt.py: a single course (organic hulls are thin by design)
@@ -190,7 +193,23 @@ def tower(height=4, footprint=2, color=71, seed=0):
 
 
 def roof(width=4, depth=4, pitch="flat", color=4, seed=0):
-    parts = bonded(width, depth, 0, color, seed, plates=True, courses=2)
+    """pitch: flat (2 plate courses) | hip (stepped inset courses, pyramid-ish)
+    | gable (stepped inset along the width only, a ridge). Every course rests on
+    the one below, so it stays connected and supported by construction."""
+    if pitch == "flat":
+        parts = bonded(width, depth, 0, color, seed, plates=True, courses=2)
+    else:
+        parts, y, w, d, ox, oz = [], 0, width, depth, 0, 0
+        n = [0]
+        while w >= 1 and d >= 1:
+            for p in bonded(w, d, y, color, seed + y, plates=True, courses=1):
+                parts.append(Part(f"r{n[0]}", p.part, p.color,
+                                  (p.pos[0] + ox, y, p.pos[2] + oz), 0, "root")); n[0] += 1
+            y += 1
+            if pitch == "gable":                 # inset width only -> a ridge
+                w -= 2; ox += 1
+            else:                                # hip -> inset both -> a point
+                w -= 2; d -= 2; ox += 1; oz += 1
     mount = Socket("base", "antistud_down", (width, depth), (0, 0, 0))
     return SubResult(parts, {}, mount)
 
@@ -203,8 +222,20 @@ def slab(width=6, depth=6, color=19, seed=0):
 
 
 def wing(span=4, sweep="flat", color=71, seed=0):
-    # a 2-wide plate fin so it binds to the deck it sits on
-    parts = bonded(2, span, 0, color, seed, plates=True, courses=2)
+    """sweep: flat (rectangular fin) | swept (stepped taper along span) |
+    tapered (narrows to a tip). A 2-wide root binds it to the deck it sits on."""
+    if sweep == "flat":
+        parts = bonded(2, span, 0, color, seed, plates=True, courses=2)
+    else:
+        parts, n = [], [0]
+        for j in range(span):
+            # width tapers from 2 at the root to 1 toward the tip
+            w = 2 if (sweep == "swept" and j < span - max(1, span // 2)) or \
+                     (sweep == "tapered" and j < span // 2) else 1
+            for c in range(2):                    # 2 plate courses to bond
+                for xi in range(w):
+                    parts.append(Part(f"w{n[0]}", "3024", color,
+                                      (xi, c, j), 0, "root")); n[0] += 1
     mount = Socket("base", "antistud_down", (2, min(2, span)), (0, 0, 0))
     return SubResult(parts, {}, mount)
 
@@ -229,11 +260,15 @@ def _run_gen(node, seed):
     return GENERATORS[name](**args)
 
 
-def expand(composition, build_id="bld_demo", name="model", seed=0):
+def expand(composition, build_id="bld_demo", name="model", seed=0, lenient=False):
     """Composition tree -> validated-shape Build. Resolves socket NAMES to grid
     positions. Raises AttachError on socket type/size mismatch BEFORE geometry —
-    bad compositions die cheap (no bricks placed)."""
-    parts, subs = [], []
+    bad compositions die cheap (no bricks placed).
+
+    lenient=True (for live LLM output): a child that won't attach is SKIPPED and
+    recorded in provenance['dropped'] rather than sinking the whole build — we
+    keep the model's good ideas and drop only the impossible ones."""
+    parts, subs, dropped = [], [], []
     counter = [0]
 
     def uid(prefix):
@@ -280,11 +315,17 @@ def expand(composition, build_id="bld_demo", name="model", seed=0):
                                 attach_name, tuple(res.sockets)))
 
         for child in node.get("children", []):
-            place(child, res, sub_name, child["attach"])
+            try:
+                place(child, res, sub_name, child.get("attach"))
+            except AttachError as e:
+                if not lenient:
+                    raise
+                dropped.append({"gen": child.get("gen"),
+                                "attach": child.get("attach"), "why": str(e)})
 
     place(composition["root"] if "root" in composition else composition,
           None, None, None)
     return Build(id=build_id, version=0, name=name, parts=tuple(parts),
                  subs=tuple(subs),
                  provenance={"backend": "compose", "seed": seed,
-                             "composition": composition})
+                             "composition": composition, "dropped": dropped})

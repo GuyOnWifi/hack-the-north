@@ -45,14 +45,24 @@ dependencies and no network.
 - Flat areas need **≥2 bonded courses** — a single course of loose bricks is
   (correctly) rejected as disconnected.
 
+- [x] **Live SSE streaming**: `GET /api/build_stream?prompt=` streams each tape
+      event as it fires; the console renders it via `EventSource`.
+- [x] **Partial socket rejection**: `expand(lenient=True)` keeps the model's
+      valid children and drops only the impossible ones (recorded in
+      `provenance.dropped`); the pipeline uses it for live LLM output.
+- [x] **Richer generators**: roof `pitch=flat|hip|gable`, wing `sweep=flat|
+      swept|tapered`. Fixed an id-collision bug in `bonded` (courses reused ids).
+- [x] **`scripts/build_part_meta.py`**: parses real LDraw `.dat` description
+      headers to auto-generate + verify the metadata table; parser unit-tested
+      against a synthetic dir (works before the 80MB library is downloaded).
+
+**25/25 tests pass.**
+
 ### Not done / next
-- [ ] SSE endpoint to stream the tape to the frontend live (tape + session exist).
-- [ ] `scripts/build_part_meta.py`: parse real LDraw `.dat` to auto-generate +
-      verify the metadata table (needs the 80MB parts library on disk). This is
-      the one place an LDraw *reader* earns a dependency; the writer stays hand-rolled.
-- [ ] Richer generators (roof pitch, real wing sweep) once the core is trusted.
-- [ ] Keep the LLM's valid sub-parts on a partial socket rejection instead of
-      whole-composition fallback to the mock.
+- [ ] Run `build_part_meta.py` against the real LDraw library once downloaded
+      (surfaces the slope-orientation discrepancy to hand-verify — by design).
+- [ ] Keep-valid-subparts is whole-child granularity; could go finer.
+- [ ] 3D render + PDF manual live in Lane C (frontend), against `fixtures/` + the API.
 
 ## Lanes A (CV), C (frontend) — owned by teammates
 Frontend can start now against `fixtures/`.

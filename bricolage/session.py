@@ -47,8 +47,8 @@ class Session:
         return v
 
     # ---- operations ----------------------------------------------------
-    def build(self, prompt, seed=0):
-        res = build_from_prompt(prompt, self.inv, seed)
+    def build(self, prompt, seed=0, tape=None):
+        res = build_from_prompt(prompt, self.inv, seed, tape=tape)
         return self._commit(None, {"kind": "build", "prompt": prompt, "seed": seed},
                             res["build"], res["report"], res["tape"])
 

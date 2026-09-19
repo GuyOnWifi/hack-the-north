@@ -125,72 +125,72 @@
     },
     {
       "id": "p12",
-      "part": "3005",
+      "part": "3004",
       "color": 15,
       "pos": [
         0,
         6,
         0
       ],
-      "rot": 0,
+      "rot": 90,
       "sub": "cabin_11"
     },
     {
       "id": "p13",
-      "part": "3005",
-      "color": 15,
-      "pos": [
-        0,
-        6,
-        3
-      ],
-      "rot": 0,
-      "sub": "cabin_11"
-    },
-    {
-      "id": "p14",
-      "part": "3005",
-      "color": 15,
-      "pos": [
-        1,
-        6,
-        0
-      ],
-      "rot": 0,
-      "sub": "cabin_11"
-    },
-    {
-      "id": "p15",
-      "part": "3005",
-      "color": 15,
-      "pos": [
-        1,
-        6,
-        3
-      ],
-      "rot": 0,
-      "sub": "cabin_11"
-    },
-    {
-      "id": "p16",
-      "part": "3005",
+      "part": "3004",
       "color": 15,
       "pos": [
         2,
         6,
         0
+      ],
+      "rot": 90,
+      "sub": "cabin_11"
+    },
+    {
+      "id": "p14",
+      "part": "3004",
+      "color": 15,
+      "pos": [
+        0,
+        6,
+        3
+      ],
+      "rot": 90,
+      "sub": "cabin_11"
+    },
+    {
+      "id": "p15",
+      "part": "3004",
+      "color": 15,
+      "pos": [
+        2,
+        6,
+        3
+      ],
+      "rot": 90,
+      "sub": "cabin_11"
+    },
+    {
+      "id": "p16",
+      "part": "3004",
+      "color": 15,
+      "pos": [
+        0,
+        6,
+        1
       ],
       "rot": 0,
       "sub": "cabin_11"
     },
     {
       "id": "p17",
-      "part": "3005",
+      "part": "3004",
       "color": 15,
       "pos": [
-        2,
+        3,
         6,
-        3
+        1
       ],
       "rot": 0,
       "sub": "cabin_11"
@@ -200,8 +200,8 @@
       "part": "3005",
       "color": 15,
       "pos": [
-        3,
-        6,
+        0,
+        9,
         0
       ],
       "rot": 0,
@@ -209,14 +209,14 @@
     },
     {
       "id": "p19",
-      "part": "3005",
+      "part": "3004",
       "color": 15,
       "pos": [
-        3,
-        6,
-        3
+        1,
+        9,
+        0
       ],
-      "rot": 0,
+      "rot": 90,
       "sub": "cabin_11"
     },
     {
@@ -224,9 +224,9 @@
       "part": "3005",
       "color": 15,
       "pos": [
-        0,
-        6,
-        1
+        3,
+        9,
+        0
       ],
       "rot": 0,
       "sub": "cabin_11"
@@ -236,23 +236,23 @@
       "part": "3005",
       "color": 15,
       "pos": [
-        3,
-        6,
-        1
+        0,
+        9,
+        3
       ],
       "rot": 0,
       "sub": "cabin_11"
     },
     {
       "id": "p22",
-      "part": "3005",
+      "part": "3004",
       "color": 15,
       "pos": [
-        0,
-        6,
-        2
+        1,
+        9,
+        3
       ],
-      "rot": 0,
+      "rot": 90,
       "sub": "cabin_11"
     },
     {
@@ -261,30 +261,6 @@
       "color": 15,
       "pos": [
         3,
-        6,
-        2
-      ],
-      "rot": 0,
-      "sub": "cabin_11"
-    },
-    {
-      "id": "p24",
-      "part": "3005",
-      "color": 15,
-      "pos": [
-        0,
-        9,
-        0
-      ],
-      "rot": 0,
-      "sub": "cabin_11"
-    },
-    {
-      "id": "p25",
-      "part": "3005",
-      "color": 15,
-      "pos": [
-        0,
         9,
         3
       ],
@@ -292,12 +268,36 @@
       "sub": "cabin_11"
     },
     {
-      "id": "p26",
-      "part": "3005",
+      "id": "p24",
+      "part": "3004",
       "color": 15,
       "pos": [
-        1,
+        0,
         9,
+        1
+      ],
+      "rot": 0,
+      "sub": "cabin_11"
+    },
+    {
+      "id": "p25",
+      "part": "3004",
+      "color": 15,
+      "pos": [
+        3,
+        9,
+        1
+      ],
+      "rot": 0,
+      "sub": "cabin_11"
+    },
+    {
+      "id": "p26",
+      "part": "3023",
+      "color": 15,
+      "pos": [
+        0,
+        12,
         0
       ],
       "rot": 0,
@@ -305,138 +305,18 @@
     },
     {
       "id": "p27",
-      "part": "3005",
+      "part": "3023",
       "color": 15,
       "pos": [
-        1,
-        9,
-        3
+        0,
+        12,
+        2
       ],
       "rot": 0,
       "sub": "cabin_11"
     },
     {
       "id": "p28",
-      "part": "3005",
-      "color": 15,
-      "pos": [
-        2,
-        9,
-        0
-      ],
-      "rot": 0,
-      "sub": "cabin_11"
-    },
-    {
-      "id": "p29",
-      "part": "3005",
-      "color": 15,
-      "pos": [
-        2,
-        9,
-        3
-      ],
-      "rot": 0,
-      "sub": "cabin_11"
-    },
-    {
-      "id": "p30",
-      "part": "3005",
-      "color": 15,
-      "pos": [
-        3,
-        9,
-        0
-      ],
-      "rot": 0,
-      "sub": "cabin_11"
-    },
-    {
-      "id": "p31",
-      "part": "3005",
-      "color": 15,
-      "pos": [
-        3,
-        9,
-        3
-      ],
-      "rot": 0,
-      "sub": "cabin_11"
-    },
-    {
-      "id": "p32",
-      "part": "3005",
-      "color": 15,
-      "pos": [
-        0,
-        9,
-        1
-      ],
-      "rot": 0,
-      "sub": "cabin_11"
-    },
-    {
-      "id": "p33",
-      "part": "3005",
-      "color": 15,
-      "pos": [
-        3,
-        9,
-        1
-      ],
-      "rot": 0,
-      "sub": "cabin_11"
-    },
-    {
-      "id": "p34",
-      "part": "3005",
-      "color": 15,
-      "pos": [
-        0,
-        9,
-        2
-      ],
-      "rot": 0,
-      "sub": "cabin_11"
-    },
-    {
-      "id": "p35",
-      "part": "3005",
-      "color": 15,
-      "pos": [
-        3,
-        9,
-        2
-      ],
-      "rot": 0,
-      "sub": "cabin_11"
-    },
-    {
-      "id": "p36",
-      "part": "3023",
-      "color": 15,
-      "pos": [
-        0,
-        12,
-        0
-      ],
-      "rot": 0,
-      "sub": "cabin_11"
-    },
-    {
-      "id": "p37",
-      "part": "3023",
-      "color": 15,
-      "pos": [
-        0,
-        12,
-        2
-      ],
-      "rot": 0,
-      "sub": "cabin_11"
-    },
-    {
-      "id": "p38",
       "part": "3020",
       "color": 15,
       "pos": [
@@ -448,7 +328,7 @@
       "sub": "cabin_11"
     },
     {
-      "id": "p39",
+      "id": "p29",
       "part": "3024",
       "color": 15,
       "pos": [
@@ -460,7 +340,7 @@
       "sub": "cabin_11"
     },
     {
-      "id": "p40",
+      "id": "p30",
       "part": "3023",
       "color": 15,
       "pos": [
@@ -472,7 +352,7 @@
       "sub": "cabin_11"
     },
     {
-      "id": "p41",
+      "id": "p31",
       "part": "3024",
       "color": 15,
       "pos": [
@@ -484,7 +364,7 @@
       "sub": "cabin_11"
     },
     {
-      "id": "p43",
+      "id": "p33",
       "part": "4073",
       "color": 72,
       "pos": [
@@ -493,10 +373,10 @@
         0
       ],
       "rot": 0,
-      "sub": "axle_pair_42"
+      "sub": "axle_pair_32"
     },
     {
-      "id": "p44",
+      "id": "p34",
       "part": "4073",
       "color": 72,
       "pos": [
@@ -505,10 +385,10 @@
         0
       ],
       "rot": 0,
-      "sub": "axle_pair_42"
+      "sub": "axle_pair_32"
     },
     {
-      "id": "p46",
+      "id": "p36",
       "part": "4073",
       "color": 72,
       "pos": [
@@ -517,10 +397,10 @@
         6
       ],
       "rot": 0,
-      "sub": "axle_pair_45"
+      "sub": "axle_pair_35"
     },
     {
-      "id": "p47",
+      "id": "p37",
       "part": "4073",
       "color": 72,
       "pos": [
@@ -529,7 +409,7 @@
         6
       ],
       "rot": 0,
-      "sub": "axle_pair_45"
+      "sub": "axle_pair_35"
     }
   ],
   "subassemblies": {
@@ -555,13 +435,13 @@
         "roof"
       ]
     },
-    "axle_pair_42": {
+    "axle_pair_32": {
       "parent": "chassis",
       "gen": "axle_pair",
       "attach": "underside_front",
       "sockets": []
     },
-    "axle_pair_45": {
+    "axle_pair_35": {
       "parent": "chassis",
       "gen": "axle_pair",
       "attach": "underside_rear",
@@ -571,6 +451,7 @@
   "provenance": {
     "backend": "compose",
     "seed": 0,
+    "dropped": [],
     "composition": {
       "name": "Rover",
       "root": {

@@ -14,12 +14,18 @@ class Tape:
         self.events = []
         self._t = 0
         self._clock = clock  # injectable so replay is deterministic
+        self.listeners = []  # live subscribers (SSE) — called on each emit
 
     def emit(self, actor, kind, text, status="ok", ms=0, tokens=0, **extra):
         self._t += max(1, ms)
         ev = {"t": self._t, "actor": actor, "kind": kind, "text": text,
               "status": status, "ms": ms, "tokens": tokens, **extra}
         self.events.append(ev)
+        for fn in self.listeners:
+            try:
+                fn(ev)
+            except Exception:
+                pass
         return ev
 
     def sse(self):

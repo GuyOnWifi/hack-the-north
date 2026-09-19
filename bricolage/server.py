@@ -61,14 +61,44 @@ class H(BaseHTTPRequestHandler):
         self._send(204, "")
 
     def do_GET(self):
-        if self.path == "/":
+        from urllib.parse import urlparse, parse_qs
+        u = urlparse(self.path)
+        if u.path == "/":
             return self._send(200, CONSOLE, "text/html; charset=utf-8")
-        if self.path == "/api/state":
+        if u.path == "/api/state":
             return self._send(200, _payload())
-        if self.path == "/api/ldr":
+        if u.path == "/api/ldr":
             v = SESSION.versions.get(SESSION.head)
             return self._send(200, to_ldr(v.build) if v else "", "text/plain")
+        if u.path == "/api/build_stream":
+            prompt = parse_qs(u.query).get("prompt", ["build a rover"])[0]
+            return self._stream_build(prompt)
         self._send(404, {"error": "not found"})
+
+    def _stream_build(self, prompt):
+        """Run a build and stream each tape event live as Server-Sent Events.
+        Synchronous: the handler thread writes as Tape.emit fires."""
+        from tape import Tape
+        self.send_response(200)
+        self.send_header("Content-Type", "text/event-stream")
+        self.send_header("Cache-Control", "no-cache")
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.end_headers()
+
+        def push(ev):
+            self.wfile.write(f"data: {json.dumps(ev)}\n\n".encode())
+            self.wfile.flush()
+
+        tape = Tape()
+        tape.listeners.append(push)
+        try:
+            SESSION.build(prompt, tape=tape)
+            done = _payload()
+            done["event"] = "done"
+            self.wfile.write(f"data: {json.dumps(done)}\n\n".encode())
+            self.wfile.flush()
+        except (BrokenPipeError, ConnectionResetError):
+            pass
 
     def do_POST(self):
         n = int(self.headers.get("Content-Length", 0))
@@ -124,26 +154,34 @@ CONSOLE = """<!doctype html><meta charset=utf-8><title>Bricolage — Lane B cons
 </div>
 <script>
 const $=s=>document.querySelector(s)
-async function build(){await post('/api/build',{prompt:$('#prompt').value})}
+function addEv(e){
+ const cls={ok:'ok',fail:'fail',warn:'warn',running:'run'}[e.status]||''
+ const ic={ok:'✓',fail:'✗',warn:'!',running:'…'}[e.status]||' '
+ $('#tape').insertAdjacentHTML('beforeend',
+   `<div class=ev><span class="actor ${e.actor}">${e.actor}</span><span class=${cls}>${ic}</span> ${e.text}</div>`)
+}
+function build(){                       // live SSE — events stream from the server
+ $('#tape').innerHTML=''
+ const es=new EventSource('/api/build_stream?prompt='+encodeURIComponent($('#prompt').value))
+ es.onmessage=m=>{const d=JSON.parse(m.data)
+   if(d.event==='done'){es.close(); renderMeta(d)} else addEv(d)}
+ es.onerror=()=>es.close()
+}
 async function edit(t){await post('/api/edit',{text:t})}
 async function post(url,body){
  const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body||{})})
  render(await r.json())
 }
-function render(d){
- const t=$('#tape'); t.innerHTML=''
- ;(d.tape||[]).forEach((e,i)=>{setTimeout(()=>{
-   const cls={ok:'ok',fail:'fail',warn:'warn',running:'run'}[e.status]||''
-   const ic={ok:'✓',fail:'✗',warn:'!',running:'…'}[e.status]||' '
-   t.insertAdjacentHTML('beforeend',
-     `<div class=ev><span class="actor ${e.actor}">${e.actor}</span><span class=${cls}>${ic}</span> ${e.text}</div>`)
- },i*120)})
+function renderMeta(d){
  const rep=d.report||{}
  $('#report').innerHTML = rep.ok?'<span class=ok>✓ valid</span>':'<span class=fail>✗ '+(rep.errors||[]).length+' issue(s)</span>'
  $('#stats').textContent = JSON.stringify(rep.stats||{},null,0)+
    ((rep.errors||[]).length?'\\n'+rep.errors.map(e=>'• '+e.human).join('\\n'):'')+
    (d.steps?`\\nsteps: ${d.steps.n_steps}`:'')
  $('#tree').textContent = d.tree||''
+}
+function render(d){
+ $('#tape').innerHTML=''; (d.tape||[]).forEach(addEv); renderMeta(d)
 }
 fetch('/api/state').then(r=>r.json()).then(render)
 </script>
