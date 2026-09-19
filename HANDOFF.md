@@ -1,7 +1,22 @@
 # Handoff — Lane B → UI
 
 Everything the UI needs to integrate. Lane B (build system) is done and tested
-(`python bricolage/tests.py` → 26/26). Pure Python, **zero dependencies**.
+(`python bricolage/tests.py` → 33/33). Pure Python, **zero dependencies**.
+
+## Run the full demo stack (verified working end-to-end)
+
+Two terminals:
+```bash
+# 1) backend (add PROVIDER=claude_cli for the real LLM designer, no API key)
+python bricolage/server.py                      # http://localhost:8017
+
+# 2) frontend (proxies /bricolage/* -> the backend)
+cd web && npm install && npm run build && BRICOLAGE_URL=http://127.0.0.1:8017 npm start
+# open http://localhost:3000
+```
+Verified on 2026-09-19: `next build` compiles clean (15 routes); a build through
+the proxy returns a valid, physics-stable flower with a live tape; `/api/compare`
+(the split-screen) is reachable. The app is "Brickbook".
 
 ## Fastest path: the live API
 
