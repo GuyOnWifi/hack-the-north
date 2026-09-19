@@ -289,6 +289,7 @@ def expand(composition, build_id="bld_demo", name="model", seed=0, lenient=False
     recorded in provenance['dropped'] rather than sinking the whole build — we
     keep the model's good ideas and drop only the impossible ones."""
     parts, subs, dropped = [], [], []
+    occupied = set()
     counter = [0]
 
     def uid(prefix):
@@ -324,10 +325,19 @@ def expand(composition, build_id="bld_demo", name="model", seed=0, lenient=False
             ty = sock.pos[1] - res.mount.pos[1]
             tz = sock.pos[2] - res.mount.pos[2]
 
-        for p in res.parts:
-            parts.append(Part(uid("p"), p.part, p.color,
-                              (p.pos[0] + tx, p.pos[1] + ty, p.pos[2] + tz),
-                              p.rot, sub_name))
+        placed = [Part(uid("p"), p.part, p.color,
+                       (p.pos[0] + tx, p.pos[1] + ty, p.pos[2] + tz),
+                       p.rot, sub_name) for p in res.parts]
+        cells = set().union(*(pp.cells() for pp in placed)) if placed else set()
+        # overlap guard: a child whose geometry collides with what's already
+        # placed (the LLM picked two colliding sockets) is dropped in lenient
+        # mode — same philosophy as dropping a bad socket, keeps the rest valid.
+        if parent_res is not None and lenient and cells & occupied:
+            dropped.append({"gen": gen_name, "attach": attach_name,
+                            "why": "overlaps existing geometry"})
+            return
+        parts.extend(placed)
+        occupied.update(cells)
 
         subs.append(SubAssembly(sub_name,
                                 None if parent_sub is None else parent_sub,
