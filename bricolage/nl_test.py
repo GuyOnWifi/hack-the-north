@@ -12,11 +12,19 @@ from pipeline import build_from_prompt
 from session import Session
 
 PROMPTS = [
+    # shapes (sculpt)
     "build me a flower", "make me a heart", "a star", "build a tree",
-    "make a mushroom", "a moon", "build a fish", "a smiley face", "a house",
-    "make me a rover", "build a truck", "a tall tower", "a long wall",
-    "build a jet", "make a dragon", "a cat", "a rocket ship", "a crown",
-    "build a sword", "make me a robot", "a castle", "a dog",
+    "make a mushroom", "a moon", "build a fish", "a smiley face",
+    "make a dragon", "a cat", "a crown", "build a sword", "a dog",
+    "an ice cream cone", "a christmas tree", "a pixel mario", "a red apple",
+    "the letter A", "a spooky ghost", "a green frog", "a birthday cake",
+    # structures (compose)
+    "a house", "make me a rover", "build a truck", "a tall tower",
+    "a long wall", "build a jet", "a rocket ship", "make me a robot",
+    "a castle", "a little blue car", "a big wide house", "a garage",
+    # awkward phrasings / edge cases
+    "can you build me something like a boat", "I want a small tower please",
+    "make the coolest robot ever", "surprise me", "asdfghjkl",
 ]
 PASS, FAIL = "\x1b[32m✓\x1b[0m", "\x1b[31m✗\x1b[0m"
 
@@ -40,14 +48,27 @@ def check_build(prompt, inv):
 
 
 def main():
-    inv = unlimited_bin()
-    print("\n\x1b[1mIMAGINE mode — unlimited bricks, any request\x1b[0m")
+    print("\n\x1b[1mIMAGINE mode — unlimited bricks, any request must be VALID\x1b[0m")
     npass = 0
     for p in PROMPTS:
-        ok, why, n, backend = check_build(p, inv)
+        ok, why, n, backend = check_build(p, unlimited_bin())
         npass += ok
-        print(f"  {PASS if ok else FAIL} {p:22} [{backend:7}] {n:3} parts  {why}")
-    print(f"  \x1b[1m{npass}/{len(PROMPTS)} complete\x1b[0m")
+        mark = PASS if ok else FAIL
+        print(f"  {mark} {p:34} [{backend:7}] {n:3} parts  {why}")
+    print(f"  \x1b[1m{npass}/{len(PROMPTS)} valid\x1b[0m")
+
+    # SOLVE mode: a finite generic LEGO set. Big asks may honestly degrade
+    # (that's fine) — what must NOT happen is a crash or a spurious invalid.
+    print("\n\x1b[1mSOLVE mode — finite generic set, must COMPLETE (valid or honest)\x1b[0m")
+    completed = 0
+    for p in PROMPTS:
+        try:
+            res = build_from_prompt(p, rich_bin(), 0)
+            complete = res["steps"] is not None or not res["report"].ok  # built or honestly rejected
+            completed += bool(complete)
+        except Exception as e:
+            print(f"  {FAIL} {p:34} CRASHED: {e}")
+    print(f"  \x1b[1m{completed}/{len(PROMPTS)} completed without crashing\x1b[0m")
 
     print("\n\x1b[1mEDITS — recolour & resize\x1b[0m")
     edits = 0
