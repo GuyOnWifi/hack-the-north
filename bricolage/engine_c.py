@@ -80,7 +80,9 @@ def _listeners(tape):
         """Show the designs and wait. The critic takes over if nobody answers."""
         CHOICE["event"].clear()
         CHOICE["answer"], CHOICE["open"] = None, True
-        tape.emit("critic", "choices", f"{len(candidates)} designs to choose from", status="running",
+        tape.emit("critic", "choices",
+                  "your design is ready: keep it or say what to change" if len(candidates) == 1
+                  else f"{len(candidates)} designs to choose from", status="running",
                   choices=[{"n": i + 1, "style": c.get("style", ""), "stands": c["stands"],
                             "image": _thumb(c["front"]), "ldr": c["ldr"]} for i, c in enumerate(candidates)])
         answered = CHOICE["event"].wait(timeout=CHOICE_WAIT)

@@ -855,14 +855,9 @@ def _first_round(run: Run, briefs: list[tuple[dict, str]], best: dict) -> tuple[
     if not built:
         return briefs[0], None, [], None
     renders = render(run, *[label for label, *_ in built])
-    if len(built) == 1:
-        label, brief, report, problems, _ = built[0]
-        _remember(best, 0, None, problems, report, problems, label)
-        score, issues = judge(run, renders[0], problems)
-        _remember(best, 0, score, issues, report, problems, label)
-        return brief, score, issues, renders[0]
+    score, issues = None, []
     i, note = None, ""
-    if run.on_choice:  # the person watching gets first refusal on the choice
+    if run.on_choice:  # the person watching gets first say: keep it, or change it
         answer = run.on_choice([
             {"label": label, "style": style, "parts": report["parts"], "stands": report["stands"]["stable"],
              "front": str(renders[n] / "front.png"), "ldr": (run.dir / f"{label}.ldr").read_text()}
@@ -872,18 +867,21 @@ def _first_round(run: Run, briefs: list[tuple[dict, str]], best: dict) -> tuple[
             i, note = answer.get("index"), (answer.get("note") or "").strip()
         else:
             i = answer
-    if i is None:
-        i, score, issues = pick(run, renders)
+    if i is None:  # nobody there, or they passed: the critic decides
+        if len(built) == 1:
+            i, (score, issues) = 0, judge(run, renders[0], built[0][3])
+        else:
+            i, score, issues = pick(run, renders)
     else:
         i = max(0, min(len(built) - 1, i))
-        run.tape.emit("critic", "pick", f"you picked design {i + 1} of {len(built)}")
-        score, issues = None, []
+        if len(built) > 1:
+            run.tape.emit("critic", "pick", f"you picked design {i + 1} of {len(built)}")
     label, brief, report, problems, _ = built[i]
     if note:  # "that one, but with bigger ears"
-        brief, report, problems, label = _apply_note(run, brief, note, problems, renders[i])
-        if report is not None:
-            _remember(best, 0, None, [note], report, problems, label)
-            return brief, None, [], render(run, label)[0]
+        brief, report2, problems, label2 = _apply_note(run, brief, note, problems, renders[i])
+        if report2 is not None:
+            _remember(best, 0, None, [note], report2, problems, label2)
+            return brief, None, [], render(run, label2)[0]
     _remember(best, 0, score, issues, report, problems, label)
     return brief, score, issues, renders[i]
 
@@ -910,7 +908,7 @@ def design(
     concept_path: Path | None = None,
     rounds: int = 0,
     target: float = 8.0,
-    fan: int = 3,
+    fan: int = 1,
     multiview: bool = True,
     do_distill: bool = True,
     on_event: Listener | None = None,
@@ -1008,7 +1006,7 @@ def main():
     ap.add_argument("--rounds", type=int, default=0, help="rounds of critic notes after the first build. Default 0: "
                     "measured over four runs, revising the winner scored worse every time (5->3, 5->3, 5->2, 5->2), "
                     "so the pipeline ships the best of --fan candidates instead")
-    ap.add_argument("--fan", type=int, default=3, help="candidate designs to write in parallel and choose between (default 3)")
+    ap.add_argument("--fan", type=int, default=1, help="candidate designs to write in parallel and choose between (default 1; more gives the critic, or you, a choice)")
     ap.add_argument("--target", type=float, default=8.0, help="stop early at this critic score (default 8)")
     ap.add_argument("--single-view", action="store_true", help="skip the side/back concept views")
     ap.add_argument("--no-distill", action="store_true", help="send the idea to the image model as-is")
