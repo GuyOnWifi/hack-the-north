@@ -85,8 +85,9 @@ Rules that follow, and the rest of what made a run 6x faster:
     `/lab` once and turns the model (`window.setLabYaw`) for the other three
     views: 16s -> 6s. It renders several models in one browser too, for
     comparing candidates.
-15. **Concept art: `quality: "low"`.** 8s against 31s, and the blockier result
-    is closer to what this kit can build.
+15. **Concept art quality is a real trade.** 8s (`low`) against 31s (`high`),
+    and low art is blockier, which is closer to what this kit can build. The
+    default is `high` because the art is on screen for the whole run.
 
 ## Lineage
 

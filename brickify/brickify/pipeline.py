@@ -77,9 +77,10 @@ _load_env()
 API_KEY = os.environ.get("ANTHROPIC_API_KEY")  # set: use the API; unset: the `claude` CLI
 IMAGE_KEY = os.environ.get("OPENAI_API_KEY")  # set: images API; unset: the `codex` CLI
 IMAGE_MODEL = os.environ.get("BRICKIFY_IMAGE_MODEL", "gpt-image-1")
-# "low" is 8s against 31s for "high", and its blockier, simpler models are
-# closer to what this kit can actually build
-IMAGE_QUALITY = os.environ.get("BRICKIFY_IMAGE_QUALITY", "low")
+# "high" is 31s against 8s for "low". Low art is blockier and closer to what
+# this kit can build, but high looks like a real set photo, which is what the
+# app shows you: worth the 23s.
+IMAGE_QUALITY = os.environ.get("BRICKIFY_IMAGE_QUALITY", "high")
 DESIGN_MODEL = os.environ.get("BRICKIFY_MODEL", "claude-opus-5")  # brief + critique
 FAST_MODEL = os.environ.get("BRICKIFY_FAST", "claude-sonnet-5")  # distill + repair
 BRIEF_TOKENS = 32000  # a full brief, or a critique carrying a revised one
