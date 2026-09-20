@@ -10,25 +10,25 @@ import type { BuildPart } from "@/lib/types";
 /** The closer: turn the model's bill of materials into a real order. Clicking
  * opens an in-app panel with every part, colour, quantity and an estimated
  * total — then downloads a BrickLink Wanted List you upload to buy the lot. */
-export function BuyBricks({ parts, name = "model" }: { parts: BuildPart[]; name?: string }) {
+export function BuyBricks({ parts }: { parts: BuildPart[] }) {
   const [open, setOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
   if (!parts.length) return null;
   const total = estimateTotal(parts);
   const n = partCount(parts);
   const rows = [...parts].sort((a, b) => estimatePart(b) - estimatePart(a));
 
-  const exportToBrickLink = () => {
+  const exportToBrickLink = async () => {
+    // The BrickLink Wanted List XML goes in BrickLink's "Upload BrickLink XML
+    // format" tab, which is a PASTE box (the file tab only takes .ldr/.lxf/.io).
+    // So copy the XML and open the page; the user pastes into that tab.
     const xml = wantedListXml(parts);
-    // download the wanted list as a file — works with no login and no clipboard,
-    // then open BrickLink's upload page to drop it in.
-    const url = URL.createObjectURL(new Blob([xml], { type: "application/xml" }));
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-bricklink.xml`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
+    try {
+      await navigator.clipboard.writeText(xml);
+      setCopied(true);
+    } catch {
+      /* clipboard blocked — the textarea below is the fallback to copy from */
+    }
     window.open(BRICKLINK_UPLOAD_URL, "_blank", "noopener,noreferrer");
   };
 
@@ -66,9 +66,15 @@ export function BuyBricks({ parts, name = "model" }: { parts: BuildPart[]; name?
             </div>
 
             <ChunkyButton variant="green" onClick={exportToBrickLink} className="mt-3 w-full shrink-0 !text-[16px]" icon={<ExternalLink size={20} strokeWidth={2.4} />}>
-              Get it on BrickLink
+              {copied ? "List copied — opening BrickLink…" : "Get it on BrickLink"}
             </ChunkyButton>
-            <p className="mt-2 shrink-0 text-center text-[12px] text-ink-soft">Downloads your parts list — upload it on BrickLink to load your cart.</p>
+            <p className="mt-2 shrink-0 text-center text-[12px] leading-snug text-ink-soft">
+              {copied ? (
+                <>Copied ✓ — on BrickLink open the <b>&ldquo;Upload BrickLink XML format&rdquo;</b> tab and paste (Ctrl/⌘+V).</>
+              ) : (
+                <>Copies your parts list — paste it into BrickLink&apos;s <b>&ldquo;Upload BrickLink XML format&rdquo;</b> tab.</>
+              )}
+            </p>
           </div>
         </div>
       )}
