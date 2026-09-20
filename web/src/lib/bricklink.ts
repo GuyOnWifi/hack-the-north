@@ -59,13 +59,24 @@ export function partCount(parts: BuildPart[]): number {
   return parts.reduce((s, p) => s + p.count, 0);
 }
 
-/** BrickLink Wanted List XML for the whole build. */
+/** BrickLink Wanted List XML for the whole build. BrickLink allows only ONE
+ * entry per (item, colour), so we merge — two LDraw colours can map to the same
+ * BrickLink colour (unknowns fall back to Light Bluish Gray), which would
+ * otherwise be a rejected duplicate. Quantities are summed. */
 export function wantedListXml(parts: BuildPart[]): string {
-  const items = parts
+  const merged = new Map<string, { id: string; colour: number; qty: number }>();
+  for (const p of parts) {
+    const colour = blColour(p.colour);
+    const key = `${p.part}|${colour}`;
+    const e = merged.get(key);
+    if (e) e.qty += p.count;
+    else merged.set(key, { id: p.part, colour, qty: p.count });
+  }
+  const items = [...merged.values()]
     .map(
-      (p) =>
-        `  <ITEM>\n    <ITEMTYPE>P</ITEMTYPE>\n    <ITEMID>${p.part}</ITEMID>\n` +
-        `    <COLOR>${blColour(p.colour)}</COLOR>\n    <MINQTY>${p.count}</MINQTY>\n  </ITEM>`,
+      (e) =>
+        `  <ITEM>\n    <ITEMTYPE>P</ITEMTYPE>\n    <ITEMID>${e.id}</ITEMID>\n` +
+        `    <COLOR>${e.colour}</COLOR>\n    <MINQTY>${e.qty}</MINQTY>\n  </ITEM>`,
     )
     .join("\n");
   return `<INVENTORY>\n${items}\n</INVENTORY>\n`;
