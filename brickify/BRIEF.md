@@ -140,4 +140,7 @@ hinge on top that tilts the main body into the pose (e.g. a hovering bird at
 
 ## Output
 
-Reply with only the JSON brief, no commentary, no code fences.
+Reply with only JSON, no commentary, no code fences: the whole brief when you
+are writing one, or only the parts that change when you are asked to fix or
+revise one (the request says which). Anything you leave out of a revision
+stays exactly as it is.

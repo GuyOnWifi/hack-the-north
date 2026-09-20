@@ -84,10 +84,11 @@ function pipelineC(e: TapeEvent, t: string): TapeCopy | null {
       if (/revised the brief/.test(t)) return { text: "Reworked the plan so every brick fits" };
       return null;
     case "builder":
-      if ((m = t.match(/^round (\d+): (\d+) parts, (\d+) collisions, (stands|tips.*)$/))) {
+      if ((m = t.match(/^round (\d+): (\d+) parts, (\d+) collisions, (stands|tips [^(]*)(?: \(trimmed (\d+)\))?$/))) {
         const notes = [
+          m[5] ? `trimmed ${plural(m[5], "piece")} where sections met` : "",
           m[3] === "0" ? "" : `${plural(m[3], "piece")} still overlapping`,
-          m[4] === "stands" ? "stands up" : "it would tip over",
+          m[4].startsWith("stands") ? "stands up" : "it would tip over",
         ].filter(Boolean);
         return { text: `Built version ${Number(m[1]) + 1}: ${plural(m[2], "brick")}, ${notes.join(", ")}` };
       }

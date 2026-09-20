@@ -32,12 +32,23 @@ def _samples(pid: str) -> np.ndarray:
 COSMETIC = {"11477", "93273", "15068"}  # surfacing slopes: they give way to structure
 
 
+TRIM_SHARE = 0.34  # past this, a child is in the wrong place, not just overlapping
+
+
+def _size(parts, body: str) -> int:
+    return sum(1 for p in parts if p.body == body)
+
+
 def resolve(parts):
-    """Drop cosmetic surfacing parts that collide with another body's parts
-    (e.g. a shoulder slope where a hinged wing sweeps). Structure always wins."""
+    """Make an assembly legal the way a builder would, before bothering a model.
+
+    Cosmetic surfacing slopes give way to structure, and a sub-assembly mounted
+    on another (a wing on a hinge, a face on side studs) gets the few pieces
+    that reach back into its parent trimmed off. Anything worse is left alone
+    and reported: it means the brief put the part in the wrong place."""
     for _ in range(4):
         r = check_world(parts, detail=True)
-        drop = set()
+        drop: set[int] = set()
         for a, b in r["pairs"]:
             pa, pb = parts[a], parts[b]
             if pa.pid in COSMETIC and pb.pid not in COSMETIC:
@@ -46,6 +57,20 @@ def resolve(parts):
                 drop.add(b)
             elif pa.pid in COSMETIC and pb.pid in COSMETIC:
                 drop.add(b)
+            elif pa.parent == pb.body:
+                drop.add(a)
+            elif pb.parent == pa.body:
+                drop.add(b)
+            elif pa.parent and pa.parent == pb.parent:
+                # two sub-assemblies on the same body (a flipper sweeping into
+                # the head): the smaller one gives way
+                drop.add(a if _size(parts, pa.body) <= _size(parts, pb.body) else b)
+        # trimming a sliver is a fix; trimming a third of a body is a cover-up
+        by_body: dict[str, int] = {}
+        for i in drop:
+            by_body[parts[i].body] = by_body.get(parts[i].body, 0) + 1
+        sizes = {name: sum(1 for p in parts if p.body == name) for name in by_body}
+        drop -= {i for i in drop if by_body[parts[i].body] > max(2, TRIM_SHARE * sizes[parts[i].body])}
         if not drop:
             break
         parts = [p for i, p in enumerate(parts) if i not in drop]

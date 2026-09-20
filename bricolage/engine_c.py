@@ -71,7 +71,7 @@ def from_result(result: dict, name: str) -> Build:
         subs.setdefault(p.body, SubAssembly(p.body, None, "brief", (), None, ()))
     run = Path(result["run"])
     prov = {
-        "backend": BACKEND, "run": str(run), "ldr": ldr, "round": result["round"],
+        "backend": BACKEND, "run": str(run), "ldr": ldr, "round": result["round"], "label": result.get("label"),
         "score": result.get("score"), "stands": result.get("stands"), "collisions": result.get("collisions", 0),
         "concept": result.get("concept"),
         "idea": result.get("idea"), "issues": result.get("issues", []),
@@ -86,13 +86,15 @@ def _yaw(m) -> float:
 
 def recipe(build: Build) -> dict:
     """What replay needs to rebuild this version without calling any model."""
-    return {"backend": BACKEND, "run": build.provenance["run"], "round": build.provenance["round"], "name": build.name}
+    return {"backend": BACKEND, "run": build.provenance["run"], "round": build.provenance["round"],
+            "label": build.provenance.get("label") or f"r{build.provenance['round']}", "name": build.name}
 
 
 def from_recipe(rec: dict) -> Build:
     run = Path(rec["run"])
     result = json.loads((run / "result.json").read_text())
-    result.update(round=rec["round"], ldr=str(run / f"r{rec['round']}.ldr"), brief=str(run / f"brief-{rec['round']}.json"))
+    label = rec.get("label") or f"r{rec['round']}"
+    result.update(round=rec["round"], label=label, ldr=str(run / f"{label}.ldr"), brief=str(run / f"brief-{label}.json"))
     return from_result(result, rec["name"])
 
 

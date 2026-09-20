@@ -36,6 +36,7 @@ class PartOut:
     M: np.ndarray  # world transform
     body: str
     hinged: tuple = ()  # for a hinge base: the bodies mounted on its top
+    parent: str = ""  # the body this one is mounted on, for a connector child
 
 
 @dataclass
@@ -154,11 +155,13 @@ def assemble(brief: dict) -> list[PartOut]:
     bodies: dict[str, Body] = {}
     out: list[PartOut] = []
 
-    def place(name: str, attach_frame: np.ndarray):
+    def place(name: str, attach_frame: np.ndarray, parent: str = ""):
         spec = specs[name]
         body = build_body(spec, palette, attach_frame)
         frame = body.frame
         bodies[name] = body
+        for p in body.parts:
+            p.parent = parent
         out.extend(body.parts)
         for c in spec.get("connectors", []):
             for att in c.get("attach", []):
@@ -180,7 +183,7 @@ def assemble(brief: dict) -> list[PartOut]:
                     F = np.eye(4)
                     F[:3, :3] = roll @ R
                     F[:3, 3] = world_base[:3] - (roll @ R) @ anchor
-                    place(child, F)
+                    place(child, F, name)
                 elif c["kind"] == "hinge":
                     # child shares the parent's grid when closed; rotate about the hinge axis
                     pivot = local @ np.array([*kit.HINGE_PIVOT, 1.0])
@@ -194,9 +197,9 @@ def assemble(brief: dict) -> list[PartOut]:
                         if p.pid == "3937" and np.allclose(p.M, frame @ local):
                             p.hinged = (*p.hinged, child)
                     top_colour = palette[c["colour"]] if isinstance(c["colour"], str) else int(c["colour"])
-                    out.append(PartOut("3938", top_colour, F @ local, child))
+                    out.append(PartOut("3938", top_colour, F @ local, child, parent=name))
                     # the hinged body shares the parent's grid, shifted by its own origin
-                    place(child, F)
+                    place(child, F, name)
 
     place(brief["root"], np.eye(4))
     for d in brief.get("details", []):

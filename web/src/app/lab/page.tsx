@@ -23,7 +23,18 @@ function Lab() {
   const name = params.get("m") ?? "bunny";
   // ?yaw=<degrees> renders a still view at that angle (used by brickify's critic loop)
   const yawDeg = params.get("yaw");
-  const yaw = yawDeg === null ? undefined : (Number(yawDeg) * Math.PI) / 180;
+  const [turned, setTurned] = useState<number | null>(null);
+  const yaw = turned ?? (yawDeg === null ? undefined : (Number(yawDeg) * Math.PI) / 180);
+
+  // brickify's renderer turns the model from outside instead of reloading the
+  // page for every angle: four views cost four frames, not four page loads.
+  useEffect(() => {
+    const w = window as unknown as { setLabYaw?: (deg: number) => void };
+    w.setLabYaw = (deg: number) => setTurned((Number(deg) * Math.PI) / 180);
+    return () => {
+      delete w.setLabYaw;
+    };
+  }, []);
   const [url, setUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState("");

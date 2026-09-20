@@ -47,6 +47,47 @@ blobs and overlapping pieces. Don't reintroduce that.
 9. **Secrets live in `.env.local`, never in the repo.** `pipeline.py` loads it
    on import. Don't print a key, commit one, or put one in a run log.
 
+## Speed (all of it was one setting)
+
+A run took 10 minutes because these models think by default: ~15k thinking
+tokens before a ~1.5k-token brief. Measured on one brief, same concept image:
+
+| effort | time | result |
+|---|---|---|
+| default | 219s | - |
+| medium | 73s | 136 parts, 0 collisions |
+| low | 37s | 114 parts, 8 collisions |
+| off | 21s | 197 parts, 13 collisions |
+
+Rules that follow, and the rest of what made a run 6x faster:
+
+10. **Every model call names its effort.** `claude(..., effort=...)`:
+    `none` for mechanical steps (distill), `medium` for writing or revising a
+    brief, `medium` for judging renders. Raise it for quality, never leave it
+    to the default.
+11. **Revisions are patches, not whole briefs.** A repair or critique returns
+    only the bodies it changes (`merge_brief` applies them). It is 5x less to
+    generate, and the parts that already worked can't drift while they are
+    rewritten - a full-rewrite loop scored 5, 5, 3 on the same model.
+12. **The kernel fixes what a builder would fix.** `resolve()` trims the few
+    pieces where a sub-assembly reaches into its parent or into a sibling,
+    instead of spending a model call: that alone removed every repair round
+    from a penguin run. Anything bigger than a sliver (see `TRIM_SHARE`) is
+    still reported, because then the brief is wrong, not just overlapping.
+13. **Choice beats polish.** `--fan` briefs are written in parallel (the brief
+    is the long pole, so three cost what one costs) and the critic picks. The
+    revise round is off by default: over four runs it scored worse every time
+    (5->3, 5->3, 5->2, 5->2), even once the reviser could see the renders.
+    Before turning it back on, fix the scale problem: `pick` scores candidates
+    against each other and `judge` scores one model alone, so their numbers
+    are not comparable.
+14. **Look at the model, don't reload the page.** `render-views.mjs` loads
+    `/lab` once and turns the model (`window.setLabYaw`) for the other three
+    views: 16s -> 6s. It renders several models in one browser too, for
+    comparing candidates.
+15. **Concept art: `quality: "low"`.** 8s against 31s, and the blockier result
+    is closer to what this kit can build.
+
 ## Lineage
 
 This is pipeline C: B's kernel-first loop plus the best of A (the layer

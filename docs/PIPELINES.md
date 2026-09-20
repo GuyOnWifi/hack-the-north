@@ -10,7 +10,7 @@ parallel (A and B); C merges the best of both and is what the app runs.
 | Who places bricks | the model (BrickGPT grammar, band by band) | code, from the model's brief | code, from the model's brief |
 | Parts | 1-brick-tall rectangular bricks | real LDraw parts: plates, bricks, curved slopes, hinges, side studs, bars | same as B |
 | Sees a picture first | no | yes: concept + side/back views (Codex) | yes |
-| Checks | lint, connectivity, force/torque, vision score | collisions, connectivity, vision critique rounds | B's checks + **stands** (centre of mass over the base) |
+| Checks | lint, connectivity, force/torque, vision score | collisions, connectivity, vision critique rounds | B's checks + **stands** (centre of mass over the base) + trims overlaps itself |
 | Streams to the app | yes, each band | no (CLI only) | yes, every tape event and every built round |
 | Edits ("Change it") | Lane B edit ops | none | revises the brief in plain language, rebuilds |
 
@@ -31,6 +31,12 @@ parallel (A and B); C merges the best of both and is what the app runs.
   - A stability gate.
   - Live streaming of each built round to the create screen.
   - No silent fallbacks: a failed run is an error, never a canned model.
+- **What made it fast** (1000s -> ~290s a run): per-stage thinking effort
+  (the models think ~15k tokens by default before a ~1.5k-token brief),
+  patches instead of whole-brief rewrites, the kernel trimming overlaps rather
+  than calling a model, four renders from one page load, low-quality concept
+  art, and three candidate briefs written in parallel. Numbers in
+  `brickify/AGENTS.md`.
 - **Not taken from A:** colour by band role (C's colours come from the concept
   image, which is better) and the BrickGPT grammar.
 
