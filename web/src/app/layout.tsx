@@ -30,8 +30,13 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${figtree.variable} h-full antialiased`}>
-      <body className="min-h-dvh">
-        {children}
+      {/* Desktop: the phone-width app sits centred on a dark studio backdrop and
+          is lifted with a soft shadow (a phone on a desk) instead of floating in
+          a gray void. On mobile the column is full-bleed and none of this shows. */}
+      <body className="min-h-dvh" style={{ background: "radial-gradient(130% 100% at 50% 0%, #232838 0%, #0d0f14 72%)" }}>
+        <div className="relative mx-auto min-h-dvh w-full max-w-[520px] bg-page shadow-[0_0_140px_rgba(0,0,0,0.6)]">
+          {children}
+        </div>
         <ServiceWorker />
       </body>
     </html>
