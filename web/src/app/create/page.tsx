@@ -94,6 +94,7 @@ function Create() {
             mode={isDraft || !assembling ? "display" : "timeline"}
             step={astep}
             landed={isDraft ? live.partialLanded : 0}
+            zoom={isDraft ? 0.42 : 1}
             spin={isDraft || !assembling ? 0.15 : 0}
             shadow
             onLoaded={(m) => !isDraft && assembly.start(m.stepCount)}

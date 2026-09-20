@@ -143,7 +143,19 @@ class Rig {
   /** How much of this model was already on screen a moment ago (a growing draft). */
   setLanded(n: number) {
     this.landed = n;
-    if (n > 0) this.goal.snap = false; // ease to the new framing, never cut to it
+  }
+
+  /** Where the camera is looking, to hand to the next version of a model that
+   *  is still being written: it should not move while bricks are added. */
+  snapshot() {
+    return { target: this.goal.target.clone(), dist: this.goal.dist, yaw: this.turntable.rotation.y };
+  }
+
+  restore(s: { target: THREE.Vector3; dist: number; yaw: number }) {
+    this.goal.target.copy(s.target);
+    this.goal.dist = s.dist;
+    this.goal.snap = true; // exactly where it was: no cut, because nothing moved
+    this.turntable.rotation.y = s.yaw;
   }
 
   apply(mode: ViewMode, step: number) {
@@ -180,7 +192,7 @@ class Rig {
   }
 
   /** Whole model for display/timeline; placed-so-far (biased to new parts) for steps. */
-  frame(mode: ViewMode, step: number, camera: THREE.PerspectiveCamera, zoom = 1) {
+  frame(mode: ViewMode, step: number, camera: THREE.PerspectiveCamera, zoom = 1, onlyIfOutgrown = false) {
     this.turntable.rotation.y = mode === "steps" ? 0 : this.turntable.rotation.y;
     this.model.root.updateMatrixWorld(true);
     const box = new THREE.Box3();
@@ -192,12 +204,23 @@ class Rig {
     }
     if (box.isEmpty()) box.copy(this.model.box);
     const sphere = box.getBoundingSphere(new THREE.Sphere());
-    this.goal.target.copy(sphere.center);
-    if (!fresh.isEmpty()) this.goal.target.lerp(fresh.getCenter(new THREE.Vector3()), 0.35);
+    const target = sphere.center.clone();
+    if (!fresh.isEmpty()) target.lerp(fresh.getCenter(new THREE.Vector3()), 0.35);
+    this.goal.target.copy(target);
     const fov = THREE.MathUtils.degToRad(camera.fov);
     const fit = Math.min(fov, 2 * Math.atan(Math.tan(fov / 2) * camera.aspect));
     const margin = mode === "steps" ? 0.92 : mode === "timeline" ? 1.0 : 0.95;
-    this.goal.dist = ((sphere.radius / Math.sin(fit / 2)) * margin) / zoom;
+    const dist = ((sphere.radius / Math.sin(fit / 2)) * margin) / zoom;
+    if (onlyIfOutgrown) {
+      // a model still being written: hold the view, and only give ground when
+      // the build has outgrown it, easing rather than cutting
+      if (dist <= this.goal.dist * 1.02) {
+        this.goal.target.copy(target);
+        return;
+      }
+      this.goal.snap = false;
+    }
+    this.goal.dist = dist;
   }
 
   /** Until when the scene still has motion to show (drop-in, camera ease). */
@@ -294,12 +317,18 @@ function Scene({ url, mode, step = 0, spin = 0.15, joints = false, broken, shado
   const loadedEvent = useEffectEvent((m: PreparedModel) => onLoaded?.(m));
   const errorEvent = useEffectEvent((e: unknown) => onError?.(e));
 
+  // a draft grows into a new model every few seconds: the camera and the
+  // turntable carry over, so bricks appear without the view moving
+  const carry = useRef<{ target: THREE.Vector3; dist: number; yaw: number } | null>(null);
+  const growing = useRef(0);
+
   useEffect(() => {
     let alive = true;
     prepareModel(url).then(
       (m) => {
         if (!alive) return;
         const r = new Rig(m);
+        if (growing.current > 0 && carry.current) r.restore(carry.current);
         rig.current = r;
         setLoaded({ turntable: r.turntable, shadowScale: Math.max(8, m.box.getSize(new THREE.Vector3()).length() * 1.6) });
         loadedEvent(m);
@@ -308,6 +337,7 @@ function Scene({ url, mode, step = 0, spin = 0.15, joints = false, broken, shado
     );
     return () => {
       alive = false;
+      carry.current = rig.current?.snapshot() ?? carry.current;
       rig.current?.dispose();
       rig.current = null;
     };
@@ -317,11 +347,12 @@ function Scene({ url, mode, step = 0, spin = 0.15, joints = false, broken, shado
   useEffect(() => {
     const r = rig.current;
     if (!r) return;
+    growing.current = landed;
     if (yaw !== undefined) r.setYaw(yaw);
     r.setLanded(landed);
     r.setJoints(joints, brokenKey ? brokenKey.split(",").map(Number) : []);
     const landing = r.apply(mode, step);
-    r.frame(mode, step, camera, zoom);
+    r.frame(mode, step, camera, zoom, landed > 0); // a growing draft keeps its framing
     r.wake();
     invalidate();
     if (mode !== "steps" || !landing) return;
