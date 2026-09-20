@@ -85,7 +85,15 @@ function Create() {
         <GhostBricks seed={73} cols={5} rows={3} scale={1.5} color="#123a8c" opacity={0.1} skip={0.25} />
 
         {modelUrl ? (
-          <ModelView url={modelUrl} mode={assembling ? "timeline" : "display"} step={astep} spin={assembling ? 0 : 0.15} shadow onLoaded={(m) => assembly.start(m.stepCount)} onError={() => {}} />
+          <ModelView
+            url={modelUrl}
+            mode={isDraft || !assembling ? "display" : "timeline"}
+            step={astep}
+            spin={isDraft || !assembling ? 0.15 : 0}
+            shadow
+            onLoaded={(m) => !isDraft && assembly.start(m.stepCount)}
+            onError={() => {}}
+          />
         ) : (
           <div className="pointer-events-none absolute inset-0 grid place-items-center px-8">
             <div className="flex flex-col items-center gap-4 text-center">
@@ -109,7 +117,7 @@ function Create() {
         {/* what it is and how it's going, along the bottom of the stage */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col gap-3 px-6 pb-5" style={{ paddingBottom: "calc(var(--safe-bottom) + 18px)" }}>
           <div className="flex flex-wrap items-end gap-2">
-            {modelUrl &&
+            {modelUrl && !isDraft &&
               (assembling ? (
                 <BrickChip size="sm">
                   Brick {Math.min(astep, mSteps ?? 0)} of {mSteps ?? "…"}
@@ -121,7 +129,7 @@ function Create() {
               ))}
             {isDraft && (
               <BrickChip size="sm" bg="#237841" ink="#ffffff">
-                Still improving it
+                Building it now
               </BrickChip>
             )}
             {modelUrl && !stable && (

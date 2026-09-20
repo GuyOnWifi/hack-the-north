@@ -129,14 +129,14 @@ BRIEF_EFFORT = os.environ.get("BRICKIFY_EFFORT", "medium")  # writing/revising a
 JUDGE_EFFORT = os.environ.get("BRICKIFY_JUDGE_EFFORT", "medium")  # scoring renders and revising
 
 
-def claude(prompt: str, images: list[Path], system: str, model: str = DESIGN_MODEL, timeout: int = 900, max_tokens: int = 16000, effort: str = "none") -> str:
+def claude(prompt: str, images: list[Path], system: str, model: str = DESIGN_MODEL, timeout: int = 900, max_tokens: int = 16000, effort: str = "none", on_text: Callable[[str], None] | None = None) -> str:
     """One Claude call that can look at `images`.
 
     With ANTHROPIC_API_KEY set this is a direct API call (images inline, no
     agent loop, much faster). Without one it shells out to `claude -p`, which
     uses your Claude Code login and reads the images from disk."""
     if API_KEY:
-        return _api(prompt, images, system, model, timeout, max_tokens, effort)
+        return _api(prompt, images, system, model, timeout, max_tokens, effort, on_text)
     return _cli(prompt, images, system, model, timeout)
 
 
@@ -162,7 +162,7 @@ def _image_bytes(img: Path) -> tuple[bytes, str]:
     return img.read_bytes(), media
 
 
-def _api(prompt: str, images: list[Path], system: str, model: str, timeout: int, max_tokens: int, effort: str = "none") -> str:
+def _api(prompt: str, images: list[Path], system: str, model: str, timeout: int, max_tokens: int, effort: str = "none", on_text: Callable[[str], None] | None = None) -> str:
     content: list[dict] = []
     for img in images:
         if img.suffix.lower() not in MEDIA or not img.exists():
@@ -177,6 +177,7 @@ def _api(prompt: str, images: list[Path], system: str, model: str, timeout: int,
         # the spec is the same on every call of a run: let the API cache it
         "system": [{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}],
         "messages": [{"role": "user", "content": content}],
+        **({"stream": True} if on_text else {}),
         **EFFORT.get(effort, EFFORT["none"]),
     }).encode()
     req = urllib.request.Request(
@@ -187,7 +188,7 @@ def _api(prompt: str, images: list[Path], system: str, model: str, timeout: int,
     for attempt in range(4):  # overloaded/rate-limited is normal; back off and retry
         try:
             with urllib.request.urlopen(req, timeout=timeout) as r:
-                out = json.loads(r.read())
+                out = _read_stream(r, on_text) if on_text else json.loads(r.read())
             text = "".join(b.get("text", "") for b in out.get("content", []))
             if out.get("stop_reason") == "max_tokens":
                 raise RuntimeError(f"the reply hit the {max_tokens}-token limit; raise max_tokens or ask for less")
@@ -204,6 +205,27 @@ def _api(prompt: str, images: list[Path], system: str, model: str, timeout: int,
                 raise RuntimeError(f"Anthropic API unreachable: {e.reason}") from None
             time.sleep(5 * (attempt + 1))
     raise RuntimeError("Anthropic API: out of retries")
+
+
+def _read_stream(r, on_text: Callable[[str], None]) -> dict:
+    """Server-sent events -> the same reply shape, calling `on_text` as the
+    answer arrives. That is what lets the app build a model while it is still
+    being written."""
+    text, stop, usage = [], None, {}
+    for line in r:
+        line = line.decode().strip()
+        if not line.startswith("data:"):
+            continue
+        ev = json.loads(line[5:])
+        kind = ev.get("type")
+        if kind == "content_block_delta" and ev.get("delta", {}).get("type") == "text_delta":
+            chunk = ev["delta"]["text"]
+            text.append(chunk)
+            on_text("".join(text))
+        elif kind == "message_delta":
+            stop = ev.get("delta", {}).get("stop_reason", stop)
+            usage = ev.get("usage", usage)
+    return {"content": [{"type": "text", "text": "".join(text)}], "stop_reason": stop, "usage": usage}
 
 
 # Model calls run from an empty directory with no MCP servers: repo instruction
@@ -318,6 +340,68 @@ def first_json(text: str) -> dict:
             if depth == 0:
                 return json.loads(text[start : i + 1])
     raise ValueError("unterminated JSON object in reply")
+
+
+def _json_at(text: str, i: int):
+    """(value, end index) for the JSON value starting at text[i], or None if it
+    hasn't finished arriving yet."""
+    if i < 0 or i >= len(text):
+        return None
+    depth, in_str, esc = 0, False, False
+    for j in range(i, len(text)):
+        ch = text[j]
+        if in_str:
+            if esc:
+                esc = False
+            elif ch == "\\":
+                esc = True
+            elif ch == '"':
+                in_str = False
+                if depth == 0:  # a bare string value
+                    try:
+                        return json.loads(text[i : j + 1]), j + 1
+                    except ValueError:
+                        return None
+            continue
+        if ch == '"':
+            in_str = True
+        elif ch in "[{":
+            depth += 1
+        elif ch in "]}":
+            depth -= 1
+            if depth == 0:
+                try:
+                    return json.loads(text[i : j + 1]), j + 1
+                except ValueError:
+                    return None
+    return None
+
+
+def half_brief(text: str) -> dict | None:
+    """A buildable brief from a reply that is still being written.
+
+    The sub-assemblies arrive one after another, so everything finished so far
+    can be built and shown while the rest is still being typed. Connectors and
+    details that point at bodies which haven't arrived are left out."""
+    palette = _json_at(text, text.find("{", text.find('"palette"') + 9)) if '"palette"' in text else None
+    root = _json_at(text, text.find('"', text.find('"root"') + 6)) if '"root"' in text else None
+    if not palette or not root or '"bodies"' not in text:
+        return None
+    bodies = []
+    j = text.find("[", text.find('"bodies"') + 8) + 1
+    while j > 0:
+        start = text.find("{", j)
+        got = _json_at(text, start) if start >= 0 else None
+        if not got:
+            break
+        bodies.append(got[0])
+        j = got[1]
+    names = {b.get("name") for b in bodies}
+    if root[0] not in names:
+        return None
+    for b in bodies:
+        b["connectors"] = [c for c in b.get("connectors", []) if all(a.get("body") in names for a in c.get("attach", []))]
+    return {"palette": palette[0], "root": root[0], "bodies": bodies}
 
 
 def preflight(need_codex: bool):
@@ -447,6 +531,32 @@ ANGLES = [
 ]
 
 
+def _stream_bricks(run: Run) -> Callable[[str], None] | None:
+    """Build the sub-assemblies of a brief as they are written, and push each
+    one to the app. The bricks are real - they are simply not all there yet."""
+    if not run.on_model:
+        return None
+    seen = {"bodies": 0, "chars": 0}
+
+    def on_text(text: str):
+        if len(text) - seen["chars"] < 400:  # parsing every token would cost more than it shows
+            return
+        seen["chars"] = len(text)
+        half = half_brief(text)
+        # one lone base plate fills the screen and says nothing: wait for shape
+        if not half or len(half["bodies"]) < 2 or len(half["bodies"]) <= seen["bodies"]:
+            return
+        seen["bodies"] = len(half["bodies"])
+        try:
+            parts = resolve(assemble(half))
+        except Exception:
+            return  # a body that isn't legal on its own: wait for the next one
+        run.on_model({"round": "draft", "draft": True, "parts": len(parts), "stands": True,
+                      "ldr": to_ldr(parts, run.distilled.get("subject") or run.idea)})
+
+    return on_text
+
+
 def write_briefs(run: Run, n: int) -> list[dict]:
     """n designs from the same concept, written at the same time. The brief is
     the long pole of a run, so three cost what one costs, and the critic gets a
@@ -455,7 +565,8 @@ def write_briefs(run: Run, n: int) -> list[dict]:
         return [write_brief(run)]
     run.tape.emit("designer", "brief", f"working up {n} designs from the concept", "running")
     with ThreadPoolExecutor(max_workers=n) as pool:
-        out = list(pool.map(lambda i: _brief_or_none(run, ANGLES[i % len(ANGLES)], i), range(n)))
+        # only the first design streams to the screen: three at once would fight
+        out = list(pool.map(lambda i: _brief_or_none(run, ANGLES[i % len(ANGLES)], i, _stream_bricks(run) if i == 0 else None), range(n)))
     briefs = [b for b in out if b]
     if not briefs:
         raise RuntimeError("no usable design came back")
@@ -463,15 +574,15 @@ def write_briefs(run: Run, n: int) -> list[dict]:
     return briefs
 
 
-def _brief_or_none(run: Run, angle: str, i: int) -> dict | None:
+def _brief_or_none(run: Run, angle: str, i: int, on_text: Callable[[str], None] | None = None) -> dict | None:
     try:
-        return write_brief(run, angle, quiet=True, tag=f"c{i}")
+        return write_brief(run, angle, quiet=True, tag=f"c{i}", on_text=on_text)
     except (RuntimeError, ValueError) as e:  # one candidate failing is not the run failing
         run.tape.emit("designer", "brief", f"design {i + 1} didn't come back: {e}", "warn")
         return None
 
 
-def write_brief(run: Run, angle: str = "", quiet: bool = False, tag: str = "") -> dict:
+def write_brief(run: Run, angle: str = "", quiet: bool = False, tag: str = "", on_text: Callable[[str], None] | None = None) -> dict:
     if not quiet:
         run.tape.emit("designer", "brief", "reading the concept and writing the build brief", "running")
     features = ", ".join(run.distilled.get("features", []))
@@ -484,6 +595,7 @@ def write_brief(run: Run, angle: str = "", quiet: bool = False, tag: str = "") -
         BRIEF_SPEC,
         max_tokens=BRIEF_TOKENS,
         effort=BRIEF_EFFORT,
+        on_text=on_text or (_stream_bricks(run) if not quiet else None),
     )
     _keep(run, tag or f"brief-{run.next_round()}", reply)
     brief = first_json(reply)
