@@ -4,25 +4,18 @@ import { BrickLoader } from "@/components/ui/Logo";
 
 import { play, setMuted, useMuted } from "@/lib/sound";
 
-import { useBuild } from "@/lib/useBuild";
+import { LIVE_ID, useBuild } from "@/lib/useBuild";
 import { BuildMissing } from "@/components/BuildMissing";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 import {
-  ArrowUp,
-  Check,
   FileDown,
   Home,
-  Loader2,
-  Redo2,
   Settings,
   Shapes,
-  Shuffle,
   Sparkles,
-  TriangleAlert,
-  Undo2,
   Volume2,
   VolumeX,
   X,
@@ -30,27 +23,50 @@ import {
 import { BrickChip, IconTile } from "@/components/ui/controls";
 import { BagGlyph, GhostBricks, StudSlider } from "@/components/ui/chrome";
 import { BrickGlyph } from "@/components/ui/IsoBrick";
+import { EditPanel, SHEET_H, SIDEBAR_W } from "@/components/edit/EditPanel";
+import { EditToolbar } from "@/components/edit/EditToolbar";
+import { ColourTray } from "@/components/edit/ColourTray";
+import { PartTray } from "@/components/edit/PartTray";
+import { useEditKeys } from "@/components/edit/useEditKeys";
+import { loadLdrSession, useLive } from "@/lib/live";
 import {
-  AgentTape,
-  useFixtureTape,
-  useTapePlayback,
-} from "@/components/AgentTape";
-import {
-  editBuild,
-  getLive,
-  redo,
-  tryAnother,
-  undo,
-} from "@/lib/live";
-import type { Report, TapeEvent } from "@/lib/bricolage";
+  addPart,
+  attachModel,
+  clearSelection,
+  dragCancel,
+  dragEnd,
+  dragMove,
+  dragStart,
+  duplicate,
+  linesOf,
+  nudge,
+  onTurnDone,
+  pick,
+  raise,
+  recolour,
+  refreshTable,
+  remove,
+  resetEditor,
+  rotate,
+  selectAll,
+  undo as editorUndo,
+  redo as editorRedo,
+  useEditor,
+  type ScreenDir,
+} from "@/lib/editor";
 
 import { useLandscape } from "@/lib/useOrientation";
 import type { PreparedModel } from "@/lib/ldraw";
+import type { ModelViewHandle } from "@/components/three/ModelView";
 
 const ModelView = dynamic(
   () => import("@/components/three/ModelView").then((m) => m.ModelView),
   { ssr: false },
 );
+
+/** Shown verbatim when the builder can't be reached (docs/EDITING.md G.1). */
+const NO_BUILDER =
+  "Changing a model needs the builder running, and I can't reach it right now.";
 
 export default function ViewPage() {
   return (
@@ -68,14 +84,71 @@ function Viewer() {
   const params = useSearchParams();
   const router = useRouter();
   const { build, live, pending } = useBuild(id);
+  const source = useLive().source;
+  const physics = useLive().payload?.physics ?? null;
   const landscape = useLandscape();
+  const editor = useEditor();
   const [model, setModel] = useState<PreparedModel | null>(null);
   const [failed, setFailed] = useState(false);
   const [value, setValue] = useState(0);
   const [scrubbing, setScrubbing] = useState(false);
   const [settings, setSettings] = useState(false);
   const [editing, setEditing] = useState(params.get("edit") === "1");
+  const [tray, setTray] = useState<"colour" | "part" | null>(null);
+  const [seeding, setSeeding] = useState(false);
+  const [seedError, setSeedError] = useState<string | null>(null);
+  const view = useRef<ModelViewHandle | null>(null);
   const count = model?.stepCount ?? 0;
+
+  // Opening "Change it" on a bundled or lab model seeds a real server session
+  // from its own LDraw text, so from here on it behaves exactly like a design
+  // the builder made. Guarded by a ref: strict mode runs effects twice.
+  const seeded = useRef(false);
+  useEffect(() => {
+    if (!editing || seeded.current || !build) return;
+    seeded.current = true;
+    if (source === "fixture") return; // offline fixtures can't be edited; said below
+    if (live) {
+      void refreshTable();
+      return;
+    }
+    const file = build.model;
+    const name = build.name;
+    void (async () => {
+      setSeeding(true);
+      setSeedError(null);
+      try {
+        const res = await fetch(file);
+        if (!res.ok) throw new Error(`No ${file}`);
+        await loadLdrSession({ name, ldr: await res.text(), source: id });
+        await refreshTable();
+        router.replace(`/build/${LIVE_ID}/view?edit=1`);
+      } catch {
+        setSeedError(NO_BUILDER);
+        seeded.current = false;
+      } finally {
+        setSeeding(false);
+      }
+    })();
+  }, [editing, build, live, source, id, router]);
+
+  useEffect(() => () => resetEditor(), []);
+
+  // The toolbar's arrows are screen-relative: the editor turns the direction
+  // the user sees into a whole-stud step along one of the model's own axes.
+  const angle = () => view.current?.viewAngle() ?? 0;
+  const keys = {
+    nudge: (dir: ScreenDir) => void nudge(dir, angle()),
+    raise: (plates: number) => void raise(plates),
+    rotate: () => void rotate(),
+    duplicate: () => void duplicate(),
+    remove: () => void remove(false),
+    undo: () => void editorUndo(),
+    redo: () => void editorRedo(),
+    clear: clearSelection,
+    selectAll,
+  };
+  useEditKeys(editing && !seeding, keys);
 
   // Replays the build step by step so a change reads as a drop-in. For live
   // edits it waits until the new version's model has loaded.
@@ -93,13 +166,27 @@ function Viewer() {
       if (v >= total) clearInterval(replayTimer.current ?? undefined);
     }, 260);
   };
+  // A structural change ("make the ears bigger") rebuilds the whole model, so
+  // it reads best as a drop-in; a part-level edit swaps in place.
+  useEffect(() => {
+    onTurnDone((o) => {
+      if (o.accepted && o.path === "brief") replayPending.current = true;
+    });
+    return () => onTurnDone(null);
+  }, []);
+
   const bagSize = Math.max(3, Math.ceil(count / 5));
   const bags = count ? Math.ceil(count / bagSize) : 0;
   const stops = Array.from(
     { length: Math.max(0, bags - 1) },
     (_, i) => (i + 1) * bagSize,
   );
-  const timeline = model !== null && value < count;
+  // Editing shows the whole model, still, with every step placed (G.0).
+  const timeline = model !== null && value < count && !editing;
+  const showStability =
+    !!physics?.com &&
+    (physics.base?.length ?? 0) >= 3 &&
+    (!physics.stable || editor.ghost?.valid === false);
 
   if (!build) return <BuildMissing pending={pending} live={live} />;
 
@@ -144,16 +231,46 @@ function Viewer() {
           </div>
         ) : (
           <ModelView
+            ref={view}
             url={build.model}
             mode={timeline ? "timeline" : "display"}
             step={value - 1}
-            spin={scrubbing || timeline ? 0 : 0.15}
+            spin={editing || scrubbing || timeline ? 0 : 0.15}
             shadow
+            preserveView={editing}
+            edit={
+              editing
+                ? {
+                    enabled: true,
+                    selected: linesOf(editor.selection),
+                    candidates: linesOf(editor.candidates),
+                    culprits: linesOf(editor.culprits),
+                    ghost: editor.ghost,
+                    onPick: pick,
+                    onDrag: (phase, d) => {
+                      if (phase === "start") dragStart();
+                      else if (phase === "move") dragMove(d);
+                      else if (phase === "end") void dragEnd();
+                      else dragCancel();
+                    },
+                    stability: showStability
+                      ? {
+                          com: physics!.com!,
+                          base: physics!.base,
+                          ground: physics!.ground ?? 0,
+                          stable: physics!.stable,
+                        }
+                      : null,
+                  }
+                : undefined
+            }
             onLoaded={(m) => {
               setModel(m);
+              attachModel(m);
               if (replayPending.current) {
                 replayPending.current = false;
-                replay(m.stepCount);
+                if (editing) setValue(m.stepCount);
+                else replay(m.stepCount);
               } else setValue(m.stepCount);
             }}
             onError={() => setFailed(true)}
@@ -201,6 +318,60 @@ function Viewer() {
             <Sparkles size={28} strokeWidth={2.2} />
           </IconTile>
         </div>
+
+        {/* The editor's toolbar sits along the top of the stage, right of the
+            left tile column: no new layout, no floating card. */}
+        {editing && (
+          <div
+            className="pointer-events-none absolute right-0 top-0 flex flex-col items-start gap-2"
+            style={{
+              left: "calc(var(--safe-left) + 96px)",
+              paddingTop: "calc(var(--safe-top) + 20px)",
+              paddingRight: "20px",
+            }}
+          >
+            <div className="pointer-events-auto max-w-full">
+              <EditToolbar
+                active={editor.selection.length > 0}
+                pending={editor.pending || seeding}
+                portrait={!landscape}
+                colours={tray === "colour"}
+                parts={tray === "part"}
+                onNudge={keys.nudge}
+                onRaise={keys.raise}
+                onRotate={keys.rotate}
+                onDuplicate={keys.duplicate}
+                onDelete={keys.remove}
+                onColours={() => setTray((t) => (t === "colour" ? null : "colour"))}
+                onParts={() => setTray((t) => (t === "part" ? null : "part"))}
+              />
+            </div>
+            {tray === "colour" && editor.table && (
+              <div className="pointer-events-auto max-w-full">
+                <ColourTray
+                  palette={editor.table.palette}
+                  disabled={editor.pending}
+                  onPick={(code) => void recolour(code)}
+                />
+              </div>
+            )}
+            {tray === "part" && editor.table && (
+              <div className="pointer-events-auto max-w-full">
+                <PartTray
+                  kit={editor.table.kit}
+                  colour={editor.lastColour ?? editor.table.palette[0]?.code ?? 4}
+                  disabled={editor.pending}
+                  onAdd={(part) =>
+                    void addPart(
+                      part,
+                      editor.lastColour ?? editor.table?.palette[0]?.code ?? 4,
+                    )
+                  }
+                />
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Bottom bar: bag / slider / build button */}
         {model && (
@@ -273,12 +444,13 @@ function Viewer() {
       )}
       {editing && (
         <EditPanel
-          live={live}
           landscape={landscape}
-          onClose={() => setEditing(false)}
-          onChanged={() => {
-            if (live) replayPending.current = true;
-            else replay(count);
+          seeding={seeding}
+          seedError={source === "fixture" ? NO_BUILDER : seedError}
+          onClose={() => {
+            setEditing(false);
+            setTray(null);
+            clearSelection();
           }}
         />
       )}
@@ -354,297 +526,5 @@ function BigTile({
     >
       {children}
     </button>
-  );
-}
-
-/** The "Change it" sidebar: docked right in landscape, docked bottom in portrait. */
-const SIDEBAR_W = 400;
-const SHEET_H = "46%";
-
-const LIVE_CHIPS = [
-  "Make the chassis longer",
-  "Make the cabin taller",
-  "Make it wider",
-  "Make it red",
-];
-const SAMPLE_CHIPS = [
-  "Make it lower",
-  "Swap the wheels",
-  "Add a spoiler",
-  "Less red",
-];
-
-type Turn = {
-  text: string;
-  events: TapeEvent[];
-  report: Report | null;
-  error: string | null;
-  result?: string;
-};
-
-/**
- * Natural-language edit. Live builds call Lane B's /edit (the new version's
- * model swaps in and replays); sample builds play the recorded tape.
- */
-function EditPanel({
-  live,
-  landscape,
-  onClose,
-  onChanged,
-}: {
-  live: boolean;
-  landscape: boolean;
-  onClose: () => void;
-  onChanged: () => void;
-}) {
-  const fixture = useFixtureTape();
-  const [text, setText] = useState("");
-  const [turns, setTurns] = useState<Turn[]>([]);
-  const [busy, setBusy] = useState(false);
-  const [sampleRun, setSampleRun] = useState<number | null>(null);
-  const played = useTapePlayback(fixture, sampleRun, () => {
-    setBusy(false);
-    onChanged();
-  });
-
-  const submit = async (value: string, op?: () => Promise<void>) => {
-    const ask = value.trim();
-    if ((!ask && !op) || busy) return;
-    setText("");
-    setBusy(true);
-    if (!live) {
-      setTurns((t) => [
-        ...t,
-        { text: ask, events: [], report: null, error: null },
-      ]);
-      setSampleRun((r) => (r ?? 0) + 1);
-      return;
-    }
-    setTurns((t) => [
-      ...t,
-      { text: ask, events: [], report: null, error: null },
-    ]);
-    try {
-      onChanged();
-      await (op ? op() : editBuild(ask));
-      const p = getLive().payload;
-      // Lane B records a tape for builds but not (yet) for edits: summarise the new version instead.
-      const result = p?.version
-        ? `Now on ${p.version} · ${p.build?.parts.length ?? 0} pieces · ${p.report?.ok ? "stands up" : "needs fixes"}`
-        : undefined;
-      setTurns((t) =>
-        t.map((turn, i) =>
-          i === t.length - 1
-            ? {
-                ...turn,
-                events: p?.tape ?? [],
-                report: p?.report ?? null,
-                result,
-              }
-            : turn,
-        ),
-      );
-    } catch (e) {
-      setTurns((t) =>
-        t.map((turn, i) =>
-          i === t.length - 1
-            ? {
-                ...turn,
-                error:
-                  e instanceof Error ? e.message : "That change didn't work",
-              }
-            : turn,
-        ),
-      );
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const chips = live ? LIVE_CHIPS : SAMPLE_CHIPS;
-
-  return (
-    <aside
-      className="absolute z-40 flex min-w-0 flex-col overflow-hidden"
-      style={
-        landscape
-          ? {
-              top: 0,
-              right: 0,
-              bottom: 0,
-              width: SIDEBAR_W,
-              background: "#e4f1fc",
-              borderLeft: "3px solid #9cc5ec",
-              paddingTop: "var(--safe-top)",
-              paddingRight: "var(--safe-right)",
-              animation: "sidebar-in 260ms cubic-bezier(.2,.9,.3,1)",
-            }
-          : {
-              left: 0,
-              right: 0,
-              bottom: 0,
-              height: SHEET_H,
-              background: "#e4f1fc",
-              borderTop: "3px solid #9cc5ec",
-              animation: "sheet-up 260ms cubic-bezier(.2,.9,.3,1)",
-            }
-      }
-    >
-      <header className="flex items-center justify-between px-5 pb-2 pt-4">
-        <div className="flex items-center gap-2">
-          <span className="grid h-9 w-9 place-items-center rounded-full bg-ai">
-            <Sparkles size={18} color="#fff" fill="#fff" />
-          </span>
-          <span className="text-[19px] font-[800] text-ink">Change it</span>
-        </div>
-        <div className="flex items-center gap-1">
-          {live && (
-            <>
-              <button
-                onClick={() => submit("Undo", undo)}
-                disabled={busy}
-                aria-label="Undo"
-                className="grid h-10 w-10 place-items-center rounded-full bg-black/5 active:scale-95 disabled:opacity-40"
-              >
-                <Undo2 size={20} strokeWidth={2.6} />
-              </button>
-              <button
-                onClick={() => submit("Redo", redo)}
-                disabled={busy}
-                aria-label="Redo"
-                className="grid h-10 w-10 place-items-center rounded-full bg-black/5 active:scale-95 disabled:opacity-40"
-              >
-                <Redo2 size={20} strokeWidth={2.6} />
-              </button>
-              <button
-                onClick={() => submit("Try another", tryAnother)}
-                disabled={busy}
-                aria-label="Try another"
-                className="grid h-10 w-10 place-items-center rounded-full bg-black/5 active:scale-95 disabled:opacity-40"
-              >
-                <Shuffle size={20} strokeWidth={2.6} />
-              </button>
-            </>
-          )}
-          <button
-            onClick={onClose}
-            aria-label="Close"
-            className="grid h-10 w-10 place-items-center rounded-full bg-black/5 active:scale-95"
-          >
-            <X size={22} strokeWidth={2.6} />
-          </button>
-        </div>
-      </header>
-      <div className="no-scrollbar min-w-0 flex-1 overflow-y-auto overflow-x-hidden px-4 pb-3">
-        {turns.length === 0 ? (
-          <p className="px-1 pt-1 text-[15px] text-ink-soft">
-            Tell me what you&apos;d change. I&apos;ll only rebuild that part and
-            keep the rest.
-          </p>
-        ) : (
-          turns.map((turn, i) => {
-            const last = i === turns.length - 1;
-            const events = live ? turn.events : last ? played : fixture;
-            return (
-              <div key={i} className="mb-4">
-                <div className="mb-3 ml-auto w-fit max-w-[85%] rounded-[18px] rounded-br-[6px] bg-blue px-4 py-2.5 text-[16px] font-semibold text-white">
-                  {turn.text}
-                </div>
-                {(events.length > 0 || (last && busy)) && (
-                  <AgentTape events={events} live={last && busy} compact />
-                )}
-                {live && !events.length && turn.result && (
-                  <div
-                    className="flex items-center gap-2 rounded-[14px] bg-white px-3 py-2.5 text-[14px] font-semibold text-ink shadow-[0_2px_0_rgba(0,0,0,0.06)]"
-                    style={{ animation: "tape-in 260ms ease-out" }}
-                  >
-                    <Check size={18} strokeWidth={2.8} color="#1f7a3a" />
-                    {turn.result}
-                  </div>
-                )}
-                {turn.error && (
-                  <p className="mt-2 rounded-[14px] bg-[#fde8ea] px-3 py-2 text-[14px] font-semibold text-[#9b1020]">
-                    {turn.error}
-                  </p>
-                )}
-                {turn.report && <ReportNotes report={turn.report} />}
-              </div>
-            );
-          })
-        )}
-      </div>
-      <div className="px-4 pb-[calc(var(--safe-bottom)+14px)]">
-        <div className="no-scrollbar -mx-4 mb-3 flex gap-2 overflow-x-auto px-4 pt-1">
-          {chips.map((c) => (
-            <BrickChip
-              key={c}
-              onClick={() => submit(c)}
-              disabled={busy}
-              bg="#ffffff"
-              className="!text-[14px]"
-            >
-              {c}
-            </BrickChip>
-          ))}
-        </div>
-        <form
-          className="flex h-[56px] items-center gap-2 rounded-[18px] bg-white pl-4 pr-2 shadow-[0_3px_0_#d5d5d5]"
-          onSubmit={(e) => {
-            e.preventDefault();
-            submit(text);
-          }}
-        >
-          <input
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Hmm, I don't like the chassis…"
-            aria-label="Describe a change"
-            className="min-w-0 flex-1 bg-transparent text-[16px] outline-none placeholder:text-[#9a9a9a]"
-          />
-          <button
-            type="submit"
-            aria-label="Send"
-            disabled={!text.trim() || busy}
-            className="grid h-11 w-11 place-items-center rounded-[14px] bg-ai text-white transition-opacity disabled:opacity-35"
-          >
-            {busy ? (
-              <Loader2 size={22} className="animate-spin" />
-            ) : (
-              <ArrowUp size={24} strokeWidth={2.8} />
-            )}
-          </button>
-        </form>
-      </div>
-    </aside>
-  );
-}
-
-/** Validator messages, rendered verbatim (they're written as UI copy). */
-function ReportNotes({ report }: { report: Report }) {
-  const notes = [
-    ...report.errors.map((e) => ({ ...e, kind: "error" as const })),
-    ...report.warnings.map((w) => ({ ...w, kind: "warning" as const })),
-  ];
-  if (!notes.length) return null;
-  return (
-    <ul className="mt-2 flex flex-col gap-1.5">
-      {notes.map((n, i) => (
-        <li
-          key={i}
-          className="flex items-start gap-2 rounded-[14px] px-3 py-2 text-[14px] font-semibold"
-          style={{
-            background: n.kind === "error" ? "#fde8ea" : "#fff6dc",
-            color: n.kind === "error" ? "#9b1020" : "#7a5600",
-          }}
-        >
-          <TriangleAlert
-            size={16}
-            strokeWidth={2.6}
-            className="mt-0.5 shrink-0"
-          />
-          {n.human}
-        </li>
-      ))}
-    </ul>
   );
 }

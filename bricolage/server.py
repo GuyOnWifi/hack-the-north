@@ -2,14 +2,17 @@
 stdlib only, so it runs under DEMO_SAFE with wifi off.
 
   POST /api/build        {prompt}      -> {version, report, steps, tape, tree}
-  POST /api/edit         {text}        -> {version, report, tape?, tree}
+  POST /api/edit         {text, selection?, base?, mode?}  -> payload + {edit}
+  POST /api/edit_direct  {ops, dry_run?, base}             -> payload + {edit}
+  POST /api/load_ldr     {name, ldr, source?}              -> payload + {edit}
   POST /api/choose       {index|null, note?} -> {ok}   (pick a candidate design mid-run)
   POST /api/try_another  {}            -> {version, report, tree}
-  POST /api/undo|redo    {}            -> {version, report, tree}
+  POST /api/undo|redo    {}            -> {version, report, tree, edit}
   GET  /api/library                    -> {models:[...]}  every model designed here
   GET  /api/library/thumb?id=           -> png of that model
   POST /api/open         {id}           -> make a saved model the current one
   GET  /api/state                      -> current build/report/steps
+  GET  /api/parts                      -> the editable part table (docs/EDITING.md D.2)
   GET  /api/ldr?version=                -> that version's model (default: current) as LDraw
   GET  /                               -> a tiny self-contained dev console
 
@@ -25,13 +28,17 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from demo import rich_bin
 from model import Inventory
 from session import Session
-from serialize import build_json, report_json
+from serialize import build_json, report_json, edit_json, nav_json
 from ldraw import to_ldr
 import engine_c
+import nl_c
+from brickify import edits as E
 
 # Designs are never limited by a real bin: the app asks for an idea, the
 # designer builds it.
 SESSION = Session(Inventory({}, unlimited=True))
+MAX_LDR = 4 * 1024 * 1024
+_TABLE: dict = {}          # version id -> the part table, with its chips
 
 # where a POSTed reference sketch is stored (single-user demo: one current sketch)
 SKETCH_PATH = "/tmp/bricked_sketch.png"
@@ -71,6 +78,19 @@ def _payload(vid=None):
             "physics": phys, "head": SESSION.head}
 
 
+def _label(v) -> str:
+    """What a version did, in the words the user was shown."""
+    from session import _direct_label
+    kind = v.op.get("kind")
+    if kind == "edit_direct_c":
+        return _direct_label(v.op)
+    if kind in ("edit_c", "edit"):
+        return str(v.op.get("text") or "that change")
+    if kind == "load_ldr":
+        return f"opening {v.op.get('name')}"
+    return "that change"
+
+
 class H(BaseHTTPRequestHandler):
     def log_message(self, *a):  # quiet
         pass
@@ -95,13 +115,17 @@ class H(BaseHTTPRequestHandler):
             return self._send(200, CONSOLE, "text/html; charset=utf-8")
         if u.path == "/api/state":
             return self._send(200, _payload())
+        if u.path == "/api/parts":
+            return self._parts()
         if u.path == "/api/ldr":
             # a version may be named: two designs racing must not hand back
             # each other's model
             want = parse_qs(u.query).get("version", [None])[0]
             v = SESSION.versions.get(want or SESSION.head)
             if v and engine_c.is_c(v.build):  # pipeline C writes its own LDraw, steps included
-                return self._send(200, v.build.provenance["ldr"], "text/plain")
+                lib = v.build.provenance.get("lib") or ""
+                text = v.build.provenance["ldr"] + ("\n" + lib if lib else "")
+                return self._send(200, text, "text/plain")
             # Include the sequenced 0 STEP markers (HANDOFF: "LDrawLoader reads steps natively").
             return self._send(200, to_ldr(v.build, _payload()["steps"]) if v else "", "text/plain")
         if u.path == "/api/library":
@@ -193,14 +217,47 @@ class H(BaseHTTPRequestHandler):
         finally:
             alive.clear()
 
+    def _parts(self):
+        try:
+            return self._parts_inner()
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            return self._send(500, {"error": str(e), "human": "I couldn't read that model's piece list."})
+
+    def _parts_inner(self):
+        with SESSION.lock:
+            model = SESSION.model_at()
+            if model is None:
+                return self._send(409, {"error": "NO_MODEL", "human": E.HUMAN["NO_MODEL"]})
+            vid = SESSION.head
+            cached = _TABLE.get(vid)
+            if cached is None:
+                t = E.table(model)
+                t["suggestions"] = nl_c.suggest(SESSION, t)
+                v = SESSION.versions[vid]
+                t["version"] = vid
+                t["source"] = v.build.provenance.get("source")
+                cached = _TABLE[vid] = t
+                if len(_TABLE) > 24:
+                    _TABLE.pop(next(iter(_TABLE)))
+            return self._send(200, cached)
+
     def do_POST(self):
         n = int(self.headers.get("Content-Length", 0))
-        body = json.loads(self.rfile.read(n) or "{}") if n else {}
+        raw = self.rfile.read(n) if n else b""
+        if len(raw) > MAX_LDR:
+            return self._send(400, {"error": "TOO_BIG", "human": "That file is too big to open."})
         try:
+            body = json.loads(raw or b"{}")
+        except ValueError:
+            return self._send(400, {"error": "BAD_JSON", "human": "I couldn't read that request."})
+        if self.path in ("/api/edit_direct", "/api/load_ldr", "/api/edit"):
+            return self._edit_route(body)
+        try:
+            extra = None
             if self.path == "/api/build":
                 SESSION.build(body.get("prompt", "build a rover"))
-            elif self.path == "/api/edit":
-                SESSION.edit(body.get("text", ""))
             elif self.path == "/api/open":
                 # bring a saved model back as the current one
                 b = engine_c.open_run(body.get("id", ""))
@@ -211,11 +268,25 @@ class H(BaseHTTPRequestHandler):
                 engine_c.choose(body.get("index"), body.get("note", ""), body.get("ask", ""))
                 return self._send(200, {"ok": True})
             elif self.path == "/api/try_another":
-                SESSION.try_another()
+                cur = SESSION.versions.get(SESSION.head)
+                if cur and cur.op.get("kind") in ("edit_direct_c", "load_ldr"):
+                    extra = nav_json("nav", "There's only one way to make that change. "
+                                            "Try a different change instead.", accepted=False)
+                else:
+                    SESSION.try_another()
             elif self.path == "/api/undo":
-                SESSION.undo()
+                cur = SESSION.versions.get(SESSION.head)
+                if not cur or not cur.parent:
+                    extra = nav_json("nav", "Nothing to undo.", accepted=False)
+                else:
+                    SESSION.undo()
+                    extra = nav_json("nav", "Undid: " + _label(cur))
             elif self.path == "/api/redo":
-                SESSION.redo()
+                if not SESSION._redo_stack:
+                    extra = nav_json("nav", "Nothing to redo.", accepted=False)
+                else:
+                    SESSION.redo()
+                    extra = nav_json("nav", "Redid: " + _label(SESSION.versions[SESSION.head]))
             elif self.path == "/api/sketch":
                 # store a reference sketch (data URL or bare base64 PNG) for the
                 # next build_stream?sketch=1 — brickify designs toward it.
@@ -230,7 +301,58 @@ class H(BaseHTTPRequestHandler):
                 return self._send(404, {"error": "not found"})
         except Exception as e:
             return self._send(500, {"error": str(e)})
-        self._send(200, _payload())
+        out = _payload()
+        if extra is not None:
+            out["edit"] = extra
+        self._send(200, out)
+
+    def _edit_route(self, body):
+        with SESSION.lock:
+            try:
+                if self.path == "/api/load_ldr":
+                    text = body.get("ldr") or ""
+                    if not isinstance(text, str) or not text.strip():
+                        return self._send(400, {"error": "EMPTY", "human": "There are no pieces in that file."})
+                    name = str(body.get("name") or "Model")
+                    v = SESSION.load_ldr(name, text, body.get("source"))
+                    out = _payload()
+                    out["edit"] = dict(
+                        nav_json("load", f"{name} is ready to change: {len(v.build.parts)} pieces"),
+                        tape=[dict(e) for e in v.tape.events])
+                    return self._send(200, out)
+
+                if self.path == "/api/edit_direct":
+                    ops = body.get("ops")
+                    base = body.get("base")
+                    dry = bool(body.get("dry_run"))
+                    if SESSION.model_at() is None:
+                        return self._send(409, {"error": "NO_MODEL", "human": E.HUMAN["NO_MODEL"]})
+                    v, res = SESSION.edit_parts(ops, dry_run=dry, base=base)
+                    out = _payload()
+                    out["edit"] = edit_json(res, "direct", dry_run=dry)
+                    return self._send(200, out)
+
+                # /api/edit — plain language
+                if SESSION.model_at() is None and engine_c.is_c(
+                        getattr(SESSION.versions.get(SESSION.head), "build", None)):
+                    return self._send(409, {"error": "NO_MODEL", "human": E.HUMAN["NO_MODEL"]})
+                cur = SESSION.versions.get(SESSION.head)
+                if not cur:
+                    return self._send(409, {"error": "NO_MODEL", "human": E.HUMAN["NO_MODEL"]})
+                if not engine_c.is_c(cur.build):
+                    SESSION.edit(body.get("text", ""))
+                    return self._send(200, _payload())
+                _, edit = nl_c.handle(SESSION, body.get("text", ""), body.get("selection") or [],
+                                      body.get("base"), body.get("mode", "auto"))
+                out = _payload()
+                out["edit"] = edit
+                return self._send(200, out)
+            except E.OpError as e:
+                return self._send(400, {"error": e.code, "human": e.human})
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
+                return self._send(500, {"error": str(e)})
 
 
 CONSOLE = """<!doctype html><meta charset=utf-8><title>Bricolage — Lane B console</title>

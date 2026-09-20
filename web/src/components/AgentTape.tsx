@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useEffectEvent, useState } from "react";
-import { parseSse, type TapeEvent } from "@/lib/bricolage";
+import { useState } from "react";
+import { type TapeEvent } from "@/lib/bricolage";
 import { tapeCopy } from "@/lib/tapeCopy";
 import { ACTOR_BRICK as ACTOR } from "@/lib/actors";
 
@@ -13,47 +13,9 @@ import { ACTOR_BRICK as ACTOR } from "@/lib/actors";
 
 const STUD = { w: 20, h: 7 };
 
-let fixtureTape: Promise<TapeEvent[]> | null = null;
-
-/** Lane B's recorded tape (fixtures/tape.sse), for the bundled sample builds. */
-export function useFixtureTape() {
-  const [events, setEvents] = useState<TapeEvent[]>([]);
-  useEffect(() => {
-    let alive = true;
-    fixtureTape ??= fetch("/bricolage-fixtures/tape.sse")
-      .then((r) => r.text())
-      .then(parseSse)
-      .catch(() => []);
-    fixtureTape.then((e) => alive && setEvents(e));
-    return () => {
-      alive = false;
-    };
-  }, []);
-  return events;
-}
-
-/**
- * Plays a recorded run with its own timing (compressed), restarting whenever
- * runKey changes; onDone fires after the last event lands.
- */
-export function useTapePlayback(events: TapeEvent[], runKey: number | null, onDone?: () => void) {
-  const [run, setRun] = useState({ key: -1, shown: 0 });
-  const done = useEffectEvent(() => onDone?.());
-  useEffect(() => {
-    if (runKey === null || !events.length) return;
-    const timers: ReturnType<typeof setTimeout>[] = [setTimeout(() => setRun({ key: runKey, shown: 0 }), 0)];
-    let at = 0;
-    let last = 0;
-    events.forEach((e, i) => {
-      at += Math.min(900, Math.max(220, (e.t - last) * 0.4));
-      last = e.t;
-      timers.push(setTimeout(() => setRun({ key: runKey, shown: i + 1 }), at));
-    });
-    timers.push(setTimeout(done, at + 500));
-    return () => timers.forEach(clearTimeout);
-  }, [events, runKey]);
-  return runKey === null || run.key !== runKey ? [] : events.slice(0, run.shown);
-}
+// There is no recorded-tape playback: a tape is always the real events of the
+// run or the edit it belongs to. (The edit panel used to replay a fixture on
+// sample builds, which showed the wrong model's narration entirely.)
 
 /** A failed step counts as fixed once any later step succeeds. */
 function fixedFailures(events: TapeEvent[]) {

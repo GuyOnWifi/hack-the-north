@@ -125,6 +125,35 @@ async function streamDesign(displayPrompt: string, fullPrompt: string) {
   }
 }
 
+/**
+ * Adopts the payload of an accepted edit: a rejected or dry-run edit changed
+ * nothing on the server, so it must change nothing here either. Returns the
+ * `edit` block so the caller can show its tape and its sentence.
+ */
+export async function applyEdit(p: Payload) {
+  const e = p.edit ?? null;
+  if (e?.accepted && !e.dry_run) await adopt(p, "live");
+  return e;
+}
+
+/** Undo/redo from a server that doesn't send an `edit` block yet. */
+export async function adoptPayload(p: Payload) {
+  if (p.version) await adopt(p, "live");
+}
+
+/** Seeds the session from LDraw text so a bundled or lab model becomes editable. */
+export async function loadLdrSession(body: { name: string; ldr: string; source?: string }) {
+  set({ status: "working", prompt: null, tape: [], partialUrl: null, error: null });
+  try {
+    const payload = await bricolage.loadLdr(body);
+    await adopt(payload, "live");
+    return payload;
+  } catch (e) {
+    set({ status: state.payload ? "ready" : "error", error: e instanceof Error ? e.message : String(e) });
+    throw e;
+  }
+}
+
 /** Keep one of the candidate designs (null = let the critic decide). */
 export async function chooseDesign(index: number | null, note = "") {
   const picked = index === null ? null : state.choices[index];
