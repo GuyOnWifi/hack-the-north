@@ -141,14 +141,18 @@ export const bricolage = {
   undo: () => post("/undo"),
   redo: () => post("/redo"),
 
-  /** Live build: tape events arrive as they fire; resolves with the final payload. */
-  stream(prompt: string, onEvent: (e: TapeEvent) => void): Promise<Payload> {
+  /** Upload a reference sketch (data URL) for the next sketch-guided build. */
+  uploadSketch: (image: string) => request<{ ok: boolean }>("/sketch", { method: "POST", body: JSON.stringify({ image }) }),
+
+  /** Live build: tape events arrive as they fire; resolves with the final payload.
+   * `opts.sketch` makes the designer build toward the previously-uploaded sketch. */
+  stream(prompt: string, onEvent: (e: TapeEvent) => void, opts?: { sketch?: boolean }): Promise<Payload> {
     return new Promise((resolve, reject) => {
       // Connect the SSE stream DIRECTLY to the backend, bypassing the Next dev
       // proxy — that proxy buffers streaming responses for the browser, so live
       // tape events never arrive until the build finishes. The backend sends
       // Access-Control-Allow-Origin:* so cross-origin EventSource is fine.
-      const es = new EventSource(`${STREAM_BASE}/build_stream?prompt=${encodeURIComponent(prompt)}`);
+      const es = new EventSource(`${STREAM_BASE}/build_stream?prompt=${encodeURIComponent(prompt)}${opts?.sketch ? "&sketch=1" : ""}`);
       let settled = false;
       const done = (fn: () => void) => {
         if (settled) return;

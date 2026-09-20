@@ -21,10 +21,11 @@ _OFFLINE = os.environ.get("PROVIDER") == "mock" or os.environ.get("DEMO_SAFE") =
 ENGINE = os.environ.get("ENGINE", "a" if _OFFLINE else "c").lower()
 
 
-def build_from_prompt(prompt, inventory, seed=0, tape=None, recipe=None):
+def build_from_prompt(prompt, inventory, seed=0, tape=None, recipe=None, sketch=None):
     """ONE path: the LEGO LLM harness. Every prompt is designed by the LLM in the
     3D brick grammar, then lint + force/torque physics checked. No hardcoded
-    template designs, no canned fallbacks — it's real model output or nothing."""
+    template designs, no canned fallbacks — it's real model output or nothing.
+    `sketch` (optional image path) is a reference the C engine designs toward."""
     tape = tape or Tape()
     if recipe is not None and recipe.get("backend") == "brickify":
         import engine_c
@@ -32,7 +33,7 @@ def build_from_prompt(prompt, inventory, seed=0, tape=None, recipe=None):
     if ENGINE == "c" and recipe is None:
         import engine_c
         _, noun, _, _ = router.route(prompt)
-        return _finish_c(engine_c.build(prompt, name=noun.title(), tape=tape), tape)
+        return _finish_c(engine_c.build(prompt, name=noun.title(), tape=tape, sketch=sketch), tape)
     import agents
 
     if recipe is not None:
