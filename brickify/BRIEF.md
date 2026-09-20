@@ -111,11 +111,25 @@ A round plate with an open stud at that cell of `body`, holding a 4-stud-long
 bar pointing out along that body's up direction. Put it on a side-stud child
 body to point it sideways (beaks, antennae, stingers, umbrella shafts, poles).
 
+```json
+{"kind": "wheels", "body": "chassis", "at": [1, 0, 0], "colour": "k", "rim": "g"}
+```
+A 2x2 plate with a wheel and tyre on each side, for anything that rolls: cars,
+rovers, trucks, trailers, wheelbarrows. `at` is a cell of `body` (the plate
+fills 2x2 from there); the wheels stick out about 1.5 studs each side and reach
+1.5 plates below the plate's underside, so put it on the body's bottom layer
+and leave those two columns clear. `quarters: 1` turns the axle to run along z.
+`colour` is the tyre, `rim` the wheel. Use two (front and back) or three pairs
+for a rover.
+
 ### Single parts for `parts`
 
 - `98138` round tile 1x1 (eyes, dots), `6141` round plate 1x1, `3062b` round brick 1x1
 - `3070b` tile 1x1, `3069b` tile 1x2, `2431` tile 1x4, `3068b` tile 2x2
 - `11477` curved slope 2x1 (origin at bottom; rises toward +z; `quarters` turns it)
+- Wedge plates, for wings, fins, tails and tapered noses: `43722` 2x3 right,
+  `43723` 2x3 left, `41769` 2x4 right, `41770` 2x4 left (they taper along z;
+  `quarters` turns them)
 
 Bricks and plates inside `layers` are chosen automatically; don't list them.
 

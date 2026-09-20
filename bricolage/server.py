@@ -3,6 +3,7 @@ stdlib only, so it runs under DEMO_SAFE with wifi off.
 
   POST /api/build        {prompt}      -> {version, report, steps, tape, tree}
   POST /api/edit         {text}        -> {version, report, tape?, tree}
+  POST /api/choose       {index|null, note?} -> {ok}   (pick a candidate design mid-run)
   POST /api/try_another  {}            -> {version, report, tree}
   POST /api/undo|redo    {}            -> {version, report, tree}
   GET  /api/state                      -> current build/report/steps
@@ -174,6 +175,10 @@ class H(BaseHTTPRequestHandler):
                 SESSION.build(body.get("prompt", "build a rover"))
             elif self.path == "/api/edit":
                 SESSION.edit(body.get("text", ""))
+            elif self.path == "/api/choose":
+                # which of the candidate designs to keep (null = let the critic)
+                engine_c.choose(body.get("index"), body.get("note", ""))
+                return self._send(200, {"ok": True})
             elif self.path == "/api/try_another":
                 SESSION.try_another()
             elif self.path == "/api/undo":

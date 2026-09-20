@@ -1,7 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { bricolage, type Payload, type TapeEvent } from "./bricolage";
+import { bricolage, type Choice, type Payload, type TapeEvent } from "./bricolage";
 import { registerModelText } from "./ldraw";
 
 // The live design session against Lane B: the current version, its LDraw text,
@@ -18,13 +18,17 @@ export interface LiveState {
   modelUrl: string | null;
   /** A speculative-draft model shown WHILE the real build streams in. */
   partialUrl: string | null;
+  /** The concept art the designer is working from, as it arrives. */
+  art: { role: string; image: string }[];
+  /** Candidate designs waiting to be picked (empty once chosen). */
+  choices: Choice[];
   tape: TapeEvent[];
   /** "live" = the API answered; "fixture" = offline fallback. */
   source: "live" | "fixture" | null;
   error: string | null;
 }
 
-const initial: LiveState = { status: "idle", prompt: null, payload: null, modelUrl: null, partialUrl: null, tape: [], source: null, error: null };
+const initial: LiveState = { status: "idle", prompt: null, payload: null, modelUrl: null, partialUrl: null, art: [], choices: [], tape: [], source: null, error: null };
 let state = initial;
 const listeners = new Set<() => void>();
 
@@ -83,15 +87,24 @@ export async function steer(instruction: string) {
 }
 
 async function streamDesign(displayPrompt: string, fullPrompt: string) {
-  set({ status: "working", prompt: displayPrompt, tape: [], partialUrl: null, error: null });
+  set({ status: "working", prompt: displayPrompt, tape: [], partialUrl: null, art: [], choices: [], error: null });
   try {
     const payload = await bricolage.stream(fullPrompt, (e) => {
       // a "geometry" event carries an LDraw blob (the speculative draft, or a
       // partial). Render it immediately instead of showing it as a tape row.
-      const g = e as TapeEvent & { kind?: string; ldr?: string };
+      const g = e as TapeEvent & { kind?: string; ldr?: string; image?: string; role?: string; choices?: Choice[] };
       if (g.kind === "geometry" && g.ldr) {
         const url = registerModelText(`partial-${state.tape.length}-${g.ldr.length}`, g.ldr);
-        set({ partialUrl: url });
+        set({ partialUrl: url, choices: [] });
+        return;
+      }
+      // the concept art, and the designs waiting to be picked, aren't tape rows
+      if (g.kind === "art" && g.image) {
+        set({ art: [...state.art.filter((a) => a.role !== g.role), { role: g.role ?? "concept", image: g.image }] });
+        return;
+      }
+      if (g.kind === "choices") {
+        set({ choices: g.choices ?? [] });
         return;
       }
       set({ tape: [...state.tape, e] });
@@ -102,6 +115,13 @@ async function streamDesign(displayPrompt: string, fullPrompt: string) {
     // hardcoded design. Everything on screen is real LLM output or nothing.
     set({ status: "error", error: e instanceof Error ? e.message : "The builder is offline" });
   }
+}
+
+/** Keep one of the candidate designs (null = let the critic decide). */
+export async function chooseDesign(index: number | null, note = "") {
+  const picked = index === null ? null : state.choices[index];
+  set({ choices: [], partialUrl: picked ? registerModelText(`picked-${index}-${picked.ldr.length}`, picked.ldr) : state.partialUrl });
+  await bricolage.choose(index, note);
 }
 
 export const editBuild = (text: string) => run(null, () => bricolage.edit(text));

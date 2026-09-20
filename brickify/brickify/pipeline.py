@@ -442,6 +442,8 @@ class Run:
     dir: Path
     tape: Tape
     on_model: Listener | None = None
+    on_image: Listener | None = None  # concept art, as it is drawn
+    on_choice: Callable[[list[dict]], int | None] | None = None  # who picks the winner
     distilled: dict = field(default_factory=dict)
     concept: Path | None = None
     views: dict[str, Path] = field(default_factory=dict)
@@ -480,6 +482,8 @@ def concept(run: Run) -> Path:
         run.tape.emit("designer", "concept", "image generation failed", "fail")
         raise RuntimeError("concept image generation failed")
     run.tape.emit("designer", "concept", "concept ready")
+    if run.on_image:
+        run.on_image({"role": "concept", "path": str(out)})
     return out
 
 
@@ -506,6 +510,9 @@ def views(run: Run) -> dict[str, Path]:
 
     with ThreadPoolExecutor(max_workers=len(VIEW_ANGLES)) as pool:
         got = {name: path for name, path in pool.map(lambda kv: one(*kv), VIEW_ANGLES.items()) if path}
+    for name, path in got.items():
+        if run.on_image:
+            run.on_image({"role": name, "path": str(path)})
     run.tape.emit("designer", "views", f"got {len(got)} extra view(s): {', '.join(got) or 'none'}", "ok" if got else "warn")
     return got
 
@@ -522,6 +529,9 @@ def _images(run: Run) -> list[Path]:
     return [p for p in [run.concept, *run.views.values()] if p and p.exists()]
 
 
+# Each candidate is asked for a different take, so the three are worth choosing
+# between. The names are what the app shows under each one.
+STYLES = ["Closest to the art", "Chunkier and simpler", "Bolder features"]
 ANGLES = [
     "",
     "\nThis is one of several designs being compared: go chunkier and simpler than you normally would, "
@@ -557,17 +567,17 @@ def _stream_bricks(run: Run) -> Callable[[str], None] | None:
     return on_text
 
 
-def write_briefs(run: Run, n: int) -> list[dict]:
+def write_briefs(run: Run, n: int) -> list[tuple[dict, str]]:
     """n designs from the same concept, written at the same time. The brief is
     the long pole of a run, so three cost what one costs, and the critic gets a
     choice instead of one attempt to polish."""
     if n == 1:
-        return [write_brief(run)]
+        return [(write_brief(run), STYLES[0])]
     run.tape.emit("designer", "brief", f"working up {n} designs from the concept", "running")
     with ThreadPoolExecutor(max_workers=n) as pool:
         # only the first design streams to the screen: three at once would fight
         out = list(pool.map(lambda i: _brief_or_none(run, ANGLES[i % len(ANGLES)], i, _stream_bricks(run) if i == 0 else None), range(n)))
-    briefs = [b for b in out if b]
+    briefs = [(b, STYLES[i % len(STYLES)]) for i, b in enumerate(out) if b]
     if not briefs:
         raise RuntimeError("no usable design came back")
     run.tape.emit("designer", "brief", f"{len(briefs)} designs to choose from")
@@ -832,27 +842,66 @@ def _remember(best: dict, rnd: int, score: float | None, issues: list[str], repo
                 collisions=report["collisions"], clean=clean, issues=issues, issues_kernel=problems)
 
 
-def _first_round(run: Run, briefs: list[dict], best: dict) -> tuple[dict, float | None, list[str], Path | None]:
+def _first_round(run: Run, briefs: list[tuple[dict, str]], best: dict) -> tuple[dict, float | None, list[str], Path | None]:
     """Build every candidate, render them together, and keep the one that reads best."""
     built = []
-    for i, b in enumerate(briefs):
+    for i, (b, style) in enumerate(briefs):
         b, parts, report, problems = build_checked(run, b)
         if parts is not None:
-            publish(run, f"r0{'abcdefg'[i] if len(briefs) > 1 else ''}", b, parts, report)
-            built.append((f"r0{'abcdefg'[i] if len(briefs) > 1 else ''}", b, report, problems))
+            label = f"r0{'abcdefg'[i] if len(briefs) > 1 else ''}"
+            publish(run, label, b, parts, report)
+            built.append((label, b, report, problems, style))
     if not built:
         return briefs[0], None, [], None
     renders = render(run, *[label for label, *_ in built])
     if len(built) == 1:
-        label, brief, report, problems = built[0]
+        label, brief, report, problems, _ = built[0]
         _remember(best, 0, None, problems, report, problems, label)
         score, issues = judge(run, renders[0], problems)
         _remember(best, 0, score, issues, report, problems, label)
         return brief, score, issues, renders[0]
-    i, score, issues = pick(run, renders)
-    label, brief, report, problems = built[i]
+    i, note = None, ""
+    if run.on_choice:  # the person watching gets first refusal on the choice
+        answer = run.on_choice([
+            {"label": label, "style": style, "parts": report["parts"], "stands": report["stands"]["stable"],
+             "front": str(renders[n] / "front.png"), "ldr": (run.dir / f"{label}.ldr").read_text()}
+            for n, (label, _, report, _, style) in enumerate(built)
+        ])
+        if isinstance(answer, dict):
+            i, note = answer.get("index"), (answer.get("note") or "").strip()
+        else:
+            i = answer
+    if i is None:
+        i, score, issues = pick(run, renders)
+    else:
+        i = max(0, min(len(built) - 1, i))
+        run.tape.emit("critic", "pick", f"you picked design {i + 1} of {len(built)}")
+        score, issues = None, []
+    label, brief, report, problems, _ = built[i]
+    if note:  # "that one, but with bigger ears"
+        brief, report, problems, label = _apply_note(run, brief, note, problems, renders[i])
+        if report is not None:
+            _remember(best, 0, None, [note], report, problems, label)
+            return brief, None, [], render(run, label)[0]
     _remember(best, 0, score, issues, report, problems, label)
     return brief, score, issues, renders[i]
+
+
+def _apply_note(run: Run, brief: dict, note: str, problems: list[str], shots: Path):
+    """Someone picked a design and said what to change: do that before going on."""
+    run.tape.emit("designer", "steer", f"your note: {note}", "running")
+    try:
+        brief = revise(run, brief, [note], problems, shots)
+        brief, parts, report, problems = build_checked(run, brief)
+    except (RuntimeError, ValueError) as e:
+        run.tape.emit("designer", "steer", f"couldn't make that change: {e}", "warn")
+        return brief, None, problems, ""
+    if parts is None:
+        run.tape.emit("inspector", "reject", "that change wouldn't build; keeping the design you picked", "warn")
+        return brief, None, problems, ""
+    label = "r0-steered"
+    publish(run, label, brief, parts, report)
+    return brief, report, problems, label
 
 
 def design(
@@ -865,11 +914,14 @@ def design(
     do_distill: bool = True,
     on_event: Listener | None = None,
     on_model: Listener | None = None,
+    on_image: Listener | None = None,
+    on_choice: Callable[[list[dict]], int | None] | None = None,
     echo: bool = True,
 ) -> dict:
     """The full loop. Raises on anything that leaves no model (no silent fallbacks)."""
     preflight(need_codex=concept_path is None or multiview)
     run = _new_run(idea, on_event, on_model, echo)
+    run.on_image, run.on_choice = on_image, on_choice
     run.tape.emit("router", "route", f"'{idea}': concept art, {fan} designs to choose from, then up to {rounds} rounds of notes")
 
     if do_distill and concept_path is None:

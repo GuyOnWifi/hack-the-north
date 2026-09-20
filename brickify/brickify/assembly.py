@@ -212,6 +212,23 @@ def _detail(d: dict, bodies: dict[str, Body], palette: dict[str, int]) -> list[P
     colour = palette[d["colour"]]
     body = bodies[d["body"]]
     parts = []
+    if d["kind"] == "wheels":
+        # a 2x2 plate with two pins, and a rim + tyre turned onto each pin
+        i, y, k = d["at"]
+        quarters = d.get("quarters", 0)
+        plate = kit.grid_matrix("4600", i, y, k, quarters)
+        parts.append(PartOut("4600", palette.get(d.get("holder", ""), colour), body.frame @ plate, body.name))
+        for side in (1, -1):
+            spin = np.eye(4)
+            # the discs' axis is +Z; turn it onto the pin axis (+-X)
+            spin[:3, :3] = kit.rot_y(1)[:3, :3] if side > 0 else kit.rot_y(3)[:3, :3]
+            spin[:3, 3] = plate[:3, :3] @ (kit.WHEEL_PIN * [side, 1, 1]) + plate[:3, 3]
+            M = plate.copy()
+            M[:3, :3] = plate[:3, :3] @ spin[:3, :3]
+            M[:3, 3] = spin[:3, 3]
+            parts.append(PartOut("4624", palette.get(d.get("rim", ""), 71), body.frame @ M, body.name))
+            parts.append(PartOut("3641", palette.get(d.get("tyre", ""), 0), body.frame @ M, body.name))
+        return parts
     if d["kind"] == "bar":
         # a bar standing in an open-stud round plate at a body cell, pointing up in that body
         i, y, k = d["at"]

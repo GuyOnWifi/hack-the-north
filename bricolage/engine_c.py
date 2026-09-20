@@ -14,6 +14,10 @@ import json
 import sys
 from pathlib import Path
 
+import base64
+import io
+import threading
+
 from model import Build, Part, SubAssembly
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "brickify"))
@@ -23,10 +27,37 @@ from brickify.check import resolve  # noqa: E402
 from brickify.kit import PLATE, STUD  # noqa: E402
 
 BACKEND = "brickify"
+CHOICE_WAIT = 180  # how long a run waits for a person before the critic decides
 
 
 def is_c(build) -> bool:
     return build is not None and build.provenance.get("backend") == BACKEND
+
+
+# The run waits here while someone picks a design; POST /api/choose answers it.
+CHOICE = {"event": threading.Event(), "answer": None, "open": False}
+
+
+def choose(index: int | None, note: str = ""):
+    """The answer from the app: which design, and anything to change about it
+    (index None = let the critic decide)."""
+    CHOICE["answer"] = {"index": index, "note": note}
+    CHOICE["event"].set()
+
+
+def _thumb(path: str, side: int = 460) -> str | None:
+    """A small JPEG data URL, so pictures can ride the tape without bloating it."""
+    try:
+        from PIL import Image
+
+        with Image.open(path) as im:
+            im = im.convert("RGB")
+            im.thumbnail((side, side))
+            buf = io.BytesIO()
+            im.save(buf, "JPEG", quality=82)
+        return "data:image/jpeg;base64," + base64.b64encode(buf.getvalue()).decode()
+    except Exception:
+        return None
 
 
 def _listeners(tape):
@@ -38,19 +69,37 @@ def _listeners(tape):
 
     def on_model(m):
         # every built round goes to the screen straight away, like A's bands did
-        tape.emit("builder", "geometry", f"round {m['round']}: {m['parts']} parts", status="running", ldr=m["ldr"], draft=False)
+        tape.emit("builder", "geometry", f"round {m['round']}: {m['parts']} parts", status="running", ldr=m["ldr"], draft=bool(m.get("draft")))
 
-    return on_event, on_model
+    def on_image(img):
+        thumb = _thumb(img["path"])
+        if thumb:
+            tape.emit("designer", "art", f"{img['role']} art", status="ok", role=img["role"], image=thumb)
+
+    def on_choice(candidates):
+        """Show the designs and wait. The critic takes over if nobody answers."""
+        CHOICE["event"].clear()
+        CHOICE["answer"], CHOICE["open"] = None, True
+        tape.emit("critic", "choices", f"{len(candidates)} designs to choose from", status="running",
+                  choices=[{"n": i + 1, "style": c.get("style", ""), "stands": c["stands"],
+                            "image": _thumb(c["front"]), "ldr": c["ldr"]} for i, c in enumerate(candidates)])
+        answered = CHOICE["event"].wait(timeout=CHOICE_WAIT)
+        CHOICE["open"] = False
+        if not answered:
+            tape.emit("critic", "choices", "nobody picked, so the critic will", status="ok")
+        return CHOICE["answer"] if answered else None
+
+    return on_event, on_model, on_image, on_choice
 
 
 def build(prompt: str, name: str, tape) -> Build:
-    on_event, on_model = _listeners(tape)
-    result = c.design(prompt, on_event=on_event, on_model=on_model, echo=False)
+    on_event, on_model, on_image, on_choice = _listeners(tape)
+    result = c.design(prompt, on_event=on_event, on_model=on_model, on_image=on_image, on_choice=on_choice, echo=False)
     return from_result(result, name)
 
 
 def edit(current: Build, instruction: str, tape) -> Build:
-    on_event, on_model = _listeners(tape)
+    on_event, on_model, _, _ = _listeners(tape)
     result = c.edit(Path(current.provenance["run"]), instruction, on_event=on_event, on_model=on_model, echo=False)
     b = from_result(result, current.name)
     return Build(b.id, current.version + 1, b.name, b.parts, b.subs, b.provenance)

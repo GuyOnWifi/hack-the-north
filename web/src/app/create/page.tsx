@@ -10,7 +10,7 @@ import { BrickGlyph } from "@/components/ui/IsoBrick";
 import { AgentTape } from "@/components/AgentTape";
 import { StepBell } from "@/components/StepBell";
 import { BrickLoader, LogoLockup } from "@/components/ui/Logo";
-import { designBuild, getSteers, steer, tryAnother, useLive } from "@/lib/live";
+import { chooseDesign, designBuild, getSteers, steer, tryAnother, useLive } from "@/lib/live";
 import { LIVE_ID } from "@/lib/useBuild";
 import { useAssembly } from "@/lib/useAssembly";
 import { useLandscape } from "@/lib/useOrientation";
@@ -84,6 +84,21 @@ function Create() {
       >
         <GhostBricks seed={73} cols={5} rows={3} scale={1.5} color="#123a8c" opacity={0.1} skip={0.25} />
 
+        {live.art.length > 0 && (
+          <div className={`pointer-events-none absolute z-10 ${modelUrl ? "bottom-24 right-5 w-[128px]" : "inset-0 grid place-items-center"}`}>
+            <div className={modelUrl ? "" : "flex flex-col items-center gap-3"}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={live.art[0].image}
+                alt="The concept art the designer is working from"
+                className="rounded-[14px] bg-white object-contain shadow-[0_10px_30px_rgba(20,40,80,0.25)]"
+                style={{ width: modelUrl ? 128 : "min(60vw, 360px)", border: "3px solid #ffffff" }}
+              />
+              {!modelUrl && <p className="text-[15px] font-[800] text-ink">{lastThink}</p>}
+            </div>
+          </div>
+        )}
+
         {modelUrl ? (
           <ModelView
             url={modelUrl}
@@ -94,14 +109,16 @@ function Create() {
             onLoaded={(m) => !isDraft && assembly.start(m.stepCount)}
             onError={() => {}}
           />
-        ) : (
+        ) : live.art.length === 0 ? (
           <div className="pointer-events-none absolute inset-0 grid place-items-center px-8">
             <div className="flex flex-col items-center gap-4 text-center">
               {!failed && <BrickLoader size={64} label="Designing your model…" />}
               <p className="max-w-[420px] text-[17px] font-[800] leading-snug text-ink">{lastThink}</p>
             </div>
           </div>
-        )}
+        ) : null}
+
+        {live.choices.length > 0 && <Chooser choices={live.choices} />}
 
         <div className="absolute left-0 top-0 flex items-center gap-3 p-5" style={{ paddingLeft: "calc(var(--safe-left) + 20px)", paddingTop: "calc(var(--safe-top) + 16px)" }}>
           <LogoLockup size={24} />
@@ -233,5 +250,46 @@ function Create() {
         </div>
       </aside>
     </main>
+  );
+}
+
+/** Three designs, one concept: you pick, and can say what to change about it.
+ *  Renders of each candidate, not live 3D, so the screen keeps one canvas. */
+function Chooser({ choices }: { choices: { n: number; style: string; stands: boolean; image?: string; ldr: string }[] }) {
+  const [note, setNote] = useState("");
+  return (
+    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 overflow-y-auto px-5 py-6" style={{ background: "rgba(228,241,252,0.94)" }}>
+      <p className="text-[22px] font-[900] tracking-[-0.02em] text-ink">Which one?</p>
+      <div className="flex flex-wrap items-stretch justify-center gap-3">
+        {choices.map((c, i) => (
+          <button
+            key={c.n}
+            onClick={() => chooseDesign(i, note)}
+            className="chunky flex w-[190px] flex-col items-center gap-2 rounded-[18px] bg-white p-3 transition-transform active:scale-95"
+            style={{ ["--rim" as string]: "#9cc5ec", ["--lift" as string]: "5px" }}
+          >
+            {c.image ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={c.image} alt={c.style || `Design ${c.n}`} className="h-[150px] w-full rounded-[12px] object-contain" />
+            ) : (
+              <div className="h-[150px] w-full rounded-[12px] bg-[#e4f1fc]" />
+            )}
+            <span className="text-[14px] font-[800] leading-tight text-ink">{c.style || `Design ${c.n}`}</span>
+            {!c.stands && <span className="text-[12px] font-[800] text-ai">tips over</span>}
+          </button>
+        ))}
+      </div>
+      <div className="flex w-full max-w-[600px] items-center gap-2 rounded-[16px] bg-white p-1.5 pl-4 ring-2 ring-ai/40">
+        <input
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          placeholder="Pick one, and say what to change: “bigger ears”"
+          className="min-w-0 flex-1 bg-transparent text-[15px] font-semibold text-ink outline-none placeholder:text-ink-soft/70"
+        />
+      </div>
+      <button onClick={() => chooseDesign(null, note)} className="text-[15px] font-[800] text-ink-soft underline-offset-4 hover:underline">
+        Let the critic choose
+      </button>
+    </div>
   );
 }

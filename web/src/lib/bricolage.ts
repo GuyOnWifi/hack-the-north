@@ -77,6 +77,16 @@ export interface Physics {
   failures: { code: string; human: string }[];
 }
 
+/** One of the candidate designs, while the run waits for someone to pick. */
+export interface Choice {
+  n: number;
+  /** How this design was asked to differ from the others. */
+  style: string;
+  stands: boolean;
+  image?: string;
+  ldr: string;
+}
+
 export interface Payload {
   version: string | null;
   name?: string;
@@ -137,6 +147,8 @@ export const bricolage = {
   ldr: () => request<string>("/ldr"),
   build: (prompt: string) => post("/build", { prompt }),
   edit: (text: string) => post("/edit", { text }, DESIGN_TIMEOUT),
+  /** Pick a candidate design mid-run; null hands it back to the critic. */
+  choose: (index: number | null, note = "") => request<{ ok: boolean }>("/choose", { method: "POST", body: JSON.stringify({ index, note }) }),
   tryAnother: () => post("/try_another", {}, DESIGN_TIMEOUT),
   undo: () => post("/undo"),
   redo: () => post("/redo"),
