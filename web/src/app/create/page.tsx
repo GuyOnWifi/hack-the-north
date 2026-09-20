@@ -10,7 +10,7 @@ import { BrickGlyph } from "@/components/ui/IsoBrick";
 import { AgentTape } from "@/components/AgentTape";
 import { StepBell } from "@/components/StepBell";
 import { BrickLoader, LogoLockup } from "@/components/ui/Logo";
-import { designBuild, getSteers, steer, tryAnother, useLive } from "@/lib/live";
+import { chooseDesign, designBuild, tryAnother, useLive } from "@/lib/live";
 import { LIVE_ID } from "@/lib/useBuild";
 import { useAssembly } from "@/lib/useAssembly";
 import { useLandscape } from "@/lib/useOrientation";
@@ -36,6 +36,7 @@ const RAIL_H = "46%";
 function Create() {
   const params = useSearchParams();
   const prompt = params.get("prompt")?.trim() || "build a rover";
+  const fromSketch = params.get("sketch") === "1";
   const live = useLive();
   const landscape = useLandscape();
   const started = useRef<string | null>(null);
@@ -43,8 +44,8 @@ function Create() {
   useEffect(() => {
     if (started.current === prompt) return;
     started.current = prompt;
-    designBuild(prompt);
-  }, [prompt]);
+    designBuild(prompt, { sketch: fromSketch });
+  }, [prompt, fromSketch]);
 
   const valid = live.payload?.report?.ok !== false; // renderable / openable
   const stable = live.payload?.physics?.stable !== false; // physically stands?
@@ -64,17 +65,6 @@ function Create() {
   const assembly = useAssembly(modelUrl);
   const { steps: mSteps, step: astep, assembling } = assembly;
 
-  // stop-and-steer: correct the build in plain language while it streams
-  const [steerText, setSteerText] = useState("");
-  const [steers, setSteers] = useState<string[]>([]);
-  const submitSteer = () => {
-    const t = steerText.trim();
-    if (!t) return;
-    steer(t);
-    setSteers(getSteers());
-    setSteerText("");
-  };
-
   return (
     <main className="fixed inset-0 select-none overflow-hidden" style={{ background: "#e4f1fc" }}>
       {/* the stage gives up its space to the docked tape, never sits under it */}
@@ -84,24 +74,43 @@ function Create() {
       >
         <GhostBricks seed={73} cols={5} rows={3} scale={1.5} color="#123a8c" opacity={0.1} skip={0.25} />
 
+        {live.art.length > 0 && (
+          <div className={`pointer-events-none absolute z-10 ${modelUrl ? "bottom-24 right-5 w-[190px]" : "inset-0 grid place-items-center px-6"}`}>
+            <div className={modelUrl ? "" : "flex flex-col items-center gap-3"}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={live.art[0].image}
+                alt="The concept art the designer is working from"
+                className="rounded-[14px] bg-white object-contain shadow-[0_10px_30px_rgba(20,40,80,0.25)]"
+                style={{ width: modelUrl ? 190 : "min(78vw, 620px)", maxHeight: modelUrl ? undefined : "62vh", border: "4px solid #ffffff" }}
+              />
+              {!modelUrl && <p className="text-[17px] font-[800] text-ink">{lastThink}</p>}
+            </div>
+          </div>
+        )}
+
         {modelUrl ? (
           <ModelView
             url={modelUrl}
             mode={isDraft || !assembling ? "display" : "timeline"}
             step={astep}
+            landed={isDraft ? live.partialLanded : 0}
+            zoom={isDraft ? 0.42 : 1}
             spin={isDraft || !assembling ? 0.15 : 0}
             shadow
             onLoaded={(m) => !isDraft && assembly.start(m.stepCount)}
             onError={() => {}}
           />
-        ) : (
+        ) : live.art.length === 0 ? (
           <div className="pointer-events-none absolute inset-0 grid place-items-center px-8">
             <div className="flex flex-col items-center gap-4 text-center">
               {!failed && <BrickLoader size={64} label="Designing your model…" />}
               <p className="max-w-[420px] text-[17px] font-[800] leading-snug text-ink">{lastThink}</p>
             </div>
           </div>
-        )}
+        ) : null}
+
+        {live.choices.length > 0 && <Chooser choices={live.choices} />}
 
         <div className="absolute left-0 top-0 flex items-center gap-3 p-5" style={{ paddingLeft: "calc(var(--safe-left) + 20px)", paddingTop: "calc(var(--safe-top) + 16px)" }}>
           <LogoLockup size={24} />
@@ -188,15 +197,6 @@ function Create() {
         </div>
 
         <div className="shrink-0 border-t-2 border-[#9cc5ec] px-5 pb-4 pt-3" style={{ paddingBottom: landscape ? "calc(var(--safe-bottom) + 16px)" : "calc(var(--safe-bottom) + 12px)" }}>
-          {steers.length > 0 && (
-            <div className="mb-2 flex flex-wrap gap-1.5">
-              {steers.map((s, i) => (
-                <BrickChip key={i} size="sm" bg="#e3000b" ink="#ffffff">
-                  {s}
-                </BrickChip>
-              ))}
-            </div>
-          )}
           {failed ? null : done && valid ? (
             <div className="flex gap-3">
               <ChunkyButton variant="white" className="!text-[16px]" onClick={() => tryAnother().catch(() => {})}>
@@ -207,18 +207,7 @@ function Create() {
               </ChunkyButton>
             </div>
           ) : (
-            <div className="flex items-center gap-2 rounded-[16px] bg-white p-1.5 pl-4 ring-2 ring-ai/40">
-              <input
-                value={steerText}
-                onChange={(e) => setSteerText(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && submitSteer()}
-                placeholder="Steer it: “make the ears floppier”"
-                className="min-w-0 flex-1 bg-transparent text-[15px] font-semibold text-ink outline-none placeholder:text-ink-soft/70"
-              />
-              <button onClick={submitSteer} disabled={!steerText.trim()} className="shrink-0 rounded-[12px] bg-ai px-4 py-2 text-[15px] font-[800] text-white active:scale-95 disabled:opacity-40">
-                Steer
-              </button>
-            </div>
+            <p className="text-center text-[14px] font-semibold text-ink-soft">You get to change it once the design is ready.</p>
           )}
           {done && !valid && (
             <ul className="mt-2 flex flex-col gap-1.5">
@@ -233,5 +222,57 @@ function Create() {
         </div>
       </aside>
     </main>
+  );
+}
+
+/** Your say on what was built: every version this run made, the critic's
+ *  favourite marked, and a box to say what to change. Renders, not live 3D,
+ *  so the screen keeps one canvas. */
+function Chooser({ choices }: { choices: { n: number; style: string; stands: boolean; preferred?: boolean; parts?: number; image?: string; ldr: string }[] }) {
+  const [note, setNote] = useState("");
+  const one = choices.length === 1;
+  return (
+    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 overflow-y-auto px-5 py-6" style={{ background: "rgba(228,241,252,0.94)" }}>
+      <p className="text-[22px] font-[900] tracking-[-0.02em] text-ink">{one ? "How does that look?" : "Keep which one?"}</p>
+      <div className="flex flex-wrap items-stretch justify-center gap-3">
+        {choices.map((c, i) => (
+          <button
+            key={c.n}
+            onClick={() => chooseDesign(i, note)}
+            className="chunky flex flex-col items-center gap-2 rounded-[20px] bg-white p-3 transition-transform active:scale-95"
+            style={{ ["--rim" as string]: c.preferred && !one ? "#e3000b" : "#9cc5ec", ["--lift" as string]: "5px", width: one ? "min(82vw, 560px)" : "min(44vw, 330px)" }}
+          >
+            {c.image ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={c.image}
+                alt={c.style || `Version ${c.n}`}
+                className="w-full rounded-[14px] object-contain"
+                style={{ height: one ? "min(52vh, 420px)" : "min(34vh, 260px)" }}
+              />
+            ) : (
+              <div className="w-full rounded-[14px] bg-[#e4f1fc]" style={{ height: one ? 420 : 260 }} />
+            )}
+            <span className="text-[15px] font-[800] leading-tight text-ink">{one ? "Build this one" : c.style || `Version ${c.n}`}</span>
+            <span className="flex items-center gap-2 text-[13px] font-[800] text-ink-soft">
+              {c.parts ? `${c.parts} bricks` : ""}
+              {c.preferred && !one && <span className="rounded-[4px] bg-ai px-1.5 py-0.5 text-white">critic&apos;s pick</span>}
+              {!c.stands && <span className="text-ai">tips over</span>}
+            </span>
+          </button>
+        ))}
+      </div>
+      <div className="flex w-full max-w-[600px] items-center gap-2 rounded-[16px] bg-white p-1.5 pl-4 ring-2 ring-ai/40">
+        <input
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          placeholder={one ? "Or say what to change: “bigger wheels”" : "Pick one, and say what to change: “bigger wheels”"}
+          className="min-w-0 flex-1 bg-transparent text-[15px] font-semibold text-ink outline-none placeholder:text-ink-soft/70"
+        />
+      </div>
+      <button onClick={() => chooseDesign(null, note)} className="text-[15px] font-[800] text-ink-soft underline-offset-4 hover:underline">
+        {one ? "Let the critic decide" : "Go with the critic's pick"}
+      </button>
+    </div>
   );
 }

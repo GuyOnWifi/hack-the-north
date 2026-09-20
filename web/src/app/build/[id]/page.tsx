@@ -8,6 +8,7 @@ import { useParams } from "next/navigation";
 import { useState } from "react";
 import { ArrowLeft, Layers, ListOrdered, Play, Plus, Sparkles } from "lucide-react";
 import { ChunkyButton, IconTile } from "@/components/ui/controls";
+import { BuyBricks } from "@/components/BuyBricks";
 import { FloatingBricks } from "@/components/ui/chrome";
 import { BrickGlyph } from "@/components/ui/IsoBrick";
 
@@ -109,6 +110,8 @@ export default function BuildDetail() {
         <ChunkyButton variant="white" href={`/build/${build.id}/parts`} className="mt-8 !text-[17px]" icon={<Layers size={22} />}>
           See all pieces
         </ChunkyButton>
+        {/* the closer: buy the exact bricks and build it for real */}
+        <BuyBricks parts={build.parts} />
       </div>
     </main>
   );

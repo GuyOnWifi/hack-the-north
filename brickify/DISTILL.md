@@ -15,6 +15,9 @@ set, and designers translate the picture into real parts.
   side studs (details facing sideways: eyes, faces, panels).
 - Small details: round tiles and plates (eyes, noses, buttons), short straight
   bars (beaks, antennae, poles, shafts), tiles for smooth tops.
+- Wheels that really roll (2x2 plate with a tyre each side), so cars, rovers,
+  trucks and anything else on wheels are fair game.
+- Wedge plates for wings, fins, tails and tapered noses.
 - A clear display stand with a tilt, for things that fly or hover.
 - 60-250 parts total. Clean colour blocking with 2-5 colours.
 
@@ -46,7 +49,7 @@ Reply with only JSON:
 ```json
 {
   "subject": "short name for files, e.g. sitting dog with umbrella hat",
-  "concept": "one or two sentences describing the buildable concept",
+  "concept": "one or two sentences describing the buildable LEGO model; always say it is a LEGO model, because this line is what the designers and the app are shown",
   "features": ["3-5 signature features to keep"],
   "simplifications": ["what you changed and why, one line each"],
   "image_prompt": "prompt for the image model: a studio product photo of an official LEGO set of <concept>, built only from real LEGO bricks and plates, chunky stylised proportions, clean colour blocking, calm static pose, whole model in frame, 3/4 view, plain light background"

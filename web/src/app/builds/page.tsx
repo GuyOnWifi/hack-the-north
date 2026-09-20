@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, ArrowUp, BookOpen, Filter, Sparkles } from "lucide-react";
 import { TabBar } from "@/components/ui/chrome";
@@ -9,6 +9,8 @@ import { BrickChip, IconTile, YellowBucket } from "@/components/ui/controls";
 import { IsoBrick } from "@/components/ui/IsoBrick";
 import { ModelSnapshot } from "@/components/three/Snapshots";
 import { BUILDS, THEMES } from "@/lib/data";
+import { bricolage, type SavedModel } from "@/lib/bricolage";
+import { openSaved } from "@/lib/live";
 import { LIVE_ID, useBuild } from "@/lib/useBuild";
 
 // Build suggestions (IMG_1228): yellow bucket with the hero model and
@@ -31,6 +33,7 @@ function Builds() {
   const [filter, setFilter] = useState<string | null>(theme && theme !== "Anything" ? theme : null);
 
   const list = useMemo(() => BUILDS.filter((b) => !filter || b.theme === filter), [filter]);
+  const saved = useLibrary();
 
   const hero = current.build ?? list[0] ?? BUILDS[0];
 
@@ -88,6 +91,18 @@ function Builds() {
           </div>
           <BookOpen size={22} color="#005ad2" strokeWidth={2.4} />
         </Link>
+      )}
+
+      {saved.length > 0 && (
+        <section className="mt-9">
+          <h2 className="text-center text-[30px] font-[800] tracking-[-0.02em] text-ink">Your builds</h2>
+          <p className="mx-auto mt-1 max-w-[320px] text-center text-[15px] text-ink-soft">Everything you have designed, newest first.</p>
+          <div className="mt-6 grid grid-cols-2 gap-x-4 gap-y-7 px-[18px]">
+            {saved.map((m) => (
+              <SavedCard key={m.id} model={m} onOpen={() => openSaved(m.id).then(() => router.push(`/build/${LIVE_ID}`))} />
+            ))}
+          </div>
+        </section>
       )}
 
       <div className="relative mt-8">
@@ -149,5 +164,42 @@ function FloatingStuds() {
         </div>
       ))}
     </div>
+  );
+}
+
+/** Models designed on this machine. They live on disk, so they survive a
+ *  reload, a restart and every new design after them. */
+function useLibrary() {
+  const [models, setModels] = useState<SavedModel[]>([]);
+  useEffect(() => {
+    let alive = true;
+    bricolage
+      .library()
+      .then((r) => alive && setModels(r.models))
+      .catch(() => {}); // no backend: just the samples below
+    return () => {
+      alive = false;
+    };
+  }, []);
+  return models;
+}
+
+/** One saved model: its own render, not a live canvas (taste rule 15). */
+function SavedCard({ model, onOpen }: { model: SavedModel; onOpen: () => void }) {
+  return (
+    <button onClick={onOpen} className="group flex flex-col items-center text-center transition-transform active:scale-[0.97]">
+      <div className="h-[140px] w-full overflow-hidden rounded-[18px] bg-[#cfe3f5]">
+        {model.thumb ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={bricolage.thumb(model.id)} alt={model.name} className="h-full w-full object-cover" />
+        ) : (
+          <div className="grid h-full w-full place-items-center">
+            <IsoBrick w={2} d={2} h={3} color="#9aa7b5" size={56} />
+          </div>
+        )}
+      </div>
+      <span className="mt-2 text-[17px] font-[800] leading-tight text-ink">{model.name}</span>
+      <span className="text-[16px] text-ink">{model.parts ?? "?"} pieces</span>
+    </button>
   );
 }

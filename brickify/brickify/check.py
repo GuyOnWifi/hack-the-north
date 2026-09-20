@@ -12,7 +12,8 @@ import numpy as np
 
 from . import kit
 
-EXEMPT = {frozenset(("3937", "3938")), frozenset(("30374", "85861"))}
+EXEMPT = {frozenset(("3937", "3938")), frozenset(("30374", "85861")),
+          frozenset(("4600", "4624")), frozenset(("4624", "3641")), frozenset(("4600", "3641"))}
 STEP = 4.0
 SHRINK = 1.5
 

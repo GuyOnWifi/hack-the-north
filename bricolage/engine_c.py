@@ -14,6 +14,12 @@ import json
 import sys
 from pathlib import Path
 
+import base64
+import io
+import threading
+import time
+from uuid import uuid4
+
 from model import Build, Part, SubAssembly
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "brickify"))
@@ -24,10 +30,43 @@ from brickify.check import resolve  # noqa: E402
 from brickify.kit import PLATE, STUD  # noqa: E402
 
 BACKEND = "brickify"
+CHOICE_WAIT = 180  # how long a run waits for a person before the critic decides
 
 
 def is_c(build) -> bool:
     return build is not None and build.provenance.get("backend") == BACKEND
+
+
+# Runs waiting for someone to pick, by id. One slot per run: a shared one meant
+# answering on one screen released a different run's review.
+PENDING: dict[str, dict] = {}
+
+
+def choose(index: int | None, note: str = "", ask: str = ""):
+    """The answer from the app: which design, and anything to change about it
+    (index None = let the critic decide). `ask` names the run being answered;
+    without it, the newest waiting run gets the answer."""
+    slot = PENDING.get(ask) or (max(PENDING.values(), key=lambda s: s["at"]) if PENDING else None)
+    if not slot:
+        return False
+    slot["answer"] = {"index": index, "note": note}
+    slot["event"].set()
+    return True
+
+
+def _thumb(path: str, side: int = 460) -> str | None:
+    """A small JPEG data URL, so pictures can ride the tape without bloating it."""
+    try:
+        from PIL import Image
+
+        with Image.open(path) as im:
+            im = im.convert("RGB")
+            im.thumbnail((side, side))
+            buf = io.BytesIO()
+            im.save(buf, "JPEG", quality=82)
+        return "data:image/jpeg;base64," + base64.b64encode(buf.getvalue()).decode()
+    except Exception:
+        return None
 
 
 def _listeners(tape):
@@ -39,19 +78,46 @@ def _listeners(tape):
 
     def on_model(m):
         # every built round goes to the screen straight away, like A's bands did
-        tape.emit("builder", "geometry", f"round {m['round']}: {m['parts']} parts", status="running", ldr=m["ldr"], draft=False)
+        tape.emit("builder", "geometry", f"round {m['round']}: {m['parts']} parts", status="running", ldr=m["ldr"], draft=bool(m.get("draft")))
 
-    return on_event, on_model
+    def on_image(img):
+        thumb = _thumb(img["path"])
+        if thumb:
+            tape.emit("designer", "art", f"{img['role']} art", status="ok", role=img["role"], image=thumb)
+
+    def on_choice(candidates):
+        """Show the designs and wait. The critic takes over if nobody answers."""
+        ask = uuid4().hex[:8]
+        slot = {"event": threading.Event(), "answer": None, "at": time.time()}
+        PENDING[ask] = slot
+        tape.emit("critic", "choices",
+                  "your design is ready: keep it or say what to change" if len(candidates) == 1
+                  else f"{len(candidates)} designs to choose from", status="running", ask=ask,
+                  choices=[{"n": i + 1, "style": c.get("style", ""), "stands": c["stands"],
+                            "preferred": bool(c.get("preferred")), "parts": c.get("parts"),
+                            "image": _thumb(c["front"]), "ldr": c["ldr"]} for i, c in enumerate(candidates)])
+        answered = slot["event"].wait(timeout=CHOICE_WAIT)
+        PENDING.pop(ask, None)
+        if not answered:
+            tape.emit("critic", "choices", "nobody picked, so the critic will", status="ok")
+        return slot["answer"] if answered else None
+
+    return on_event, on_model, on_image, on_choice
 
 
-def build(prompt: str, name: str, tape) -> Build:
-    on_event, on_model = _listeners(tape)
-    result = c.design(prompt, on_event=on_event, on_model=on_model, echo=False)
+def build(prompt: str, name: str, tape, sketch=None) -> Build:
+    on_event, on_model, on_image, on_choice = _listeners(tape)
+    # a user sketch becomes brickify's CONCEPT image: it designs toward the
+    # drawing (and skips generating its own concept) - the sketch-as-reference.
+    # A sketch also means a fresh design: there is nothing cached to replay.
+    result = c.design(prompt, concept_path=Path(sketch) if sketch else None,
+                      on_event=on_event, on_model=on_model, on_image=on_image,
+                      on_choice=on_choice, echo=False)
     return from_result(result, name)
 
 
 def edit(current: Build, instruction: str, tape) -> Build:
-    on_event, on_model = _listeners(tape)
+    on_event, on_model, _, _ = _listeners(tape)
     result = c.edit(Path(current.provenance["run"]), instruction, on_event=on_event, on_model=on_model, echo=False)
     b = from_result(result, current.name)
     return Build(b.id, current.version + 1, b.name, b.parts, b.subs, b.provenance)
@@ -85,6 +151,59 @@ def from_result(result: dict, name: str) -> Build:
 def _yaw(m) -> float:
     import math
     return math.degrees(math.atan2(-m[2, 0], m[0, 0]))
+
+
+def library() -> list[dict]:
+    """Every model this machine has designed, newest first. Runs write
+    themselves to disk as they go, so the library is just what is there."""
+    out = []
+    for d in sorted(c.RUNS.glob("*/"), reverse=True):
+        f = d / "result.json"
+        if not f.exists():
+            continue
+        try:
+            r = json.loads(f.read_text())
+        except ValueError:
+            continue
+        if not r.get("ldr") or not Path(r["ldr"]).exists():
+            continue
+        out.append({"id": d.name, "name": _title(r.get("idea") or d.name),
+                    "idea": r.get("idea"), "parts": r.get("parts"), "score": r.get("score"),
+                    "stands": r.get("stands"), "made": d.name[:13], "thumb": bool(_thumb_path(d, r))})
+    return out
+
+
+def _title(idea: str) -> str:
+    """A short name from the idea it was designed from."""
+    return (idea.split(".")[0].strip()[:40] or "Model").title()
+
+
+def _thumb_path(d: Path, result: dict) -> Path | None:
+    """The front render of the model that won, or any render this run made."""
+    label = result.get("label") or f"r{result.get('round', 0)}"
+    first = d / f"views-{label}" / "front.png"
+    if first.exists():
+        return first
+    others = sorted(d.glob("views-*/front.png"))
+    return others[-1] if others else None
+
+
+def thumb(run_id: str) -> Path | None:
+    d = c.RUNS / run_id
+    f = d / "result.json"
+    if not f.exists():
+        return None
+    return _thumb_path(d, json.loads(f.read_text()))
+
+
+def open_run(run_id: str) -> Build:
+    """A saved run, rebuilt into a Build so every build screen works on it."""
+    d = c.RUNS / run_id
+    result = json.loads((d / "result.json").read_text())
+    result["run"] = str(d)  # runs move between machines; trust where it is now
+    for key in ("ldr", "brief"):
+        result[key] = str(d / Path(result[key]).name)
+    return from_result(result, _title(result.get("idea") or run_id))
 
 
 def recipe(build: Build) -> dict:

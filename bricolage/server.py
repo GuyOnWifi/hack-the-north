@@ -5,11 +5,15 @@ stdlib only, so it runs under DEMO_SAFE with wifi off.
   POST /api/edit         {text, selection?, base?, mode?}  -> payload + {edit}
   POST /api/edit_direct  {ops, dry_run?, base}             -> payload + {edit}
   POST /api/load_ldr     {name, ldr, source?}              -> payload + {edit}
+  POST /api/choose       {index|null, note?} -> {ok}   (pick a candidate design mid-run)
   POST /api/try_another  {}            -> {version, report, tree}
   POST /api/undo|redo    {}            -> {version, report, tree, edit}
+  GET  /api/library                    -> {models:[...]}  every model designed here
+  GET  /api/library/thumb?id=           -> png of that model
+  POST /api/open         {id}           -> make a saved model the current one
   GET  /api/state                      -> current build/report/steps
   GET  /api/parts                      -> the editable part table (docs/EDITING.md D.2)
-  GET  /api/ldr                        -> current model as text/plain LDraw
+  GET  /api/ldr?version=                -> that version's model (default: current) as LDraw
   GET  /                               -> a tiny self-contained dev console
 
 Run:  python bricolage/server.py   (then open http://localhost:8017)
@@ -35,6 +39,9 @@ from brickify import edits as E
 SESSION = Session(Inventory({}, unlimited=True))
 MAX_LDR = 4 * 1024 * 1024
 _TABLE: dict = {}          # version id -> the part table, with its chips
+
+# where a POSTed reference sketch is stored (single-user demo: one current sketch)
+SKETCH_PATH = "/tmp/bricked_sketch.png"
 
 
 def _payload(vid=None):
@@ -111,16 +118,36 @@ class H(BaseHTTPRequestHandler):
         if u.path == "/api/parts":
             return self._parts()
         if u.path == "/api/ldr":
-            v = SESSION.versions.get(SESSION.head)
+            # a version may be named: two designs racing must not hand back
+            # each other's model
+            want = parse_qs(u.query).get("version", [None])[0]
+            v = SESSION.versions.get(want or SESSION.head)
             if v and engine_c.is_c(v.build):  # pipeline C writes its own LDraw, steps included
                 lib = v.build.provenance.get("lib") or ""
                 text = v.build.provenance["ldr"] + ("\n" + lib if lib else "")
                 return self._send(200, text, "text/plain")
             # Include the sequenced 0 STEP markers (HANDOFF: "LDrawLoader reads steps natively").
             return self._send(200, to_ldr(v.build, _payload()["steps"]) if v else "", "text/plain")
+        if u.path == "/api/library":
+            return self._send(200, {"models": engine_c.library()})
+        if u.path == "/api/library/thumb":
+            f = engine_c.thumb(parse_qs(u.query).get("id", [""])[0])
+            if not f:
+                return self._send(404, {"error": "no picture for that one"})
+            data = f.read_bytes()
+            self.send_response(200)
+            self.send_header("Content-Type", "image/png")
+            self.send_header("Cache-Control", "public, max-age=31536000, immutable")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            return self.wfile.write(data)
         if u.path == "/api/build_stream":
-            prompt = parse_qs(u.query).get("prompt", ["build a rover"])[0]
-            return self._stream_build(prompt)
+            q = parse_qs(u.query)
+            prompt = q.get("prompt", ["build a rover"])[0]
+            use_sketch = q.get("sketch", ["0"])[0] in ("1", "true")
+            sketch = SKETCH_PATH if use_sketch and os.path.exists(SKETCH_PATH) else None
+            return self._stream_build(prompt, sketch)
         if u.path == "/api/compare":
             # split-screen: 'LLM places bricks' (floats/topples) vs our solver
             from pipeline import compare
@@ -128,7 +155,7 @@ class H(BaseHTTPRequestHandler):
             return self._send(200, compare(prompt, SESSION.inv))
         self._send(404, {"error": "not found"})
 
-    def _stream_build(self, prompt):
+    def _stream_build(self, prompt, sketch=None):
         """Run a build and stream each tape event live as Server-Sent Events.
         Synchronous: the handler thread writes as Tape.emit fires."""
         import threading
@@ -174,7 +201,7 @@ class H(BaseHTTPRequestHandler):
         tape = Tape()
         tape.listeners.append(push)
         try:
-            SESSION.build(prompt, tape=tape)
+            SESSION.build(prompt, tape=tape, sketch=sketch)
             done = _payload()
             done["event"] = "done"
             push(done)
@@ -231,6 +258,15 @@ class H(BaseHTTPRequestHandler):
             extra = None
             if self.path == "/api/build":
                 SESSION.build(body.get("prompt", "build a rover"))
+            elif self.path == "/api/open":
+                # bring a saved model back as the current one
+                b = engine_c.open_run(body.get("id", ""))
+                SESSION._commit(None, {"kind": "build", "prompt": b.name, "seed": 0, "recipe": engine_c.recipe(b)},
+                                b, engine_c.report(b))
+            elif self.path == "/api/choose":
+                # which of the candidate designs to keep (null = let the critic)
+                engine_c.choose(body.get("index"), body.get("note", ""), body.get("ask", ""))
+                return self._send(200, {"ok": True})
             elif self.path == "/api/try_another":
                 cur = SESSION.versions.get(SESSION.head)
                 if cur and cur.op.get("kind") in ("edit_direct_c", "load_ldr"):
@@ -251,6 +287,16 @@ class H(BaseHTTPRequestHandler):
                 else:
                     SESSION.redo()
                     extra = nav_json("nav", "Redid: " + _label(SESSION.versions[SESSION.head]))
+            elif self.path == "/api/sketch":
+                # store a reference sketch (data URL or bare base64 PNG) for the
+                # next build_stream?sketch=1 — brickify designs toward it.
+                import base64
+                data = body.get("image", "")
+                if "," in data:
+                    data = data.split(",", 1)[1]
+                with open(SKETCH_PATH, "wb") as f:
+                    f.write(base64.b64decode(data))
+                return self._send(200, {"ok": True})
             else:
                 return self._send(404, {"error": "not found"})
         except Exception as e:

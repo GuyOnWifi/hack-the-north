@@ -77,9 +77,10 @@ _load_env()
 API_KEY = os.environ.get("ANTHROPIC_API_KEY")  # set: use the API; unset: the `claude` CLI
 IMAGE_KEY = os.environ.get("OPENAI_API_KEY")  # set: images API; unset: the `codex` CLI
 IMAGE_MODEL = os.environ.get("BRICKIFY_IMAGE_MODEL", "gpt-image-1")
-# "low" is 8s against 31s for "high", and its blockier, simpler models are
-# closer to what this kit can actually build
-IMAGE_QUALITY = os.environ.get("BRICKIFY_IMAGE_QUALITY", "low")
+# "high" is 31s against 8s for "low". Low art is blockier and closer to what
+# this kit can build, but high looks like a real set photo, which is what the
+# app shows you: worth the 23s.
+IMAGE_QUALITY = os.environ.get("BRICKIFY_IMAGE_QUALITY", "high")
 DESIGN_MODEL = os.environ.get("BRICKIFY_MODEL", "claude-opus-5")  # brief + critique
 FAST_MODEL = os.environ.get("BRICKIFY_FAST", "claude-sonnet-5")  # distill + repair
 BRIEF_TOKENS = 32000  # a full brief, or a critique carrying a revised one
@@ -442,6 +443,8 @@ class Run:
     dir: Path
     tape: Tape
     on_model: Listener | None = None
+    on_image: Listener | None = None  # concept art, as it is drawn
+    on_choice: Callable[[list[dict]], int | None] | None = None  # who picks the winner
     distilled: dict = field(default_factory=dict)
     concept: Path | None = None
     views: dict[str, Path] = field(default_factory=dict)
@@ -480,6 +483,8 @@ def concept(run: Run) -> Path:
         run.tape.emit("designer", "concept", "image generation failed", "fail")
         raise RuntimeError("concept image generation failed")
     run.tape.emit("designer", "concept", "concept ready")
+    if run.on_image:
+        run.on_image({"role": "concept", "path": str(out)})
     return out
 
 
@@ -506,6 +511,9 @@ def views(run: Run) -> dict[str, Path]:
 
     with ThreadPoolExecutor(max_workers=len(VIEW_ANGLES)) as pool:
         got = {name: path for name, path in pool.map(lambda kv: one(*kv), VIEW_ANGLES.items()) if path}
+    for name, path in got.items():
+        if run.on_image:
+            run.on_image({"role": name, "path": str(path)})
     run.tape.emit("designer", "views", f"got {len(got)} extra view(s): {', '.join(got) or 'none'}", "ok" if got else "warn")
     return got
 
@@ -522,6 +530,9 @@ def _images(run: Run) -> list[Path]:
     return [p for p in [run.concept, *run.views.values()] if p and p.exists()]
 
 
+# Each candidate is asked for a different take, so the three are worth choosing
+# between. The names are what the app shows under each one.
+STYLES = ["Closest to the art", "Chunkier and simpler", "Bolder features"]
 ANGLES = [
     "",
     "\nThis is one of several designs being compared: go chunkier and simpler than you normally would, "
@@ -557,17 +568,17 @@ def _stream_bricks(run: Run) -> Callable[[str], None] | None:
     return on_text
 
 
-def write_briefs(run: Run, n: int) -> list[dict]:
+def write_briefs(run: Run, n: int) -> list[tuple[dict, str]]:
     """n designs from the same concept, written at the same time. The brief is
     the long pole of a run, so three cost what one costs, and the critic gets a
     choice instead of one attempt to polish."""
     if n == 1:
-        return [write_brief(run)]
+        return [(write_brief(run), STYLES[0])]
     run.tape.emit("designer", "brief", f"working up {n} designs from the concept", "running")
     with ThreadPoolExecutor(max_workers=n) as pool:
         # only the first design streams to the screen: three at once would fight
         out = list(pool.map(lambda i: _brief_or_none(run, ANGLES[i % len(ANGLES)], i, _stream_bricks(run) if i == 0 else None), range(n)))
-    briefs = [b for b in out if b]
+    briefs = [(b, STYLES[i % len(STYLES)]) for i, b in enumerate(out) if b]
     if not briefs:
         raise RuntimeError("no usable design came back")
     run.tape.emit("designer", "brief", f"{len(briefs)} designs to choose from")
@@ -806,8 +817,12 @@ def _new_run(idea: str, on_event: Listener | None, on_model: Listener | None, ec
     return Run(idea, slug, run_dir, Tape(run_dir / "tape.jsonl", (on_event,) if on_event else (), echo), on_model)
 
 
-def _finish(run: Run, best: dict) -> dict:
-    best.update(
+def _save(run: Run, best: dict) -> dict:
+    """Write the run's record. Called after every built round, not just at the
+    end: a model that exists should be in your library even if the run is
+    abandoned halfway, or the browser closed, or a later stage falls over."""
+    record = {k: v for k, v in best.items() if k != "report_obj"}
+    record.update(
         idea=run.idea,
         run=str(run.dir),
         distilled=run.distilled.get("concept"),
@@ -815,12 +830,19 @@ def _finish(run: Run, best: dict) -> dict:
         views={k: str(v) for k, v in run.views.items()},
         seconds=round(time.time() - run.tape.t0),
     )
-    if best.get("round") is not None:
-        label = best.get("label") or f"r{best['round']}"
-        best["ldr"] = str(run.dir / f"{label}.ldr")
-        best["brief"] = str(run.dir / f"brief-{label}.json")
-    (run.dir / "result.json").write_text(json.dumps(best, indent=1))
-    return best
+    if record.get("round") is not None:
+        label = record.get("label") or f"r{record['round']}"
+        record["ldr"] = str(run.dir / f"{label}.ldr")
+        record["brief"] = str(run.dir / f"brief-{label}.json")
+    (run.dir / "result.json").write_text(json.dumps(record, indent=1))
+    return record
+
+
+def _finish(run: Run, best: dict) -> dict:
+    best.pop("report_obj", None)  # working state, not part of the record
+    record = _save(run, best)
+    best.update(record)
+    return record
 
 
 def _remember(best: dict, rnd: int, score: float | None, issues: list[str], report: dict, problems: list[str], label: str = ""):
@@ -832,44 +854,216 @@ def _remember(best: dict, rnd: int, score: float | None, issues: list[str], repo
                 collisions=report["collisions"], clean=clean, issues=issues, issues_kernel=problems)
 
 
-def _first_round(run: Run, briefs: list[dict], best: dict) -> tuple[dict, float | None, list[str], Path | None]:
+def _first_round(run: Run, briefs: list[tuple[dict, str]], best: dict) -> tuple[dict, float | None, list[str], Path | None]:
     """Build every candidate, render them together, and keep the one that reads best."""
     built = []
-    for i, b in enumerate(briefs):
+    for i, (b, style) in enumerate(briefs):
         b, parts, report, problems = build_checked(run, b)
         if parts is not None:
-            publish(run, f"r0{'abcdefg'[i] if len(briefs) > 1 else ''}", b, parts, report)
-            built.append((f"r0{'abcdefg'[i] if len(briefs) > 1 else ''}", b, report, problems))
+            label = f"r0{'abcdefg'[i] if len(briefs) > 1 else ''}"
+            publish(run, label, b, parts, report)
+            built.append((label, b, report, problems, style))
+            if best.get("round") is None:  # something to open, from the first build on
+                _remember(best, 0, None, [], report, problems, label)
+                _save(run, best)
     if not built:
         return briefs[0], None, [], None
     renders = render(run, *[label for label, *_ in built])
     if len(built) == 1:
-        label, brief, report, problems = built[0]
-        _remember(best, 0, None, problems, report, problems, label)
-        score, issues = judge(run, renders[0], problems)
-        _remember(best, 0, score, issues, report, problems, label)
-        return brief, score, issues, renders[0]
-    i, score, issues = pick(run, renders)
-    label, brief, report, problems = built[i]
+        i, (score, issues) = 0, judge(run, renders[0], built[0][3])
+    else:
+        i, score, issues = pick(run, renders)
+    label, brief, report, problems, _ = built[i]
     _remember(best, 0, score, issues, report, problems, label)
+    best["report_obj"] = report
+    _save(run, best)
     return brief, score, issues, renders[i]
+
+
+def review(run: Run, rounds_built: list[dict], best: dict):
+    """The last word is yours. Every version built this run is offered, the
+    critic's favourite marked, with a box to say what to change. Showing only
+    the critic's pick meant watching it improve a model and then being handed
+    the older one."""
+    usable = [r for r in rounds_built if r.get("shots")]
+    if not run.on_choice or not usable:
+        return
+    answer = run.on_choice([{
+        "label": r["label"], "style": r["style"], "parts": r["report"]["parts"],
+        "stands": r["report"]["stands"]["stable"], "preferred": r["label"] == best.get("label"),
+        "front": str(r["shots"] / "front.png"), "ldr": (run.dir / f"{r['label']}.ldr").read_text(),
+    } for r in usable])
+    if not isinstance(answer, dict):
+        return  # they left it to the critic
+    i, note = answer.get("index"), (answer.get("note") or "").strip()
+    chosen = usable[max(0, min(len(usable) - 1, i))] if i is not None else next((r for r in usable if r["label"] == best.get("label")), usable[-1])
+    if i is not None and chosen["label"] != best.get("label"):
+        run.tape.emit("critic", "pick", f"you kept {chosen['style'].lower()}")
+        best.update(score=chosen["score"], round=chosen["round"], label=chosen["label"], parts=chosen["report"]["parts"],
+                    stands=chosen["report"]["stands"]["stable"], collisions=chosen["report"]["collisions"],
+                    clean=not chosen["report"]["collisions"] and chosen["report"]["stands"]["stable"],
+                    issues=chosen["issues"], issues_kernel=chosen["problems"])
+    if not note:
+        return
+    brief, report, problems, changed = _apply_note(run, chosen["brief"], note, chosen["problems"], chosen["shots"])
+    if report is not None:
+        best["clean"] = False  # your word beats the score: this is the one to ship
+        _remember(best, chosen["round"] + 1, None, [note], report, problems, changed)
+    _save(run, best)
+
+
+def _apply_note(run: Run, brief: dict, note: str, problems: list[str], shots: Path):
+    """Someone picked a design and said what to change: do that before going on."""
+    run.tape.emit("designer", "steer", f"your note: {note}", "running")
+    try:
+        brief = revise(run, brief, [note], problems, shots)
+        brief, parts, report, problems = build_checked(run, brief)
+    except (RuntimeError, ValueError) as e:
+        run.tape.emit("designer", "steer", f"couldn't make that change: {e}", "warn")
+        return brief, None, problems, ""
+    if parts is None:
+        run.tape.emit("inspector", "reject", "that change wouldn't build; keeping the design you picked", "warn")
+        return brief, None, problems, ""
+    label = "r0-steered"
+    publish(run, label, brief, parts, report)
+    return brief, report, problems, label
+
+
+REPLAY_SECONDS = float(os.environ.get("BRICKIFY_REPLAY_SECONDS", 20))
+REPLAY_GAP = 2.2  # no single step of a replay drags longer than this
+
+
+def cached(idea: str) -> tuple[Path, dict] | None:
+    """The newest finished run of the same idea, if there is one."""
+    want = slugify(idea)
+    found = None
+    for d in sorted(RUNS.glob("*")):
+        f = d / "result.json"
+        if not f.exists():
+            continue
+        try:
+            r = json.loads(f.read_text())
+        except ValueError:
+            continue
+        if slugify(r.get("idea") or "") == want and r.get("ldr") and Path(r["ldr"]).exists():
+            found = (d, r)
+    return found
+
+
+def _chunks(ldr: str, n: int = 5) -> list[str]:
+    """The model in n growing pieces, cut on its build steps, so a replay can
+    put it together on screen the way the first run did."""
+    head = [l for l in ldr.splitlines() if not l.startswith("1 ") and l.strip() != "0 STEP"]
+    groups, cur = [], []
+    for line in ldr.splitlines():
+        if line.strip() == "0 STEP":
+            if cur:
+                groups.append(cur)
+                cur = []
+        elif line.startswith("1 "):
+            cur.append(line)
+    if cur:
+        groups.append(cur)
+    if not groups:
+        return [ldr]
+    step = max(1, len(groups) // n)
+    out, sofar = [], []
+    for i in range(0, len(groups), step):
+        sofar += [line for g in groups[i : i + step] for line in g]
+        out.append("\n".join(head + sofar + ["0 STEP"]) + "\n")
+    return out
+
+
+def replay(idea: str, run_dir: Path, result: dict, on_event: Listener | None, on_model: Listener | None,
+           on_image: Listener | None, on_choice=None, echo: bool = True) -> dict:
+    """Play a run you already have, at speed. Everything shown really happened:
+    the same steps, the same concept art, the same model going together. It
+    just doesn't wait on models that already answered."""
+    events = [json.loads(l) for l in (run_dir / "tape.jsonl").read_text().splitlines() if l.strip()]
+    tape = Tape(run_dir / "replay.jsonl", (on_event,) if on_event else (), echo)
+    span = max((e["t"] for e in events), default=1) or 1
+    rate = min(1.0, REPLAY_SECONDS * 1000 / span)
+
+    ldr = Path(result["ldr"]).read_text()
+    pieces = _chunks(ldr)
+    art = {"concept": run_dir / "concept.png", **{k: run_dir / f"concept-{k}.png" for k in VIEW_ANGLES}}
+
+    tape.emit("router", "route", f"'{idea}': you have built this before, so here it is again")
+    last = 0
+    for e in events:
+        time.sleep(min((e["t"] - last) * rate / 1000, REPLAY_GAP))
+        last = e["t"]
+        if e["kind"] in ("route", "choices", "pick", "done", "steer", "error"):
+            continue
+        tape.emit(e["actor"], e["kind"], e["text"], e.get("status", "ok"))
+        if e["kind"] == "concept" and "ready" in e["text"] and on_image and art["concept"].exists():
+            on_image({"role": "concept", "path": str(art["concept"])})
+        if e["kind"] == "views" and on_image:
+            for role, f in art.items():
+                if role != "concept" and f.exists():
+                    on_image({"role": role, "path": str(f)})
+        if e["kind"] == "brief" and on_model and pieces:  # the model goes together as it did
+            for piece in pieces:
+                time.sleep(min(REPLAY_SECONDS / 12, REPLAY_GAP))
+                on_model({"round": "draft", "draft": True, "parts": piece.count("\n1 "), "stands": True, "ldr": piece})
+    if on_model:
+        on_model({"round": result.get("label", "r0"), "parts": result.get("parts", 0),
+                  "stands": result.get("stands", True), "ldr": ldr})
+
+    best = dict(result)
+    if on_choice:
+        run = Run(idea, slugify(idea), run_dir, tape)
+        run.concept = art["concept"] if art["concept"].exists() else None
+        run.views = {k: v for k, v in art.items() if k != "concept" and v.exists()}
+        run.on_choice = on_choice
+        rounds_built = _rounds_on_disk(run_dir, best)
+        review(run, rounds_built, best)
+        best = _save(run, best)
+    tape.emit("scribe", "done", f"built from the one you made earlier ({best.get('parts')} parts)")
+    return best
+
+
+def _rounds_on_disk(run_dir: Path, best: dict) -> list[dict]:
+    """Every version a finished run left behind, for the review."""
+    out = []
+    for ldr in sorted(run_dir.glob("r*.ldr")):
+        label = ldr.stem
+        brief = run_dir / f"brief-{label}.json"
+        shots = run_dir / f"views-{label}"
+        if not brief.exists() or not (shots / "front.png").exists():
+            continue
+        parts = sum(1 for line in ldr.read_text().splitlines() if line.startswith("1 "))
+        out.append({"label": label, "style": "First build" if label.endswith("0") else "After the critic's notes",
+                    "brief": json.loads(brief.read_text()), "shots": shots, "round": int(label[1]) if label[1:2].isdigit() else 0,
+                    "report": {"parts": parts, "collisions": 0, "stands": {"stable": best.get("stands", True)}},
+                    "score": best.get("score") if label == best.get("label") else None,
+                    "issues": [], "problems": []})
+    return out
 
 
 def design(
     idea: str,
     concept_path: Path | None = None,
-    rounds: int = 0,
+    rounds: int = 1,
     target: float = 8.0,
-    fan: int = 3,
+    fan: int = 1,
     multiview: bool = True,
     do_distill: bool = True,
     on_event: Listener | None = None,
     on_model: Listener | None = None,
+    on_image: Listener | None = None,
+    on_choice: Callable[[list[dict]], int | None] | None = None,
+    fresh: bool = False,
     echo: bool = True,
 ) -> dict:
     """The full loop. Raises on anything that leaves no model (no silent fallbacks)."""
+    if not fresh and not concept_path:
+        seen = cached(idea)
+        if seen:
+            return replay(idea, *seen, on_event, on_model, on_image, on_choice, echo)
     preflight(need_codex=concept_path is None or multiview)
     run = _new_run(idea, on_event, on_model, echo)
+    run.on_image, run.on_choice = on_image, on_choice
     run.tape.emit("router", "route", f"'{idea}': concept art, {fan} designs to choose from, then up to {rounds} rounds of notes")
 
     if do_distill and concept_path is None:
@@ -891,6 +1085,11 @@ def design(
         pool.shutdown()
     best: dict = {"score": None, "round": None}
     brief, score, issues, shots = _first_round(run, briefs, best)
+    # every version built this run, so you can be offered the choice at the end
+    rounds_built = [{"label": best.get("label", "r0"), "style": "First build", "brief": brief, "shots": shots,
+                     "report": best.get("report_obj", {"parts": best.get("parts", 0), "collisions": best.get("collisions", 0),
+                                                       "stands": {"stable": best.get("stands", True)}}),
+                     "score": score, "issues": issues, "problems": best.get("issues_kernel", []), "round": 0}]
     for rnd in range(1, rounds + 1):
         if best["score"] is not None and best["score"] >= target:
             break
@@ -907,6 +1106,11 @@ def design(
             run.tape.emit("critic", "error", f"couldn't judge that round, keeping the best so far: {e}", "fail")
             break
         _remember(best, rnd, score, issues, report, problems, f"r{rnd}")
+        _save(run, best)
+        rounds_built.append({"label": f"r{rnd}", "style": "After the critic's notes", "brief": brief, "shots": shots,
+                             "report": report, "score": score, "issues": issues, "problems": problems, "round": rnd})
+
+    review(run, rounds_built, best)
 
     if best["round"] is None:
         run.tape.emit("scribe", "done", "no buildable model came out of this run", "fail")
@@ -955,7 +1159,8 @@ def main():
     ap.add_argument("--rounds", type=int, default=0, help="rounds of critic notes after the first build. Default 0: "
                     "measured over four runs, revising the winner scored worse every time (5->3, 5->3, 5->2, 5->2), "
                     "so the pipeline ships the best of --fan candidates instead")
-    ap.add_argument("--fan", type=int, default=3, help="candidate designs to write in parallel and choose between (default 3)")
+    ap.add_argument("--fresh", action="store_true", help="design it again instead of replaying one you already made")
+    ap.add_argument("--fan", type=int, default=1, help="candidate designs to write in parallel and choose between (default 1; more gives the critic, or you, a choice)")
     ap.add_argument("--target", type=float, default=8.0, help="stop early at this critic score (default 8)")
     ap.add_argument("--single-view", action="store_true", help="skip the side/back concept views")
     ap.add_argument("--no-distill", action="store_true", help="send the idea to the image model as-is")
@@ -966,7 +1171,8 @@ def main():
     if a.edit:
         result = edit(a.edit, a.idea)
     else:
-        result = design(a.idea, a.concept, a.rounds, a.target, fan=a.fan, multiview=not a.single_view, do_distill=not a.no_distill)
+        result = design(a.idea, a.concept, a.rounds, a.target, fan=a.fan, multiview=not a.single_view,
+                        do_distill=not a.no_distill, fresh=a.fresh)
     # the CLI also publishes the model for the dev lab page (/lab?m=<slug>)
     lab = WEB / "public/lab" / f"{slugify(result['idea'])}.ldr"
     shutil.copy(result["ldr"], lab)

@@ -4,9 +4,10 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Search } from "lucide-react";
+import { Search, Pencil } from "lucide-react";
 import { GhostBricks, TabBar } from "@/components/ui/chrome";
 import { YellowBucket } from "@/components/ui/controls";
+import { SketchPad } from "@/components/SketchPad";
 import { ModelSnapshot } from "@/components/three/Snapshots";
 import { BUILDS, THEMES, getBuild } from "@/lib/data";
 import { useInView } from "@/lib/useInView";
@@ -26,6 +27,7 @@ const GlassBrick = dynamic(
 export default function Home() {
   const router = useRouter();
   const [query, setQuery] = useState("");
+  const [sketching, setSketching] = useState(false);
 
   return (
     <main
@@ -76,8 +78,13 @@ export default function Home() {
             aria-label="Describe a build"
             className="h-full min-w-0 flex-1 bg-transparent text-[19px] text-ink outline-none placeholder:text-[#949494]"
           />
+          <span className="h-9 w-px bg-[#d9d9d9]" />
+          <button type="button" onClick={() => setSketching(true)} aria-label="Sketch a build" className="grid h-11 w-11 shrink-0 place-items-center active:scale-95">
+            <Pencil size={26} strokeWidth={2.2} color="#1a1a1a" />
+          </button>
         </form>
       </YellowBucket>
+      {sketching && <SketchPad onClose={() => setSketching(false)} />}
 
       <Carousel />
 
