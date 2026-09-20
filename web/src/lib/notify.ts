@@ -7,7 +7,7 @@
 //
 // Permission is only ever requested from a tap on the bell, never on load.
 
-const PREF = "brickedup.stepNotifications";
+const PREF = "bricked.stepNotifications";
 
 const listeners = new Set<() => void>();
 let cached: NotifyState | null = null;
@@ -78,7 +78,7 @@ export async function notifyStep(title: string, body: string, done = false) {
   if (notifyState() !== "on" || document.visibilityState === "visible") return;
   const options: NotificationOptions = {
     body,
-    tag: "brickedup-step",
+    tag: "bricked-step",
     icon: "/icons/icon-192.png",
     badge: "/icons/icon-192.png",
     silent: !done, // only the finished model makes a sound

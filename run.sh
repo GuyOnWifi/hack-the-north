@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Launch BrickedUp: the Lane B API (with pipeline C as the designer) + the web app.
+# Launch Bricked: the Lane B API (with pipeline C as the designer) + the web app.
 #
 #   ./run.sh                 pipeline C: concept image -> brief -> real LEGO parts
 #                            (needs `claude` and `codex login`; ~6-10 min a model)

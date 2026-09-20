@@ -69,10 +69,16 @@ def _thumb(path: str, side: int = 460) -> str | None:
         return None
 
 
+class Abandoned(Exception):
+    """Nobody is watching this run any more, so it stops."""
+
+
 def _listeners(tape):
     """brickify events -> this package's tape (and so the SSE stream)."""
 
     def on_event(ev):
+        if getattr(tape, "gone", False):
+            raise Abandoned("the browser left, so this design stopped")
         extra = {k: v for k, v in ev.items() if k not in ("t", "actor", "kind", "text", "status")}
         tape.emit(ev["actor"], ev["kind"], ev["text"], status=ev["status"], **extra)
 
