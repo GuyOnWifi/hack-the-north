@@ -933,21 +933,43 @@ REPLAY_SECONDS = float(os.environ.get("BRICKIFY_REPLAY_SECONDS", 20))
 REPLAY_GAP = 2.2  # no single step of a replay drags longer than this
 
 
+# Words that carry no meaning when matching one idea against another.
+FILLER = {"a", "an", "the", "some", "my", "our", "of", "with", "and", "in", "on", "for", "please", "build", "me", "make"}
+
+
+def _words(idea: str) -> list[str]:
+    return [w for w in re.findall(r"[a-z0-9]+", (idea or "").lower()) if w not in FILLER]
+
+
 def cached(idea: str) -> tuple[Path, dict] | None:
-    """The newest finished run of the same idea, if there is one."""
-    want = slugify(idea)
-    found = None
+    """The model you already made that answers this, if there is one.
+
+    "bus" finds the yellow school bus, and case and articles never matter. The
+    rule: every word you typed must appear in the saved idea, and the thing
+    itself (the last word) must be the same - so "bus" finds a school bus, but
+    "dog" doesn't hand you the dog holding an umbrella. The closest match wins,
+    then the newest."""
+    want = _words(idea)
+    if not want:
+        return None
+    best = None
     for d in sorted(RUNS.glob("*")):
         f = d / "result.json"
-        if not f.exists():
+        if d.name.startswith(".") or d.name == "removed" or not f.exists():
             continue
         try:
             r = json.loads(f.read_text())
         except ValueError:
             continue
-        if slugify(r.get("idea") or "") == want and r.get("ldr") and Path(r["ldr"]).exists():
-            found = (d, r)
-    return found
+        if not r.get("ldr") or not Path(r["ldr"]).exists():
+            continue
+        have = _words(r.get("idea") or d.name.replace("-", " "))
+        if not have or have[-1] != want[-1] or not set(want) <= set(have):
+            continue
+        rank = (0 if have == want else 1, len(have) - len(want), d.name)
+        if best is None or rank[:2] < best[0][:2] or (rank[:2] == best[0][:2] and rank[2] > best[0][2]):
+            best = (rank, d, r)
+    return (best[1], best[2]) if best else None
 
 
 def _chunks(ldr: str, n: int = 5) -> list[str]:
@@ -988,7 +1010,10 @@ def replay(idea: str, run_dir: Path, result: dict, on_event: Listener | None, on
     pieces = _chunks(ldr)
     art = {"concept": run_dir / "concept.png", **{k: run_dir / f"concept-{k}.png" for k in VIEW_ANGLES}}
 
-    tape.emit("router", "route", f"'{idea}': you have built this before, so here it is again")
+    same = slugify(result.get("idea") or "") == slugify(idea)
+    tape.emit("router", "route",
+              f"'{idea}': you have built this before, so here it is again" if same
+              else f"'{idea}': that is the {result.get('idea')} you made earlier")
     last = 0
     for e in events:
         time.sleep(min((e["t"] - last) * rate / 1000, REPLAY_GAP))

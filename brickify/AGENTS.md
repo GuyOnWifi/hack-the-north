@@ -89,12 +89,18 @@ Rules that follow, and the rest of what made a run 6x faster:
     and low art is blockier, which is closer to what this kit can build. The
     default is `high` because the art is on screen for the whole run.
 
-16. **Runs are the cache.** A second ask for the same idea replays the run on
+16. **The cache matches the way a person asks.** "bus" finds the yellow school
+    bus; case, articles and filler words never matter. Every word you typed
+    must appear in the saved idea and the thing itself (the last word) must
+    match, so "dog" doesn't hand back the dog holding an umbrella, and "red"
+    matches nothing. The tape says which saved model it matched when it isn't
+    what you typed.
+17. **Runs are the cache.** A second ask for the same idea replays the run on
     disk (`cached`, `replay`): the real tape, the real concept art, the real
     model going together, timed to about 20s (`BRICKIFY_REPLAY_SECONDS`).
     Nothing is invented for a replay - if it is on screen, it happened - and a
     note in the review still costs a real model call. `--fresh` skips it.
-17. **A record is written after every built round** (`_save`), not at the end.
+18. **A record is written after every built round** (`_save`), not at the end.
     17 of 47 runs once had finished models and no record, so they were
     invisible to the library; anything that exists should be openable.
 

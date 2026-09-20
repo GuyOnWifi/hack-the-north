@@ -53,6 +53,8 @@ function pipelineC(e: TapeEvent, t: string): TapeCopy | null {
   switch (e.actor) {
     case "router":
       if ((m = t.match(/^'([^']+)': distill, concept.*x(\d+) max$/))) return { text: `Designing "${m[1]}": concept art, a brick plan, then up to ${m[2]} builds` };
+      if ((m = t.match(/^'([^']+)': you have built this before/))) return { text: `You have built "${m[1]}" before, so here it is again` };
+      if ((m = t.match(/^'([^']+)': that is the (.+) you made earlier$/))) return { text: `"${m[1]}" is the ${m[2]} you made earlier` };
       return null;
     case "planner":
       if ((m = t.match(/^making '([^']+)' buildable/))) return { text: `Working out how "${m[1]}" can be built in bricks` };
