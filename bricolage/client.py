@@ -9,6 +9,9 @@ names, semantic args, socket names. Never a coordinate (invariant #4).
 from __future__ import annotations
 import os
 
+import json
+import hashlib
+import pathlib
 MODEL = "claude-opus-5"     # behind the adapter; swap to gpt for OpenAI prize
 
 SYSTEM = """You are the DESIGNER in a LEGO build system. You decide WHAT to
@@ -39,6 +42,37 @@ PROPOSE_TOOL = {
         "required": ["root"],
     },
 }
+
+
+CACHE_DIR = pathlib.Path(os.environ.get(
+    "BRICOLAGE_LLM_CACHE", pathlib.Path(__file__).resolve().parent.parent / "data" / "llm_cache"))
+
+
+def _cache_key(*parts):
+    return hashlib.sha256("\x1f".join(str(p) for p in parts).encode()).hexdigest()
+
+
+def _cache_get(key):
+    if os.environ.get("BRICOLAGE_NO_LLM_CACHE"):
+        return None
+    f = CACHE_DIR / key[:2] / f"{key}.json"
+    if not f.exists():
+        return None
+    try:
+        return json.loads(f.read_text())
+    except (json.JSONDecodeError, OSError):
+        return None
+
+
+def _cache_put(key, value):
+    if os.environ.get("BRICOLAGE_NO_LLM_CACHE"):
+        return
+    f = CACHE_DIR / key[:2] / f"{key}.json"
+    try:
+        f.parent.mkdir(parents=True, exist_ok=True)
+        f.write_text(json.dumps(value))
+    except OSError:
+        pass
 
 
 def provider():
@@ -78,15 +112,38 @@ class LLMClient:
         self.calls = 0
 
     def propose_compose(self, prompt, inv_summary, noun, size, seed):
-        self.calls += 1
+        """Ask the designer for a composition, memoised on disk.
+
+        MEASURED: a `claude -p` proposal takes 5-14 s, of which ~1.8 s is just spawning the CLI
+        (a trivial "reply ok" prompt costs 1.77 s). A demo runs the same handful of prompts over
+        and over, so the second run of anything should be free -- and on stage the difference
+        between 14 s and instant is the difference between a pause and a beat.
+
+        Keyed on everything that can change the answer, so a different bin or seed still asks.
+        Determinism is unaffected: we already record the returned composition and replay the
+        recorded op, never the model.
+        """
         p = provider()
+        key = _cache_key(p, MODEL, prompt, inv_summary, noun, size, seed)
+        hit = _cache_get(key)
+        if hit is not None:
+            return hit
+
+        self.calls += 1
         if p == "anthropic":
-            return self._anthropic(prompt, inv_summary, noun, size, seed)
-        if p == "openai":
-            return self._openai(prompt, inv_summary, noun, size, seed)
-        if p in ("claude_cli", "claude-cli", "cli"):
-            return self._claude_cli(prompt, inv_summary, noun, size, seed)
-        return self._mock(prompt, inv_summary, noun, size, seed)
+            comp = self._anthropic(prompt, inv_summary, noun, size, seed)
+        elif p == "openai":
+            comp = self._openai(prompt, inv_summary, noun, size, seed)
+        elif p in ("claude_cli", "claude-cli", "cli"):
+            comp = self._claude_cli(prompt, inv_summary, noun, size, seed)
+        else:
+            return self._mock(prompt, inv_summary, noun, size, seed)
+
+        # Only cache a real answer. The mock fallback is cheap to recompute and caching it would
+        # pin a degraded result in place long after the network came back.
+        if comp is not None:
+            _cache_put(key, comp)
+        return comp
 
     # ---- real providers (wired, inert without a key) -------------------
     def _anthropic(self, prompt, inv_summary, noun, size, seed):  # pragma: no cover

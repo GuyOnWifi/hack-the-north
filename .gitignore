@@ -55,3 +55,6 @@ data/real/batch2/
 data/real/table/
 data/real/table_hires/
 data/real/spread/
+
+# Memoised LLM proposals. Derived, machine-local, keyed by prompt hash.
+data/llm_cache/
