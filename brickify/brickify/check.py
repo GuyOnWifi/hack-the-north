@@ -18,6 +18,12 @@ SHRINK = 1.5
 
 
 def _samples(pid: str) -> np.ndarray:
+    """Body-box sample cloud for a part. Kit parts use the hand-verified Geom;
+    anything else is resolved by `partlib` (embedded geometry, the header's
+    'Brick 2 x 4', or a 1x1 brick), so a loaded model never raises."""
+    if pid not in kit.G:
+        from . import partlib
+        return partlib.samples(pid)
     g = kit.G[pid]
     h = max(g.plates, 1) * kit.PLATE
     y0, y1 = (-h, 0.0) if g.origin == "bottom" else (0.0, h)
@@ -83,19 +89,26 @@ def _hinged(a, b) -> bool:
     return (a.pid == "3937" and b.body in getattr(a, "hinged", ())) or (b.pid == "3937" and a.body in getattr(b, "hinged", ()))
 
 
-def check_world(parts, detail: bool = False) -> dict:
+def check_world(parts, detail: bool = False, same_body: bool = False, samples=None) -> dict:
+    """Interpenetration report. `same_body=True` also checks parts of one body
+    (a loaded .ldr is all one body, so the editor's gate needs it); `samples`
+    is an optional pid -> cloud callable, so a caller with its own part library
+    can supply geometry for parts outside the kit."""
+    sample = samples or _samples
     cache: dict[str, np.ndarray] = {}
     owner: dict[tuple, int] = {}
     hits = defaultdict(int)
     for idx, p in enumerate(parts):
-        s = cache.setdefault(p.pid, _samples(p.pid))
+        s = cache.get(p.pid)
+        if s is None:
+            s = cache[p.pid] = sample(p.pid)
         w = (p.M @ s.T).T[:, :3]
         for key in map(tuple, np.floor(w / STEP).astype(int)):
             o = owner.get(key)
             if o is None:
                 owner[key] = idx
             # within one body the grid rules out overlaps; only check across bodies
-            elif o != idx and parts[o].body != p.body and frozenset((parts[o].pid, p.pid)) not in EXEMPT and not _hinged(parts[o], p):
+            elif o != idx and (same_body or parts[o].body != p.body) and frozenset((parts[o].pid, p.pid)) not in EXEMPT and not _hinged(parts[o], p):
                 hits[(min(o, idx), max(o, idx))] += 1
     real = [(a, b) for (a, b), n in hits.items() if n >= 3]
     pairs = [(parts[a].pid, parts[a].body, parts[b].pid, parts[b].body, hits[(a, b)]) for a, b in real]
@@ -105,17 +118,23 @@ def check_world(parts, detail: bool = False) -> dict:
     return out
 
 
-def stands(parts) -> dict:
+def stands(parts, detail: bool = False, samples=None) -> dict:
     """Will it stand on a table? Centre of mass (every part weighted by its
     body volume) must fall inside the footprint of the parts touching the
     ground, with a little margin. Returns {stable, margin, direction} where
-    margin is in studs (negative = how far outside the base the weight sits)."""
+    margin is in studs (negative = how far outside the base the weight sits).
+    With `detail`, also the centre of mass, the base hull and the ground plane
+    (the UI draws them)."""
     if not parts:
-        return {"stable": False, "margin": 0.0, "direction": None}
+        out = {"stable": False, "margin": 0.0, "direction": None}
+        return {**out, "com": None, "base": [], "ground": 0.0} if detail else out
+    sample = samples or _samples
     cache: dict[str, np.ndarray] = {}
     world = []
     for p in parts:
-        s = cache.setdefault(p.pid, _samples(p.pid))
+        s = cache.get(p.pid)
+        if s is None:
+            s = cache[p.pid] = sample(p.pid)
         world.append((p.M @ s.T).T[:, :3])
     pts = np.concatenate(world)
     ground = pts[:, 1].max()  # LDraw: +y is down
@@ -124,7 +143,25 @@ def stands(parts) -> dict:
     margin, direction = _inside(com, base)
     # studs grip, so weight right on the edge still stands; only weight clearly
     # past the base tips it over
-    return {"stable": margin > -0.25, "margin": round(margin, 2), "direction": direction}
+    out = {"stable": margin > -0.25, "margin": round(margin, 2), "direction": direction}
+    if detail:
+        out["com"] = [round(float(com[0]) / kit.STUD, 2), round(float(com[1]) / kit.STUD, 2)]
+        out["base"] = _hull(base)
+        out["ground"] = round(float(ground), 2)
+    return out
+
+
+def _hull(cloud: np.ndarray) -> list:
+    """Base polygon in studs, for the UI's stability overlay."""
+    from scipy.spatial import ConvexHull, QhullError
+
+    try:
+        h = ConvexHull(cloud)
+        pts = cloud[h.vertices]
+    except (QhullError, ValueError):
+        lo, hi = cloud.min(axis=0), cloud.max(axis=0)
+        pts = np.array([[lo[0], lo[1]], [hi[0], lo[1]], [hi[0], hi[1]], [lo[0], hi[1]]])
+    return [[round(float(a) / kit.STUD, 2), round(float(b) / kit.STUD, 2)] for a, b in pts]
 
 
 def _inside(point: np.ndarray, cloud: np.ndarray) -> tuple[float, str | None]:

@@ -15,10 +15,43 @@ def build_json(build):
                                    "attach": s.attach, "sockets": list(s.sockets)}
                           for s in build.subs},
         # drop internal, non-JSON provenance (voxels has tuple keys; it's only
-        # for replay). Keep composition (JSON-safe, useful to the UI).
+        # for replay) and the bulky LDraw text + embedded part library, which
+        # have their own endpoint (/api/ldr) and would add ~560 KB per poll.
         "provenance": {k: v for k, v in build.provenance.items()
-                       if k not in ("voxels", "dropped")},
+                       if k not in ("voxels", "dropped", "ldr", "lib")},
     }
+
+
+def edit_json(res, path, dry_run=False, tape=None, human=None):
+    """An edits.Result -> the `edit` key every mutating response carries
+    (docs/EDITING.md D.1). `tape` holds only this edit's own events."""
+    events = tape if tape is not None else _events(getattr(res, "events", ()))
+    return {
+        "accepted": bool(res.accepted), "dry_run": bool(dry_run), "path": path,
+        "code": res.code, "human": human if human is not None else res.human,
+        "ops": [dict(o) for o in res.ops],
+        "changed": list(res.changed), "added": list(res.added), "removed": list(res.removed),
+        "landed": [dict(l) for l in res.landed],
+        "candidates": [], "culprits": list(res.culprits), "offer": res.offer,
+        "tape": events,
+    }
+
+
+def _events(raw):
+    out, t = [], 0
+    for actor, kind, text, status in raw:
+        t += 1
+        out.append({"t": t, "actor": actor, "kind": kind, "text": text,
+                    "status": status, "ms": 0, "tokens": 0})
+    return out
+
+
+def nav_json(path, human, accepted=True, kind="edit.nav", actor="router"):
+    return {"accepted": accepted, "dry_run": False, "path": path, "code": None,
+            "human": human, "ops": [], "changed": [], "added": [], "removed": [],
+            "landed": [], "candidates": [], "culprits": [], "offer": None,
+            "tape": [{"t": 1, "actor": actor, "kind": kind, "text": human,
+                      "status": "ok" if accepted else "warn", "ms": 0, "tokens": 0}]}
 
 
 def report_json(report):

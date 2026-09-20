@@ -111,6 +111,10 @@ function pipelineC(e: TapeEvent, t: string): TapeCopy | null {
 }
 
 export function tapeCopy(e: TapeEvent): TapeCopy {
+  // Edit events (docs/EDITING.md E.5) are already written as plain words —
+  // rewriting them here would only mangle them.
+  if (e.kind.startsWith("edit.")) return { text: e.text };
+
   const t = e.text.trim();
   let m: RegExpMatchArray | null;
 

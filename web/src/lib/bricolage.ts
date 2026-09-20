@@ -62,11 +62,101 @@ export interface TapeEvent {
   tokens: number;
 }
 
+// --- Part-level editing (docs/EDITING.md sections A-E) ----------------------
+
+/** One edit op, exactly as /edit_direct takes it. Every field is an integer. */
+export interface EditOp {
+  op: "move" | "rotate" | "recolour" | "delete" | "duplicate" | "add";
+  ids?: string[];
+  /** [studs X, plates UP, studs Z] — the server converts to LDraw units. */
+  d?: [number, number, number];
+  quarters?: number;
+  colour?: number;
+  cascade?: boolean;
+  settle?: boolean;
+  part?: string;
+  on?: string | null;
+  body?: string;
+  all?: true;
+}
+
+/** Where a touched part actually ended up (read-only floats, for the ghost). */
+export interface Landed {
+  id: string;
+  /** Line in the new text; its current line on a dry run; -1 if it doesn't exist yet. */
+  line: number;
+  requested: [number, number, number];
+  d: [number, number, number];
+  settled: boolean;
+  origin: [number, number, number];
+  matrix: number[];
+}
+
+export type EditPath = "direct" | "preparse" | "fast" | "brief" | "nav" | "load";
+
+/** The `edit` key every mutation response carries. `human` is UI copy: verbatim. */
+export interface EditResult {
+  accepted: boolean;
+  dry_run?: boolean;
+  path: EditPath;
+  code: string | null;
+  human: string;
+  ops: EditOp[];
+  changed: string[];
+  added: string[];
+  removed: string[];
+  landed: Landed[];
+  candidates: string[];
+  culprits: string[];
+  offer: { cascade?: boolean } | null;
+  tape: TapeEvent[];
+}
+
+export interface PartRow {
+  id: string;
+  line: number;
+  part: string;
+  name: string;
+  kind: string;
+  geometry: string;
+  colour: number;
+  colour_name: string;
+  trans: boolean;
+  body: string;
+  pos: [number, number, number];
+  rot: number;
+  upright: boolean;
+  size: [number, number, number];
+  origin: [number, number, number];
+  step: number;
+  where: string[];
+  tags: string[];
+  loose: boolean;
+}
+
+export interface PartsTable {
+  version: string;
+  count: number;
+  source: string | null;
+  parts: PartRow[];
+  bodies: { name: string; count: number; colours: number[] }[];
+  colours: { code: number; name: string; count: number; trans: boolean }[];
+  kit: { part: string; name: string; kind: string; size: [number, number, number] }[];
+  palette: { code: number; name: string; hex: string; trans: boolean }[];
+  suggestions: string[];
+}
+
 /** Structural stability of the current build (from Lane B's physics engine). */
 export interface Physics {
   stable: boolean;
   com: [number, number] | null;
   base: [number, number][];
+  /** Studs the centre of mass sits inside the base by (negative = outside). */
+  margin?: number;
+  /** "-z" | "+z" | "-x" | "+x": which way it would go over. */
+  direction?: string;
+  /** The ground plane's LDraw Y, in LDU. */
+  ground?: number;
   topple_margin?: number;
   sturdiness?: number;
   weakest_layer?: number | null;
@@ -87,6 +177,8 @@ export interface Payload {
   tree?: string;
   head?: string | null;
   physics?: Physics;
+  /** Present on every mutation once the part-level editor is wired up. */
+  edit?: EditResult;
 }
 
 const BASE = "/bricolage";
@@ -94,11 +186,13 @@ const FIXTURES = "/bricolage-fixtures";
 
 // The SSE stream must skip the Next dev proxy (it buffers streaming responses),
 // so EventSource talks to the backend origin directly. Override with
-// NEXT_PUBLIC_STREAM_ORIGIN; otherwise assume the backend is on :8017 of the
-// same host (what run.sh launches). Non-stream REST calls keep using the proxy.
+// NEXT_PUBLIC_STREAM_ORIGIN; otherwise the backend is on the same host at the
+// port next.config.ts read out of BRICOLAGE_URL (8017 by default, what run.sh
+// launches). Non-stream REST calls keep using the proxy.
+const STREAM_PORT = process.env.NEXT_PUBLIC_STREAM_PORT || "8017";
 const STREAM_ORIGIN =
   process.env.NEXT_PUBLIC_STREAM_ORIGIN ||
-  (typeof window !== "undefined" ? `${window.location.protocol}//${window.location.hostname}:8017` : "");
+  (typeof window !== "undefined" ? `${window.location.protocol}//${window.location.hostname}:${STREAM_PORT}` : "");
 const STREAM_BASE = STREAM_ORIGIN ? `${STREAM_ORIGIN}/api` : BASE;
 
 async function request<T>(path: string, init?: RequestInit, timeoutMs = 60000): Promise<T> {
@@ -108,7 +202,8 @@ async function request<T>(path: string, init?: RequestInit, timeoutMs = 60000): 
     const res = await fetch(`${BASE}${path}`, { ...init, signal: ctrl.signal, headers: { "Content-Type": "application/json", ...init?.headers } });
     if (!res.ok) {
       const body = await res.json().catch(() => ({}));
-      throw new ApiError(body.error ?? `HTTP ${res.status}`, res.status);
+      // 400/409 carry a `human` sentence written as UI copy; prefer it.
+      throw new ApiError(body.human ?? body.error ?? `HTTP ${res.status}`, res.status, body.human ?? null);
     }
     const type = res.headers.get("content-type") ?? "";
     return (type.includes("json") ? res.json() : res.text()) as Promise<T>;
@@ -121,6 +216,8 @@ export class ApiError extends Error {
   constructor(
     message: string,
     readonly status = 0,
+    /** The server's own user-facing sentence, when it sent one. */
+    readonly human: string | null = null,
   ) {
     super(message);
   }
@@ -131,12 +228,21 @@ const post = (path: string, body: unknown = {}, timeoutMs?: number) => request<P
 // Pipeline C revises a brief for an edit (1-3 min) and redesigns from scratch
 // for "try another" (6-10 min), so those calls get room to finish.
 const DESIGN_TIMEOUT = 15 * 60 * 1000;
+/** A part-level edit is geometry, not a model call: it answers in well under a second. */
+const EDIT_TIMEOUT = 20 * 1000;
 
 export const bricolage = {
   state: () => request<Payload>("/state"),
   ldr: () => request<string>("/ldr"),
   build: (prompt: string) => post("/build", { prompt }),
-  edit: (text: string) => post("/edit", { text }, DESIGN_TIMEOUT),
+  /** Natural language. The router decides between the instant path and a rebuild. */
+  edit: (text: string, selection: string[] = [], base?: string | null) => post("/edit", { text, selection, base, mode: "auto" }, DESIGN_TIMEOUT),
+  /** Buttons, keys and drags: resolved ops, gated server-side. */
+  editDirect: (ops: EditOp[], opts: { dryRun?: boolean; base: string }) => post("/edit_direct", { ops, dry_run: !!opts.dryRun, base: opts.base }, EDIT_TIMEOUT),
+  /** The part table the editor picks against. */
+  parts: () => request<PartsTable>("/parts", undefined, EDIT_TIMEOUT),
+  /** Seeds a session from LDraw text (a sample model, a lab model). No model call. */
+  loadLdr: (body: { name: string; ldr: string; source?: string }) => post("/load_ldr", body, 60 * 1000),
   tryAnother: () => post("/try_another", {}, DESIGN_TIMEOUT),
   undo: () => post("/undo"),
   redo: () => post("/redo"),

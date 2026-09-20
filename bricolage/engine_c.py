@@ -18,6 +18,7 @@ from model import Build, Part, SubAssembly
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "brickify"))
 from brickify import pipeline as c  # noqa: E402
+from brickify import edits, partlib  # noqa: E402
 from brickify.assembly import assemble  # noqa: E402
 from brickify.check import resolve  # noqa: E402
 from brickify.kit import PLATE, STUD  # noqa: E402
@@ -75,6 +76,8 @@ def from_result(result: dict, name: str) -> Build:
         "score": result.get("score"), "stands": result.get("stands"), "collisions": result.get("collisions", 0),
         "concept": result.get("concept"),
         "idea": result.get("idea"), "issues": result.get("issues", []),
+        # what the part-level editor needs to take over from here
+        "lib": "", "source": None, "next_id": 0, "edited": False,
     }
     return Build(f"c-{run.name}-r{result['round']}", 1, name, tuple(parts), tuple(subs.values()), prov)
 
@@ -149,4 +152,56 @@ def report(build: Build):
 
 
 def physics(build: Build) -> dict:
-    return {"stable": build.provenance.get("stands") is not False, "studs": 0, "broken": [], "backend": BACKEND, "com": None, "base": [], "failures": []}
+    """Real numbers for a loaded/edited model; the old flag for a fresh build."""
+    st = build.provenance.get("stability")
+    if st:
+        return dict(st)
+    return {"stable": build.provenance.get("stands") is not False, "studs": 0, "broken": [],
+            "backend": BACKEND, "com": None, "base": [], "failures": []}
+
+
+# ------------------------------------------------- loaded + part-edited models
+def load_text(text: str):
+    """Any .ldr/.mpd text -> an editable Model (sub-models flattened, bodies
+    named, every part resolved through partlib so nothing is skipped)."""
+    main, lib_text, bodies = edits.flatten(text)
+    lib = partlib.load_library(lib_text)
+    model = edits.parse(main, bodies=bodies, lib=lib, next_id=0)
+    if not model.parts:
+        raise edits.OpError("There are no pieces in that file.", "EMPTY")
+    return model, lib_text
+
+
+def build_from_model(model, name: str, *, bid: str, version: int, source=None,
+                     lib_text: str = "", run=None, round_=None, edited: bool = False,
+                     extra: dict | None = None) -> Build:
+    parts, subs = [], {}
+    for i, p in enumerate(model.parts):
+        m = p.M
+        pos = (round(m[0, 3] / STUD), round(-m[1, 3] / PLATE), round(m[2, 3] / STUD))
+        rot = (round(float(_yaw(m)) / 90) % 4) * 90
+        parts.append(Part(p.id, p.pid, int(p.colour), pos, rot, p.body or "model"))
+        subs.setdefault(p.body or "model", SubAssembly(p.body or "model", None, "brief", (), None, ()))
+    st = edits.stability(model)
+    prov = {"backend": BACKEND, "run": run, "round": round_, "ldr": edits.write(model),
+            "lib": lib_text, "source": source, "next_id": model.next_id, "edited": edited,
+            "stands": bool(st["stable"]), "collisions": len(edits.pairs(model)),
+            "stability": st, "issues": []}
+    if extra:
+        prov.update(extra)
+    return Build(bid, version, name, tuple(parts), tuple(subs.values()), prov)
+
+
+def from_ldr(name: str, text: str, source=None, bid: str | None = None):
+    model, lib_text = load_text(text)
+    bid = bid or f"ldr-{source or name}".replace(" ", "-").lower()
+    return build_from_model(model, name, bid=bid, version=1, source=source, lib_text=lib_text), model
+
+
+def to_model(build: Build):
+    """Rebuild the editable Model from a build's own provenance (replay, restore)."""
+    lib = partlib.load_library(build.provenance.get("lib") or "")
+    ids = [p.id for p in build.parts]
+    bodies = [p.sub for p in build.parts]
+    return edits.parse(build.provenance["ldr"], ids=ids, bodies=bodies, lib=lib,
+                       next_id=build.provenance.get("next_id", 0))
