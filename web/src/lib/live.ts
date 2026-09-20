@@ -70,10 +70,15 @@ async function run(prompt: string | null, op: () => Promise<Payload>) {
   }
 }
 
-/** Designs a new build, streaming the agent tape. Falls back to the fixtures
- *  offline. Corrections happen mid-run instead: the designer stops with the
- *  model on screen and takes a note (see chooseDesign). */
-export async function designBuild(prompt: string) {
+/** Whether this session's builds reference the uploaded sketch. */
+let useSketch = false;
+
+/** Designs a new build, streaming the agent tape. `opts.sketch` builds toward
+ *  the sketch the user uploaded (via bricolage.uploadSketch). Corrections
+ *  happen mid-run: the designer stops with the model on screen and takes a
+ *  note (see chooseDesign). */
+export async function designBuild(prompt: string, opts?: { sketch?: boolean }) {
+  useSketch = !!opts?.sketch;
   return streamDesign(prompt, prompt);
 }
 
@@ -111,9 +116,7 @@ async function streamDesign(displayPrompt: string, fullPrompt: string) {
         return;
       }
       set({ tape: [...state.tape, e] });
-    }, (stop) => {
-      stopStream = stop;
-    });
+    }, { sketch: useSketch, onOpen: (stop) => { stopStream = stop; } });
     await adopt(payload, "live");
   } catch (e) {
     // NO canned fallback. If the live builder fails, say so — never show a
