@@ -1,0 +1,24 @@
+{
+ "score": 3.0,
+ "round": 0,
+ "label": "r0",
+ "parts": 138,
+ "stands": true,
+ "collisions": 0,
+ "clean": true,
+ "issues": [
+  "Silhouette doesn't read as a sumo wrestler at a glance - blocky, no big round belly",
+  "Head is a square box with black hair slabs sticking out sideways; no topknot shape or face shaping",
+  "Eyes are oversized black round studs protruding on the sides of the face, not forward-facing eyes with brows",
+  "Arms are thin curved slope panels floating off the torso, not thick rounded limbs resting on knees",
+  "Mawashi is a thin dark blue band rather than the wide belt/loincloth wrapping hips",
+  "Crossed/kneeling leg pose missing - legs are a flat plate base",
+  "Exposed studs, gaps and visible clutch points make it look unfinished rather than an official set",
+  "Body far too narrow/tall; concept is wide and low",
+  "Black foot details from concept absent or misplaced"
+ ],
+ "issues_kernel": [],
+ "idea": "Sumo wrestler",
+ "distilled": "A LEGO model of a chunky sumo wrestler built from stacked bricks and curved slopes, sitting cross-legged in a stable pose with a rounded belly and a topknot, wearing a simple mawashi belt detail.",
+ "seconds": 325
+}

@@ -1,0 +1,22 @@
+{"t": 0, "actor": "router", "kind": "route", "text": "'Lady bug': concept art, 1 designs to choose from, then up to 1 rounds of notes", "status": "ok"}
+{"t": 0, "actor": "planner", "kind": "distill", "text": "making 'Lady bug' buildable", "status": "running"}
+{"t": 6341, "actor": "planner", "kind": "distill", "text": "concept: A LEGO model of a chunky, stylised ladybug built from stacked bricks and plates, with a smooth curved shell of red slopes dotted with black round tiles, sitting on a small green leaf base. (changed: Removed any wing-flying pose; ladybug sits still on a leaf base instead of mid-flight; Thin real antennae replaced with two short chunky bars mounted on the head)", "status": "ok"}
+{"t": 6342, "actor": "designer", "kind": "concept", "text": "drawing the concept as an official LEGO set", "status": "running"}
+{"t": 35296, "actor": "designer", "kind": "concept", "text": "concept ready", "status": "ok"}
+{"t": 35368, "actor": "designer", "kind": "brief", "text": "reading the concept and writing the build brief", "status": "running"}
+{"t": 35368, "actor": "designer", "kind": "views", "text": "turning the concept to see its side and back", "status": "running"}
+{"t": 64041, "actor": "designer", "kind": "views", "text": "got 2 extra view(s): side, back", "status": "ok"}
+{"t": 88433, "actor": "designer", "kind": "brief", "text": "brief written: 5 sub-assemblies", "status": "ok"}
+{"t": 88669, "actor": "builder", "kind": "build", "text": "round r0: 73 parts, 0 collisions, stands (trimmed 3)", "status": "ok"}
+{"t": 94813, "actor": "critic", "kind": "critique", "text": "comparing the renders with the concept", "status": "running"}
+{"t": 101044, "actor": "critic", "kind": "critique", "text": "score 3/10: Shell is boxy and lumpy, not the smooth rounded dome of the concept; Spots are barely present - only a couple of dark studs instead of clear black round spots on red; Head is a blocky black box, not a rounded dome; eyes are side-mounted small cylinders rather than large white/black forward eyes", "status": "warn"}
+{"t": 101045, "actor": "designer", "kind": "revise", "text": "reworking the design from the critic's notes", "status": "running"}
+{"t": 176050, "actor": "designer", "kind": "revise", "text": "reworked leaf, shell, head", "status": "ok"}
+{"t": 176121, "actor": "builder", "kind": "build", "text": "round r1: 110 parts, 0 collisions, stands", "status": "ok"}
+{"t": 182470, "actor": "critic", "kind": "critique", "text": "comparing the renders with the concept", "status": "running"}
+{"t": 190599, "actor": "critic", "kind": "critique", "text": "score 3/10: Shell is a blocky, lumpy stack of bricks, not the smooth rounded red dome of the concept; Head is an angular black box with exposed studs and brick texture instead of a rounded dome; Antennae are oversized thick bars mounted awkwardly high/backwards, not slim studded antennae with ball tips", "status": "warn"}
+{"t": 192535, "actor": "scribe", "kind": "done", "text": "best: round 0 scored 3.0/10 (73 parts) in 193s", "status": "ok"}
+{"t": 1, "actor": "designer", "kind": "edit", "text": "changing it: fix it with critic", "status": "running"}
+{"t": 18571, "actor": "inspector", "kind": "reject", "text": "3009 in body 'shell' collides with 3010 in body 'head'; 3004 in body 'shell' collides with 3001 in body 'head'; 3622 in body 'shell' collides with 3005 in body 'head'", "status": "fail"}
+{"t": 28057, "actor": "repair", "kind": "fix", "text": "reworked head to clear the kernel's objections", "status": "ok"}
+{"t": 28096, "actor": "builder", "kind": "build", "text": "round r2: 81 parts, 0 collisions, stands", "status": "ok"}

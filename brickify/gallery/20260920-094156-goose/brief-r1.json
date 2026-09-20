@@ -1,0 +1,353 @@
+{
+ "name": "chunky goose",
+ "palette": {
+  "w": 15,
+  "k": 0,
+  "o": 25
+ },
+ "root": "body",
+ "bodies": [
+  {
+   "name": "body",
+   "layers": [
+    [
+     "........",
+     "..ooo...",
+     "........",
+     "........",
+     "..ooo...",
+     "........"
+    ],
+    [
+     "........",
+     "..o.....",
+     "........",
+     "........",
+     "..o.....",
+     "........"
+    ],
+    [
+     "........",
+     "..o.....",
+     "........",
+     "........",
+     "..o.....",
+     "........"
+    ],
+    [
+     "........",
+     ".wwwww..",
+     ".wwwww..",
+     ".wwwww..",
+     ".wwwww..",
+     "........"
+    ],
+    [
+     "..wwww..",
+     ".wwwwww.",
+     "wwwwwwww",
+     "wwwwwwww",
+     ".wwwwww.",
+     "..wwww.."
+    ],
+    [
+     ".wwwwww.",
+     "wwwwwwww",
+     "wwwwwwww",
+     "wwwwwwww",
+     "wwwwwwww",
+     ".wwwwww."
+    ],
+    [
+     ".wwwwww.",
+     "wwwwwwww",
+     "wwwwwwww",
+     "wwwwwwww",
+     "wwwwwwww",
+     ".wwwwww."
+    ],
+    [
+     ".wwwwww.",
+     "wwwwwwww",
+     "wwwwwwww",
+     "wwwwwwww",
+     "wwwwwwww",
+     ".wwwwww."
+    ],
+    [
+     ".wwwwww.",
+     "kwwwwwww",
+     "kwwwwwww",
+     "kwwwwwww",
+     "kwwwwwww",
+     ".wwwwww."
+    ],
+    [
+     ".wwwwww.",
+     "kwwwwwww",
+     "kwwwwwww",
+     "kwwwwwww",
+     "kwwwwwww",
+     ".wwwwww."
+    ],
+    [
+     "..wwww..",
+     ".kwwwww.",
+     ".kwwwww.",
+     ".kwwwww.",
+     ".kwwwww.",
+     "..wwww.."
+    ],
+    [
+     "........",
+     "..wwww..",
+     ".wwwww..",
+     ".wwwww..",
+     "..wwww..",
+     "........"
+    ],
+    [
+     "........",
+     "........",
+     "..www...",
+     "..www...",
+     "........",
+     "........"
+    ]
+   ],
+   "surface": true,
+   "connectors": [
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      4,
+      13,
+      2
+     ],
+     "quarters": 1,
+     "colour": "k",
+     "attach": [
+      {
+       "body": "neck",
+       "angle": 0
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      2,
+      7,
+      0
+     ],
+     "quarters": 0,
+     "colour": "w",
+     "attach": [
+      {
+       "body": "wingL"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      2,
+      7,
+      5
+     ],
+     "quarters": 2,
+     "colour": "w",
+     "attach": [
+      {
+       "body": "wingR"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "neck",
+   "origin": [
+    4,
+    16,
+    2
+   ],
+   "layers": [
+    [
+     "kk.",
+     "kk."
+    ],
+    [
+     "kk.",
+     "kk."
+    ],
+    [
+     "kk.",
+     "kk."
+    ],
+    [
+     "kk.",
+     "kk."
+    ],
+    [
+     "kk.",
+     "kk."
+    ],
+    [
+     "kk.",
+     "kk."
+    ],
+    [
+     "kk.",
+     "kk."
+    ],
+    [
+     "kk.",
+     "kk."
+    ],
+    [
+     "kkk",
+     "kkk"
+    ],
+    [
+     "kkk",
+     "kkk"
+    ],
+    [
+     "kkk",
+     "kkk"
+    ],
+    [
+     "kkk",
+     "kkk"
+    ]
+   ],
+   "surface": true,
+   "connectors": [
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      1,
+      9,
+      0
+     ],
+     "quarters": 0,
+     "colour": "k",
+     "attach": [
+      {
+       "body": "eyeL"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      1,
+      9,
+      1
+     ],
+     "quarters": 2,
+     "colour": "k",
+     "attach": [
+      {
+       "body": "eyeR"
+      }
+     ]
+    },
+    {
+     "part": "11211",
+     "kind": "side",
+     "at": [
+      2,
+      9,
+      0
+     ],
+     "quarters": 3,
+     "stud": 0,
+     "colour": "k",
+     "attach": [
+      {
+       "body": "beak"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "eyeL",
+   "parts": [
+    [
+     "6141",
+     "w",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "eyeR",
+   "parts": [
+    [
+     "6141",
+     "w",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "beak",
+   "layers": [
+    [
+     "oo",
+     "oo"
+    ],
+    [
+     "oo",
+     "oo"
+    ],
+    [
+     "oo",
+     "oo"
+    ],
+    [
+     "o.",
+     "o."
+    ]
+   ],
+   "surface": true
+  },
+  {
+   "name": "wingL",
+   "layers": [
+    [
+     "wwww",
+     "wwww"
+    ]
+   ],
+   "surface": false
+  },
+  {
+   "name": "wingR",
+   "layers": [
+    [
+     "wwww",
+     "wwww"
+    ]
+   ],
+   "surface": false
+  }
+ ],
+ "details": []
+}

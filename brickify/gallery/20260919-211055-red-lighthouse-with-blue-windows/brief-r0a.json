@@ -1,0 +1,353 @@
+{
+ "name": "lighthouse",
+ "palette": {
+  "r": 4,
+  "w": 15,
+  "k": 0,
+  "c": 47,
+  "t": 19,
+  "y": 226,
+  "s": 72,
+  "a": 322
+ },
+ "root": "base",
+ "bodies": [
+  {
+   "name": "base",
+   "layers": [
+    [
+     "ssssss",
+     "ssssss",
+     "ssssss",
+     "ssssss",
+     "ssssss",
+     "ssssss"
+    ],
+    [
+     "ssssss",
+     "ssssss",
+     "ssssss",
+     "ssssss",
+     "ssssss",
+     "ssssss"
+    ],
+    [
+     "ssssss",
+     "s....s",
+     "s....s",
+     "s....s",
+     "s....s",
+     "ssssss"
+    ]
+   ],
+   "surface": true,
+   "connectors": [
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      2,
+      2,
+      2
+     ],
+     "colour": "s",
+     "attach": [
+      {
+       "body": "tower",
+       "angle": 0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "tower",
+   "origin": [
+    1,
+    5,
+    1
+   ],
+   "layers": [
+    [
+     "rrrr",
+     "rrrr",
+     "rrrr",
+     "rrrr"
+    ],
+    [
+     "rrrr",
+     "rrrr",
+     "rrrr",
+     "rrrr"
+    ],
+    [
+     "rrrr",
+     "rrrr",
+     "rrrr",
+     "rrrr"
+    ],
+    [
+     "wwww",
+     "wwww",
+     "wwww",
+     "wwww"
+    ],
+    [
+     "wwww",
+     "wwww",
+     "wwww",
+     "wwww"
+    ],
+    [
+     "wwww",
+     "wwww",
+     "wwww",
+     "wwww"
+    ],
+    [
+     "rrrr",
+     "rrrr",
+     "rrrr",
+     "rrrr"
+    ],
+    [
+     "rrrr",
+     "rrrr",
+     "rrrr",
+     "rrrr"
+    ],
+    [
+     "rrrr",
+     "rrrr",
+     "rrrr",
+     "rrrr"
+    ],
+    [
+     "wwww",
+     "wwww",
+     "wwww",
+     "wwww"
+    ],
+    [
+     "wwww",
+     "wwww",
+     "wwww",
+     "wwww"
+    ],
+    [
+     "wwww",
+     "wwww",
+     "wwww",
+     "wwww"
+    ],
+    [
+     "rrrr",
+     "rrrr",
+     "rrrr",
+     "rrrr"
+    ],
+    [
+     "rrrr",
+     "rrrr",
+     "rrrr",
+     "rrrr"
+    ],
+    [
+     "rrrr",
+     "rrrr",
+     "rrrr",
+     "rrrr"
+    ],
+    [
+     ".ww.",
+     "wwww",
+     "wwww",
+     ".ww."
+    ],
+    [
+     ".ww.",
+     "wwww",
+     "wwww",
+     ".ww."
+    ],
+    [
+     ".ww.",
+     "wwww",
+     "wwww",
+     ".ww."
+    ],
+    [
+     ".rr.",
+     "rrrr",
+     "rrrr",
+     ".rr."
+    ],
+    [
+     ".rr.",
+     "rrrr",
+     "rrrr",
+     ".rr."
+    ],
+    [
+     ".rr.",
+     "rrrr",
+     "rrrr",
+     ".rr."
+    ]
+   ],
+   "surface": true,
+   "connectors": [
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      0,
+      4,
+      1
+     ],
+     "quarters": 1,
+     "colour": "w",
+     "attach": [
+      {
+       "body": "winA"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      0,
+      10,
+      1
+     ],
+     "quarters": 1,
+     "colour": "w",
+     "attach": [
+      {
+       "body": "winB"
+      }
+     ]
+    },
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      1,
+      18,
+      1
+     ],
+     "colour": "k",
+     "attach": [
+      {
+       "body": "lantern",
+       "angle": 0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "winA",
+   "parts": [
+    [
+     "98138",
+     "a",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "winB",
+   "parts": [
+    [
+     "98138",
+     "a",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "lantern",
+   "origin": [
+    0,
+    21,
+    0
+   ],
+   "layers": [
+    [
+     "kkkk",
+     "kkkk",
+     "kkkk",
+     "kkkk"
+    ],
+    [
+     "kkkk",
+     "kkkk",
+     "kkkk",
+     "kkkk"
+    ],
+    [
+     "....",
+     ".cc.",
+     ".cc.",
+     "...."
+    ],
+    [
+     "....",
+     ".cc.",
+     ".cc.",
+     "...."
+    ],
+    [
+     "....",
+     ".cc.",
+     ".cc.",
+     "...."
+    ],
+    [
+     "....",
+     ".tt.",
+     ".tt.",
+     "...."
+    ],
+    [
+     "....",
+     ".tt.",
+     ".tt.",
+     "...."
+    ]
+   ],
+   "surface": true,
+   "parts": [
+    [
+     "98138",
+     "y",
+     [
+      1,
+      7,
+      1
+     ]
+    ],
+    [
+     "98138",
+     "y",
+     [
+      2,
+      7,
+      2
+     ]
+    ]
+   ]
+  }
+ ],
+ "details": []
+}

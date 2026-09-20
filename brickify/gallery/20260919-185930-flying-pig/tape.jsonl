@@ -1,0 +1,27 @@
+{"t": 0, "actor": "router", "kind": "route", "text": "'flying pig': distill, concept, views, brief, then build/critique x3 max", "status": "ok"}
+{"t": 0, "actor": "planner", "kind": "distill", "text": "making 'flying pig' buildable", "status": "running"}
+{"t": 8620, "actor": "planner", "kind": "distill", "text": "concept: A chunky pink pig with a round body, snout, and floppy ears, sitting calmly with two small white wings attached at the sides. The whole model is mounted on a clear tilted display stand so it appears to hover. (changed: Flying mid-air becomes hovering on a clear tilted display stand, since free flight and balance cannot be built.; Flapping wings become static wings on side hinges set at one fixed angle, because motion is not buildable.)", "status": "ok"}
+{"t": 8620, "actor": "designer", "kind": "concept", "text": "drawing the concept as an official LEGO set", "status": "running"}
+{"t": 55891, "actor": "designer", "kind": "concept", "text": "concept ready", "status": "ok"}
+{"t": 55892, "actor": "designer", "kind": "views", "text": "turning the concept to see its side and back", "status": "running"}
+{"t": 107702, "actor": "designer", "kind": "views", "text": "got 2 extra view(s): side, back", "status": "ok"}
+{"t": 107704, "actor": "designer", "kind": "brief", "text": "reading the concept and writing the build brief", "status": "running"}
+{"t": 269049, "actor": "designer", "kind": "brief", "text": "brief written: 14 sub-assemblies", "status": "ok"}
+{"t": 269132, "actor": "inspector", "kind": "reject", "text": "3002 in body 'body' collides with 3623 in body 'wingR'; 3024 in body 'body' collides with 3062b in body 'legBR'; 3004 in body 'body' collides with 3062b in body 'legFL'", "status": "fail"}
+{"t": 457051, "actor": "repair", "kind": "fix", "text": "revised the brief to clear the kernel's objections", "status": "ok"}
+{"t": 457126, "actor": "inspector", "kind": "reject", "text": "3666 in body 'body' collides with 3938 in body 'wingR'", "status": "fail"}
+{"t": 582033, "actor": "repair", "kind": "fix", "text": "revised the brief to clear the kernel's objections", "status": "ok"}
+{"t": 582091, "actor": "builder", "kind": "build", "text": "round 0: 148 parts, 0 collisions, stands", "status": "ok"}
+{"t": 597594, "actor": "critic", "kind": "critique", "text": "comparing the renders with the concept", "status": "running"}
+{"t": 765350, "actor": "critic", "kind": "critique", "text": "score 4/10: Body reads as a long boxy loaf, not the plump egg-shaped pig of the concept - too narrow and too tall for its length; No big round snout disc; the 2x2 snout is lost against the face; Eyes are tiny single tiles set too far back and too low - concept has large black eyes high on the face above a wide snout", "status": "warn"}
+{"t": 765455, "actor": "inspector", "kind": "reject", "text": "3010 in body 'body' collides with 3020 in body 'wingL'; 3001 in body 'body' collides with 3020 in body 'wingR'; 3001 in body 'body' collides with 3024 in body 'wingR'", "status": "fail"}
+{"t": 900235, "actor": "repair", "kind": "fix", "text": "revised the brief to clear the kernel's objections", "status": "ok"}
+{"t": 900342, "actor": "inspector", "kind": "reject", "text": "3002 in body 'body' collides with 3023 in body 'wingR'; 3002 in body 'body' collides with 3024 in body 'wingR'; 3003 in body 'body' collides with 3023 in body 'wingL'", "status": "fail"}
+{"t": 1047309, "actor": "repair", "kind": "fix", "text": "revised the brief to clear the kernel's objections", "status": "ok"}
+{"t": 1047398, "actor": "builder", "kind": "build", "text": "round 1: 186 parts, 0 collisions, stands", "status": "ok"}
+{"t": 1064397, "actor": "critic", "kind": "critique", "text": "comparing the renders with the concept", "status": "running"}
+{"t": 1248991, "actor": "critic", "kind": "critique", "text": "score 0/10: ", "status": "warn"}
+{"t": 1249072, "actor": "builder", "kind": "build", "text": "round 2: 186 parts, 0 collisions, stands", "status": "ok"}
+{"t": 1264844, "actor": "critic", "kind": "critique", "text": "comparing the renders with the concept", "status": "running"}
+{"t": 1418737, "actor": "critic", "kind": "critique", "text": "score 5/10: Wings are far too small and stubby - the concept's big swept-back feathered wings barely read on the render; Ear hinges were placed at a body layer that is empty at z=1/z=5, so the ears float/misalign instead of standing up off the head; Eyes sit too low and too close to the snout, reading as dots on the muzzle rather than wide-set black eyes on the face", "status": "warn"}
+{"t": 1418739, "actor": "scribe", "kind": "done", "text": "best: round 2 scored 5.0/10 (186 parts) in 1419s", "status": "ok"}

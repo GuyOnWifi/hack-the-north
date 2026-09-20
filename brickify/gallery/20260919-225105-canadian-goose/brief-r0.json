@@ -1,0 +1,311 @@
+{
+ "name": "canada-goose",
+ "palette": {
+  "k": 0,
+  "w": 15,
+  "t": 19,
+  "n": 6,
+  "d": 308,
+  "o": 25
+ },
+ "root": "body",
+ "bodies": [
+  {
+   "name": "body",
+   "layers": [
+    [
+     ".........",
+     "...ddd...",
+     ".........",
+     "...ddd...",
+     "........."
+    ],
+    [
+     ".........",
+     "....d....",
+     ".........",
+     "....d....",
+     "........."
+    ],
+    [
+     ".........",
+     "....d....",
+     ".........",
+     "....d....",
+     "........."
+    ],
+    [
+     ".........",
+     "....d....",
+     ".........",
+     "....d....",
+     "........."
+    ],
+    [
+     ".........",
+     "..nntttt.",
+     "..nntttt.",
+     "..nntttt.",
+     "........."
+    ],
+    [
+     "..nnnttt.",
+     ".nnnttttt",
+     ".nnnttttt",
+     ".nnnttttt",
+     "..nnnttt."
+    ],
+    [
+     ".nnnnttt.",
+     "nnnnntttt",
+     "nnnnntttt",
+     "nnnnntttt",
+     ".nnnnttt."
+    ],
+    [
+     ".nnnnnttt",
+     "knnnnnttt",
+     "knnnnnttt",
+     "knnnnnttt",
+     ".nnnnnttt"
+    ],
+    [
+     ".nnnnnt..",
+     "knnnnntt.",
+     "knnnnntt.",
+     "knnnnntt.",
+     ".nnnnnt.."
+    ],
+    [
+     ".........",
+     ".nnnnnn..",
+     ".nnnnnn..",
+     ".nnnnnn..",
+     "........."
+    ],
+    [
+     ".........",
+     "..nnnn...",
+     "..nnnn...",
+     "..nnnn...",
+     "........."
+    ]
+   ],
+   "parts": [
+    [
+     "43722",
+     "k",
+     [
+      0,
+      10,
+      1
+     ]
+    ],
+    [
+     "43723",
+     "k",
+     [
+      0,
+      11,
+      1
+     ]
+    ]
+   ],
+   "connectors": [
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      7,
+      9,
+      1
+     ],
+     "quarters": 1,
+     "colour": "k",
+     "attach": [
+      {
+       "body": "neck",
+       "angle": 8
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "neck",
+   "origin": [
+    7,
+    12,
+    1
+   ],
+   "layers": [
+    [
+     "ww.",
+     "ww."
+    ],
+    [
+     "kk.",
+     "kk."
+    ],
+    [
+     "kk.",
+     "kk."
+    ],
+    [
+     "kk.",
+     "kk."
+    ],
+    [
+     "kk.",
+     "kk."
+    ],
+    [
+     "kk.",
+     "kk."
+    ],
+    [
+     "kk.",
+     "kk."
+    ],
+    [
+     "kk.",
+     "kk."
+    ],
+    [
+     "kk.",
+     "kk."
+    ],
+    [
+     "kkw",
+     "kkw"
+    ],
+    [
+     "kwk",
+     "kwk"
+    ],
+    [
+     "kkk",
+     "kkk"
+    ]
+   ],
+   "connectors": [
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      1,
+      9,
+      0
+     ],
+     "quarters": 0,
+     "colour": "k",
+     "attach": [
+      {
+       "body": "eyeL"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      1,
+      9,
+      1
+     ],
+     "quarters": 2,
+     "colour": "k",
+     "attach": [
+      {
+       "body": "eyeR"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      2,
+      9,
+      0
+     ],
+     "quarters": 3,
+     "colour": "k",
+     "attach": [
+      {
+       "body": "beak"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "eyeL",
+   "parts": [
+    [
+     "6141",
+     "w",
+     [
+      0,
+      0,
+      0
+     ]
+    ],
+    [
+     "98138",
+     "k",
+     [
+      0,
+      1,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "eyeR",
+   "parts": [
+    [
+     "6141",
+     "w",
+     [
+      0,
+      0,
+      0
+     ]
+    ],
+    [
+     "98138",
+     "k",
+     [
+      0,
+      1,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "beak",
+   "layers": [
+    [
+     "o"
+    ]
+   ],
+   "surface": false
+  }
+ ],
+ "details": [
+  {
+   "kind": "bar",
+   "body": "beak",
+   "at": [
+    0,
+    0,
+    0
+   ],
+   "colour": "o",
+   "holder": "o"
+  }
+ ]
+}

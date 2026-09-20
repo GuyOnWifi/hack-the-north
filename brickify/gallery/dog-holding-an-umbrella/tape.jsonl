@@ -1,0 +1,17 @@
+{"t": 0, "actor": "router", "kind": "route", "text": "'dog holding an umbrella': concept, brief, build, critique (2 rounds max)", "status": "ok"}
+{"t": 0, "actor": "designer", "kind": "brief", "text": "reading the concept and writing the build brief", "status": "running"}
+{"t": 148134, "actor": "designer", "kind": "brief", "text": "brief written: 6 sub-assemblies", "status": "ok"}
+{"t": 148256, "actor": "inspector", "kind": "reject", "text": "3005 in body 'umbrella' collides with 3021 in body 'earL'; 3005 in body 'umbrella' collides with 3023 in body 'earL'; 3005 in body 'umbrella' collides with 3023 in body 'earL'", "status": "fail"}
+{"t": 202660, "actor": "repair", "kind": "fix", "text": "revised the brief to clear the kernel's objections", "status": "ok"}
+{"t": 202772, "actor": "scribe", "kind": "build", "text": "built 240 parts, 0 collisions", "status": "ok"}
+{"t": 225303, "actor": "inspector", "kind": "critique", "text": "comparing the renders with the concept", "status": "running"}
+{"t": 324934, "actor": "inspector", "kind": "critique", "text": "score 5/10: Umbrella canopy is a small flat slab that sits almost on the dog's head; it needs to be bigger, domed and lifted well clear of the head, like the concept; No umbrella handle below the paw, so the pole just ends at the fist; the J handle is missing; Only three legs: the front leg under the raised paw is missing, so the dog looks lopsided", "status": "warn"}
+{"t": 325056, "actor": "scribe", "kind": "build", "text": "built 260 parts, 0 collisions", "status": "ok"}
+{"t": 346081, "actor": "inspector", "kind": "critique", "text": "comparing the renders with the concept", "status": "running"}
+{"t": 415653, "actor": "inspector", "kind": "critique", "text": "score 4/10: The umbrella canopy is a flat, square red slab with a bump on top. It should be a stepped dome that clearly rises to a centre tip.; Nothing holds the umbrella. The shaft floats beside the head with no raised white paw gripping it, which is the key action in the concept.; The shaft has no curved J handle at the bottom.", "status": "warn"}
+{"t": 415795, "actor": "inspector", "kind": "reject", "text": "3622 in body 'dog' collides with 3623 in body 'umbrella'; 3005 in body 'umbrella' collides with 3020 in body 'earL'; 3622 in body 'dog' collides with 3623 in body 'umbrella'", "status": "fail"}
+{"t": 545385, "actor": "repair", "kind": "fix", "text": "revised the brief to clear the kernel's objections", "status": "ok"}
+{"t": 545523, "actor": "scribe", "kind": "build", "text": "built 298 parts, 0 collisions", "status": "ok"}
+{"t": 567040, "actor": "inspector", "kind": "critique", "text": "comparing the renders with the concept", "status": "running"}
+{"t": 652258, "actor": "inspector", "kind": "critique", "text": "score 5/10: The raised foreleg is a flat 2x6 white plate sticking straight out from the chest, so it reads as a shelf, not a paw holding the umbrella. It should be a tan leg ending in a white paw; The canopy is a flat, square-looking slab. The concept has a wide, clearly domed umbrella; it needs a wider rim and steeper stepped layers up to the top knob; The canopy is narrow next to the dog. In the concept the umbrella is about as wide as the dog is long", "status": "warn"}
+{"t": 652260, "actor": "scribe", "kind": "done", "text": "best: round 0 scored 5.0/10 (240 parts)", "status": "ok"}

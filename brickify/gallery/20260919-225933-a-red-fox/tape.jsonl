@@ -1,0 +1,11 @@
+{"t": 0, "actor": "router", "kind": "route", "text": "'a red fox': concept art, 1 designs to choose from, then up to 0 rounds of notes", "status": "ok"}
+{"t": 0, "actor": "planner", "kind": "distill", "text": "making 'a red fox' buildable", "status": "running"}
+{"t": 5611, "actor": "planner", "kind": "distill", "text": "concept: A LEGO model of a chunky sitting fox with a bushy stacked tail curled at its side, built from stacked bricks and plates with a curved slope back and pointed ear details. (changed: Changed a running or pouncing pose to a calm sitting pose, since dynamic action poses aren't buildable; Made the tail a short curled stack of bricks 3-4 studs long instead of a long flowing tail)", "status": "ok"}
+{"t": 5611, "actor": "designer", "kind": "concept", "text": "drawing the concept as an official LEGO set", "status": "running"}
+{"t": 35356, "actor": "designer", "kind": "concept", "text": "concept ready", "status": "ok"}
+{"t": 35357, "actor": "designer", "kind": "brief", "text": "reading the concept and writing the build brief", "status": "running"}
+{"t": 146029, "actor": "designer", "kind": "brief", "text": "brief written: 8 sub-assemblies", "status": "ok"}
+{"t": 146283, "actor": "builder", "kind": "build", "text": "round r0: 134 parts, 0 collisions, stands (trimmed 21)", "status": "ok"}
+{"t": 152848, "actor": "critic", "kind": "critique", "text": "comparing the renders with the concept", "status": "running"}
+{"t": 159558, "actor": "critic", "kind": "critique", "text": "score 2/10: Does not read as a fox at a glance; looks like an abstract red blob; Floating/disconnected ear piece hovering off the model in front and right views; Sitting pose missing - build stands upright on two thick legs, no seated haunch or front legs", "status": "warn"}
+{"t": 159559, "actor": "scribe", "kind": "done", "text": "best: round 0 scored 2.0/10 (134 parts) in 160s", "status": "ok"}

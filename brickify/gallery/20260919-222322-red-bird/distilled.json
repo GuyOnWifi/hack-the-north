@@ -1,0 +1,18 @@
+{
+ "subject": "chunky red bird",
+ "concept": "A LEGO model of a small, round, chunky red bird perched on a simple ground plate, built from stacked bricks and curved slopes with a bright orange beak and wings on side studs.",
+ "features": [
+  "round plump body with curved top slopes",
+  "short orange bar beak",
+  "two round eyes on side studs",
+  "small wedge plate wings",
+  "stubby tail of 1-2 bricks"
+ ],
+ "simplifications": [
+  "Flying pose replaced with a calm perched stance on a ground plate, since balance and mid-air poses aren't buildable.",
+  "Feathers and realistic plumage simplified into clean red brick color blocking with minimal detail.",
+  "Wings simplified to flat wedge plates on side studs instead of poseable or spread wings.",
+  "Tail shortened to a small stack of bricks/slopes instead of a thin tapering shape."
+ ],
+ "image_prompt": "a studio product photo of an official LEGO set of a small, round, chunky red bird perched calmly on a ground plate, with an orange bar beak, round eyes on side studs, and wedge plate wings, built only from real LEGO bricks and plates, chunky stylised proportions, clean colour blocking, calm static pose, whole model in frame, 3/4 view, plain light background"
+}

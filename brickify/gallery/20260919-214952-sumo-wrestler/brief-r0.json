@@ -1,0 +1,421 @@
+{
+ "name": "sumo",
+ "palette": {
+  "t": 19,
+  "b": 272,
+  "k": 0,
+  "w": 15
+ },
+ "root": "legs",
+ "bodies": [
+  {
+   "name": "legs",
+   "layers": [
+    [
+     ".tttt.",
+     "tttttt",
+     "tttttt",
+     "tttttt",
+     "tttttt",
+     "tttttt",
+     ".tttt."
+    ],
+    [
+     ".tttt.",
+     "tttttt",
+     "tttttt",
+     "tttttt",
+     "tttttt",
+     "tttttt",
+     ".tttt."
+    ],
+    [
+     ".ttt..",
+     "tttt..",
+     "tttt..",
+     "tttt..",
+     "tttt..",
+     "tttt..",
+     ".ttt.."
+    ]
+   ],
+   "parts": [
+    [
+     "3070b",
+     "k",
+     [
+      1,
+      3,
+      0
+     ]
+    ],
+    [
+     "3070b",
+     "k",
+     [
+      1,
+      3,
+      6
+     ]
+    ]
+   ],
+   "connectors": [
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      1,
+      3,
+      2
+     ],
+     "colour": "t",
+     "attach": [
+      {
+       "body": "torso",
+       "angle": 0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "torso",
+   "origin": [
+    1,
+    6,
+    1
+   ],
+   "layers": [
+    [
+     ".bb.",
+     "bbbb",
+     "bbbb",
+     "bbbb",
+     ".bb."
+    ],
+    [
+     ".bb.",
+     "bbbb",
+     "bbbb",
+     "bbbb",
+     ".bb."
+    ],
+    [
+     ".bb.",
+     "bbbb",
+     "bbbb",
+     "bbbb",
+     ".bb."
+    ],
+    [
+     ".tt.",
+     "tttt",
+     "tttt",
+     "tttt",
+     ".tt."
+    ],
+    [
+     "ttt.",
+     "tttt",
+     "tttt",
+     "tttt",
+     "ttt."
+    ],
+    [
+     "ttt.",
+     "tttt",
+     "tttt",
+     "tttt",
+     "ttt."
+    ],
+    [
+     ".tt.",
+     "tttt",
+     "tttt",
+     "tttt",
+     ".tt."
+    ],
+    [
+     ".tt.",
+     "ttt.",
+     "ttt.",
+     "ttt.",
+     ".tt."
+    ],
+    [
+     "....",
+     "ttt.",
+     "ttt.",
+     "ttt.",
+     "...."
+    ]
+   ],
+   "connectors": [
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      1,
+      9,
+      2
+     ],
+     "colour": "t",
+     "attach": [
+      {
+       "body": "head",
+       "angle": 0
+      }
+     ]
+    },
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      1,
+      6,
+      0
+     ],
+     "colour": "t",
+     "attach": [
+      {
+       "body": "armL",
+       "angle": 62
+      }
+     ]
+    },
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      1,
+      6,
+      4
+     ],
+     "colour": "t",
+     "attach": [
+      {
+       "body": "armR",
+       "angle": -62
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "armL",
+   "origin": [
+    1,
+    9,
+    -3
+   ],
+   "layers": [
+    [
+     "tt",
+     "tt",
+     "tt",
+     "tt"
+    ],
+    [
+     "tt",
+     "tt",
+     "tt",
+     "tt"
+    ],
+    [
+     "tt",
+     "tt",
+     "tt",
+     "tt"
+    ]
+   ]
+  },
+  {
+   "name": "armR",
+   "origin": [
+    1,
+    9,
+    4
+   ],
+   "layers": [
+    [
+     "tt",
+     "tt",
+     "tt",
+     "tt"
+    ],
+    [
+     "tt",
+     "tt",
+     "tt",
+     "tt"
+    ],
+    [
+     "tt",
+     "tt",
+     "tt",
+     "tt"
+    ]
+   ]
+  },
+  {
+   "name": "head",
+   "origin": [
+    1,
+    12,
+    0
+   ],
+   "layers": [
+    [
+     ".tt.",
+     "tttt",
+     "tttt",
+     "tttt",
+     ".tt."
+    ],
+    [
+     ".tt.",
+     "tttt",
+     "tttt",
+     "tttt",
+     ".tt."
+    ],
+    [
+     ".tt.",
+     "tttt",
+     "tttt",
+     "tttt",
+     ".tt."
+    ],
+    [
+     ".tt.",
+     "tttt",
+     "tttt",
+     "tttt",
+     ".tt."
+    ],
+    [
+     ".kk.",
+     "kkkk",
+     "kkkk",
+     "kkkk",
+     ".kk."
+    ],
+    [
+     ".kk.",
+     "kkkk",
+     "kkkk",
+     "kkkk",
+     ".kk."
+    ],
+    [
+     ".kk.",
+     ".kkk",
+     ".kkk",
+     ".kkk",
+     ".kk."
+    ]
+   ],
+   "parts": [
+    [
+     "3062b",
+     "k",
+     [
+      1,
+      7,
+      2
+     ]
+    ],
+    [
+     "98138",
+     "k",
+     [
+      1,
+      10,
+      2
+     ]
+    ]
+   ],
+   "connectors": [
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      0,
+      1,
+      1
+     ],
+     "quarters": 1,
+     "colour": "t",
+     "attach": [
+      {
+       "body": "eyeL"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      0,
+      1,
+      3
+     ],
+     "quarters": 1,
+     "colour": "t",
+     "attach": [
+      {
+       "body": "eyeR"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "eyeL",
+   "parts": [
+    [
+     "6141",
+     "w",
+     [
+      0,
+      0,
+      0
+     ]
+    ],
+    [
+     "98138",
+     "k",
+     [
+      0,
+      1,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "eyeR",
+   "parts": [
+    [
+     "6141",
+     "w",
+     [
+      0,
+      0,
+      0
+     ]
+    ],
+    [
+     "98138",
+     "k",
+     [
+      0,
+      1,
+      0
+     ]
+    ]
+   ]
+  }
+ ],
+ "details": []
+}

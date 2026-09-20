@@ -90,6 +90,30 @@ Env: `BRICKIFY_EFFORT` (thinking for briefs, default `medium`),
 (distill and repair, default `claude-sonnet-5`), `BRICKIFY_WEB` (web app URL,
 default `http://localhost:3000`), `BRICKIFY_RUNS` (where runs go).
 
+## Sharing the gallery between machines
+
+Runs stay on the machine that made them (they are big, and most are
+throwaway). The ones worth keeping travel with the code:
+
+```bash
+# on the machine with the good models: star them in the app, then
+uv run python -m brickify.share export      # --all for everything
+git add brickify/gallery && git commit && git push
+
+# on the other laptops
+git pull
+uv run python -m brickify.share import
+```
+
+Imported models appear in Your builds, open with their manual, and replay in
+seconds when someone asks for them again. A record's paths are rebuilt from
+its folder when read, so a model made on one laptop works on another.
+
+Sharing a whole cache live instead (a Dropbox or iCloud folder all three
+machines see) needs no commands: point every machine at it with
+`BRICKIFY_RUNS=/path/to/shared/runs`. Run folders are named by the second
+they started, so two machines never collide.
+
 ## Other entry points
 
 ```bash

@@ -1,0 +1,14 @@
+{"t": 0, "actor": "router", "kind": "route", "text": "'mars rover': concept art, 3 designs to choose from, then up to 0 rounds of notes", "status": "ok"}
+{"t": 0, "actor": "planner", "kind": "distill", "text": "making 'mars rover' buildable", "status": "running"}
+{"t": 7041, "actor": "planner", "kind": "distill", "text": "concept: A LEGO model of a chunky Mars rover with six rolling wheels, a boxy body, a raised camera mast, and a solar panel wing on each side. (changed: Kept the rover stationary on its wheels instead of mid-drive or tilted on rocky terrain, since dynamic poses aren't buildable; Made solar panels flat wedge plates instead of thin fragile panels, for a sturdy chunky build)", "status": "ok"}
+{"t": 7042, "actor": "designer", "kind": "concept", "text": "drawing the concept as an official LEGO set", "status": "running"}
+{"t": 15768, "actor": "designer", "kind": "concept", "text": "concept ready", "status": "ok"}
+{"t": 15841, "actor": "designer", "kind": "views", "text": "turning the concept to see its side and back", "status": "running"}
+{"t": 15841, "actor": "designer", "kind": "brief", "text": "working up 3 designs from the concept", "status": "running"}
+{"t": 25014, "actor": "designer", "kind": "views", "text": "got 2 extra view(s): side, back", "status": "ok"}
+{"t": 96841, "actor": "designer", "kind": "brief", "text": "3 designs to choose from", "status": "ok"}
+{"t": 97075, "actor": "builder", "kind": "build", "text": "round r0a: 66 parts, 0 collisions, stands (trimmed 2)", "status": "ok"}
+{"t": 97099, "actor": "builder", "kind": "build", "text": "round r0b: 77 parts, 0 collisions, stands", "status": "ok"}
+{"t": 97126, "actor": "builder", "kind": "build", "text": "round r0c: 61 parts, 0 collisions, stands (trimmed 1)", "status": "ok"}
+{"t": 141450, "actor": "critic", "kind": "pick", "text": "you picked design 1 of 3", "status": "ok"}
+{"t": 141451, "actor": "scribe", "kind": "done", "text": "best: round 0 scored None/10 (66 parts) in 141s", "status": "ok"}

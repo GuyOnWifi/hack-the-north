@@ -1,0 +1,303 @@
+{
+ "name": "chess-knight",
+ "palette": {
+  "d": 191,
+  "m": 226,
+  "k": 0
+ },
+ "root": "base",
+ "bodies": [
+  {
+   "name": "base",
+   "layers": [
+    [
+     ".ddddd.",
+     "ddddddd",
+     "ddddddd",
+     "ddddddd",
+     "ddddddd",
+     "ddddddd",
+     ".ddddd."
+    ],
+    [
+     ".ddddd.",
+     "ddddddd",
+     "ddddddd",
+     "ddddddd",
+     "ddddddd",
+     "ddddddd",
+     ".ddddd."
+    ],
+    [
+     ".ddddd.",
+     "ddddddd",
+     "ddddddd",
+     "ddddddd",
+     "ddddddd",
+     "ddddddd",
+     ".ddddd."
+    ],
+    [
+     ".......",
+     "..ddd..",
+     ".ddddd.",
+     ".ddddd.",
+     ".ddddd.",
+     "..ddd..",
+     "......."
+    ],
+    [
+     ".......",
+     "..ddd..",
+     ".ddddd.",
+     ".ddddd.",
+     ".ddddd.",
+     "..ddd..",
+     "......."
+    ],
+    [
+     ".......",
+     "..ddd..",
+     ".ddddd.",
+     ".ddddd.",
+     ".ddddd.",
+     "..ddd..",
+     "......."
+    ],
+    [
+     ".......",
+     ".......",
+     "..ddd..",
+     "..ddd..",
+     "..ddd..",
+     ".......",
+     "......."
+    ],
+    [
+     ".......",
+     ".......",
+     "..ddd..",
+     "..ddd..",
+     "..ddd..",
+     ".......",
+     "......."
+    ],
+    [
+     ".......",
+     ".......",
+     "..ddd..",
+     "..ddd..",
+     "..ddd..",
+     ".......",
+     "......."
+    ]
+   ],
+   "surface": true,
+   "connectors": [
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      3,
+      6,
+      2
+     ],
+     "quarters": 1,
+     "colour": "d",
+     "attach": [
+      {
+       "body": "neck",
+       "angle": 0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "neck",
+   "origin": [
+    0,
+    9,
+    2
+   ],
+   "layers": [
+    [
+     ".ddddd",
+     ".ddddd",
+     ".ddddd"
+    ],
+    [
+     ".ddddd",
+     ".ddddd",
+     ".ddddd"
+    ],
+    [
+     ".ddddd",
+     ".ddddd",
+     ".ddddd"
+    ],
+    [
+     "..dddm",
+     "..dddm",
+     "..dddm"
+    ],
+    [
+     "..dddm",
+     "..dddm",
+     "..dddm"
+    ],
+    [
+     "..dddm",
+     "..dddm",
+     "..dddm"
+    ],
+    [
+     "...ddm",
+     "...ddm",
+     "...ddm"
+    ],
+    [
+     "...ddm",
+     "...ddm",
+     "...ddm"
+    ],
+    [
+     "...ddm",
+     "...ddm",
+     "...ddm"
+    ],
+    [
+     "dddddm",
+     "dddddm",
+     "dddddm"
+    ],
+    [
+     "dddddm",
+     "dddddm",
+     "dddddm"
+    ],
+    [
+     "dddddm",
+     "dddddm",
+     "dddddm"
+    ],
+    [
+     "...ddm",
+     "...ddm",
+     "...ddm"
+    ],
+    [
+     "...ddm",
+     "...ddm",
+     "...ddm"
+    ],
+    [
+     "...d.m",
+     ".....m",
+     "...d.m"
+    ]
+   ],
+   "surface": true,
+   "connectors": [
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      2,
+      10,
+      0
+     ],
+     "quarters": 0,
+     "colour": "d",
+     "attach": [
+      {
+       "body": "eyeL"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      2,
+      10,
+      2
+     ],
+     "quarters": 2,
+     "colour": "d",
+     "attach": [
+      {
+       "body": "eyeR"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      0,
+      10,
+      1
+     ],
+     "quarters": 1,
+     "colour": "d",
+     "attach": [
+      {
+       "body": "muzzle"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "eyeL",
+   "parts": [
+    [
+     "98138",
+     "k",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "eyeR",
+   "parts": [
+    [
+     "98138",
+     "k",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "muzzle",
+   "layers": [
+    [
+     "d"
+    ]
+   ],
+   "surface": false
+  }
+ ],
+ "details": [
+  {
+   "kind": "bar",
+   "body": "muzzle",
+   "at": [
+    0,
+    0,
+    0
+   ],
+   "colour": "k",
+   "holder": "d"
+  }
+ ]
+}

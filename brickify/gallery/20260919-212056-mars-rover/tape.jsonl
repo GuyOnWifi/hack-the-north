@@ -1,0 +1,16 @@
+{"t": 0, "actor": "router", "kind": "route", "text": "'mars rover': concept art, 3 designs to choose from, then up to 0 rounds of notes", "status": "ok"}
+{"t": 0, "actor": "planner", "kind": "distill", "text": "making 'mars rover' buildable", "status": "running"}
+{"t": 7202, "actor": "planner", "kind": "distill", "text": "concept: A stout, boxy Mars rover built from stacked bricks and plates, with six chunky wheels, a raised camera mast, and a solar panel wing on each side, parked calmly on a small red-plate terrain base. (changed: Replaced posable suspension arms with fixed short bricks connecting wheels to body, since jointed mechanisms aren't buildable; Made the camera mast a short thick stack instead of a thin tall rod, for stability)", "status": "ok"}
+{"t": 7202, "actor": "designer", "kind": "concept", "text": "drawing the concept as an official LEGO set", "status": "running"}
+{"t": 16936, "actor": "designer", "kind": "concept", "text": "concept ready", "status": "ok"}
+{"t": 16981, "actor": "designer", "kind": "views", "text": "turning the concept to see its side and back", "status": "running"}
+{"t": 16981, "actor": "designer", "kind": "brief", "text": "working up 3 designs from the concept", "status": "running"}
+{"t": 25636, "actor": "designer", "kind": "views", "text": "got 2 extra view(s): side, back", "status": "ok"}
+{"t": 114702, "actor": "designer", "kind": "brief", "text": "3 designs to choose from", "status": "ok"}
+{"t": 114796, "actor": "builder", "kind": "build", "text": "round r0a: 130 parts, 0 collisions, stands (trimmed 2)", "status": "ok"}
+{"t": 114842, "actor": "builder", "kind": "build", "text": "round r0b: 131 parts, 0 collisions, stands", "status": "ok"}
+{"t": 114889, "actor": "inspector", "kind": "reject", "text": "3024 in body 'base' collides with 3022 in body 'wheelD'; 3024 in body 'base' collides with 3022 in body 'wheelE'; 3024 in body 'base' collides with 3003 in body 'wheelD'", "status": "fail"}
+{"t": 120950, "actor": "repair", "kind": "fix", "text": "reworked base to clear the kernel's objections", "status": "ok"}
+{"t": 121027, "actor": "builder", "kind": "build", "text": "round r0c: 91 parts, 0 collisions, stands (trimmed 3)", "status": "ok"}
+{"t": 190656, "actor": "critic", "kind": "pick", "text": "you picked design 3 of 3", "status": "ok"}
+{"t": 190658, "actor": "scribe", "kind": "done", "text": "best: round 0 scored None/10 (91 parts) in 191s", "status": "ok"}

@@ -69,10 +69,16 @@ def _thumb(path: str, side: int = 460) -> str | None:
         return None
 
 
+class Abandoned(Exception):
+    """Nobody is watching this run any more, so it stops."""
+
+
 def _listeners(tape):
     """brickify events -> this package's tape (and so the SSE stream)."""
 
     def on_event(ev):
+        if getattr(tape, "gone", False):
+            raise Abandoned("the browser left, so this design stopped")
         extra = {k: v for k, v in ev.items() if k not in ("t", "actor", "kind", "text", "status")}
         tape.emit(ev["actor"], ev["kind"], ev["text"], status=ev["status"], **extra)
 
@@ -170,7 +176,7 @@ def library() -> list[dict]:
             r = json.loads(f.read_text())
         except ValueError:
             continue
-        r = _normalise(d, r)
+        r = _normalise(d)
         if not r:
             continue
         out.append({"id": d.name, "name": _title(r.get("idea") or d.name),
@@ -180,28 +186,10 @@ def library() -> list[dict]:
     return out
 
 
-def _normalise(d: Path, r: dict) -> dict | None:
-    """Fill in what an older or half-finished record is missing, from what is
-    on disk. Early runs named their models `<idea>-rN.ldr` and wrote no `label`
-    or `ldr` at all; a run that crashed wrote no record until its files were
-    already there. Either way the model exists, so it belongs in the library."""
-    if r.get("ldr") and Path(r["ldr"]).exists():
-        return r
-    label = r.get("label") or r.get("lab")
-    ldr = (d / f"{label}.ldr") if label else None
-    if not (ldr and ldr.exists()):
-        found = sorted(d.glob("*.ldr"))
-        if not found:
-            return None
-        ldr = found[-1]
-        label = ldr.stem
-    rnd = r.get("round", int(label[-1]) if label[-1].isdigit() else 0)
-    brief = next((b for b in (d / f"brief-{label}.json", d / f"brief-{rnd}.json") if b.exists()), None)
-    if not brief:
-        return None
-    return {**r, "label": label, "round": rnd, "ldr": str(ldr), "brief": str(brief),
-            "idea": r.get("idea") or d.name.replace("-", " "),
-            "parts": r.get("parts") or sum(1 for line in ldr.read_text().splitlines() if line.startswith("1 "))}
+def _normalise(d: Path, r: dict | None = None) -> dict | None:
+    """One repair for both sides: brickify rebuilds a record's paths from the
+    folder, so an old run opens as readily as one made a minute ago."""
+    return c.record(d)
 
 
 def remove(run_id: str) -> bool:
@@ -261,7 +249,7 @@ def thumb(run_id: str) -> Path | None:
 def open_run(run_id: str) -> Build:
     """A saved run, rebuilt into a Build so every build screen works on it."""
     d = c.RUNS / run_id
-    result = _normalise(d, json.loads((d / "result.json").read_text()))
+    result = _normalise(d)
     if not result:
         raise FileNotFoundError(f"no model saved under {run_id}")
     result["run"] = str(d)  # runs move between machines; trust where it is now

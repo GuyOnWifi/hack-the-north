@@ -1,0 +1,20 @@
+{"t": 0, "actor": "router", "kind": "route", "text": "'Canadian goose': concept art, 1 designs to choose from, then up to 1 rounds of notes", "status": "ok"}
+{"t": 0, "actor": "planner", "kind": "distill", "text": "making 'Canadian goose' buildable", "status": "running"}
+{"t": 6547, "actor": "planner", "kind": "distill", "text": "concept: A LEGO model of a standing Canada goose built from stacked bricks and plates, with a curved slope back, a black head and neck, a white chin patch, and a short orange bar beak. (changed: Replaced any flying or honking pose with a calm standing pose, since dynamic action isn't buildable.; Simplified the long curved neck into a stacked-brick column with a slight forward tilt for recognizability without thin free-standing parts.)", "status": "ok"}
+{"t": 6547, "actor": "designer", "kind": "concept", "text": "drawing the concept as an official LEGO set", "status": "running"}
+{"t": 33820, "actor": "designer", "kind": "concept", "text": "concept ready", "status": "ok"}
+{"t": 33868, "actor": "designer", "kind": "views", "text": "turning the concept to see its side and back", "status": "running"}
+{"t": 33868, "actor": "designer", "kind": "brief", "text": "reading the concept and writing the build brief", "status": "running"}
+{"t": 62201, "actor": "designer", "kind": "views", "text": "got 2 extra view(s): side, back", "status": "ok"}
+{"t": 150249, "actor": "designer", "kind": "brief", "text": "brief written: 5 sub-assemblies", "status": "ok"}
+{"t": 150461, "actor": "builder", "kind": "build", "text": "round r0: 102 parts, 0 collisions, stands", "status": "ok"}
+{"t": 156521, "actor": "critic", "kind": "critique", "text": "comparing the renders with the concept", "status": "running"}
+{"t": 162494, "actor": "critic", "kind": "critique", "text": "score 3/10: Beak is a long thin bar/antenna sticking out like a spike instead of a flat orange wedge bill; Body is squat and lumpy; no clear goose silhouette or upright posture; Head is a plain rectangular black block with no shaping or white cheek patch", "status": "warn"}
+{"t": 162496, "actor": "designer", "kind": "revise", "text": "reworking the design from the critic's notes", "status": "running"}
+{"t": 327716, "actor": "designer", "kind": "revise", "text": "reworked body, neck, beak", "status": "ok"}
+{"t": 327797, "actor": "inspector", "kind": "reject", "text": "The model would tip over: its centre of mass is 1.0 studs outside the base it stands on, toward +x. Widen or extend the base (or the stand) on that side, or move weight back over it.", "status": "fail"}
+{"t": 338977, "actor": "repair", "kind": "fix", "text": "reworked body, neck to clear the kernel's objections", "status": "ok"}
+{"t": 339055, "actor": "builder", "kind": "build", "text": "round r1: 113 parts, 0 collisions, tips +x (trimmed 1)", "status": "warn"}
+{"t": 345407, "actor": "critic", "kind": "critique", "text": "comparing the renders with the concept", "status": "running"}
+{"t": 351399, "actor": "critic", "kind": "critique", "text": "score 3/10: Body is a flat, messy slab of exposed studs and mismatched brown/tan \u2014 no clean goose silhouette or tail; Beak is a chunky orange 2x2 brick sticking sideways out of the head, not a tapered bill; Only one stubby brown plate for legs/feet; concept has two distinct legs and webbed feet", "status": "warn"}
+{"t": 356156, "actor": "scribe", "kind": "done", "text": "best: round 0 scored 3.0/10 (102 parts) in 356s", "status": "ok"}

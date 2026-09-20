@@ -1,0 +1,22 @@
+{
+ "score": 5.0,
+ "round": 1,
+ "lab": "hummingbird-r1",
+ "parts": 113,
+ "issues": [
+  "Wings are lumpy splayed paddles with notches, reading more like claws or hands than swept feathers. They should rise up and back from the shoulders in a narrow, near-vertical diagonal fan.",
+  "The trans-light-blue feather tips barely show and sit at odd corners instead of trailing the green primaries.",
+  "The tail is a two-pronged fork that reads as claws. It should be a single tapered dark wedge pointing down and back.",
+  "The body's bottom layer leaves the stand hinge's top cells empty (x=0, z=1..2), so the join is weak.",
+  "The body is too shallow for a hovering hummingbird: the body should sit more upright, head up.",
+  "Wing hinges are grey bricks showing on the green flanks. They should be green so they blend in.",
+  "The grey stand hinge is prominent under the belly."
+ ],
+ "label": "hummingbird-r1",
+ "idea": "hummingbird",
+ "stands": true,
+ "collisions": 0,
+ "distilled": null,
+ "seconds": 43,
+ "kept": true
+}

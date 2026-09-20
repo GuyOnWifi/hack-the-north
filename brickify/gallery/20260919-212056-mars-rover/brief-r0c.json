@@ -1,0 +1,520 @@
+{
+ "name": "mars-rover",
+ "palette": {
+  "g": 71,
+  "d": 72,
+  "k": 0,
+  "r": 4
+ },
+ "root": "base",
+ "bodies": [
+  {
+   "name": "base",
+   "surface": false,
+   "layers": [
+    [
+     "rrrrrrrrrr",
+     "rrrrrrrrrr",
+     "rrrrrrrrrr",
+     "rrrrrrrrrr",
+     "rrrrrrrrrr",
+     "rrrrrrrrrr",
+     "rrrrrrrrrr",
+     "rrrrrrrrrr"
+    ]
+   ],
+   "connectors": [
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      4,
+      0,
+      3
+     ],
+     "colour": "d",
+     "attach": [
+      {
+       "body": "hull",
+       "angle": 0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "hull",
+   "origin": [
+    1,
+    3,
+    2
+   ],
+   "layers": [
+    [
+     "dggggggg",
+     "dggggggg",
+     "dggggggg",
+     "dggggggg"
+    ],
+    [
+     "dggggggg",
+     "dggggggg",
+     "dggggggg",
+     "dggggggg"
+    ],
+    [
+     "dggggggg",
+     "dggggggg",
+     "dggggggg",
+     "dggggggg"
+    ],
+    [
+     "gggggggg",
+     "gggggggg",
+     "gggggggg",
+     "gggggggg"
+    ],
+    [
+     ".gggggg.",
+     ".gggggg.",
+     ".gggggg.",
+     ".gggggg."
+    ]
+   ],
+   "connectors": [
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      1,
+      0,
+      0
+     ],
+     "quarters": 0,
+     "colour": "d",
+     "attach": [
+      {
+       "body": "wheelA"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      4,
+      0,
+      0
+     ],
+     "quarters": 0,
+     "colour": "d",
+     "attach": [
+      {
+       "body": "wheelB"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      6,
+      0,
+      0
+     ],
+     "quarters": 0,
+     "colour": "d",
+     "attach": [
+      {
+       "body": "wheelC"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      1,
+      0,
+      3
+     ],
+     "quarters": 2,
+     "colour": "d",
+     "attach": [
+      {
+       "body": "wheelD"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      4,
+      0,
+      3
+     ],
+     "quarters": 2,
+     "colour": "d",
+     "attach": [
+      {
+       "body": "wheelE"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      6,
+      0,
+      3
+     ],
+     "quarters": 2,
+     "colour": "d",
+     "attach": [
+      {
+       "body": "wheelF"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      0,
+      3,
+      1
+     ],
+     "quarters": 1,
+     "colour": "d",
+     "attach": [
+      {
+       "body": "armstub"
+      }
+     ]
+    },
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      3,
+      3,
+      0
+     ],
+     "colour": "d",
+     "attach": [
+      {
+       "body": "wingL",
+       "angle": -8
+      }
+     ]
+    },
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      3,
+      3,
+      3
+     ],
+     "colour": "d",
+     "attach": [
+      {
+       "body": "wingR",
+       "angle": 8
+      }
+     ]
+    },
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      2,
+      5,
+      1
+     ],
+     "quarters": 1,
+     "colour": "g",
+     "attach": [
+      {
+       "body": "mast",
+       "angle": 0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "wheelA",
+   "surface": false,
+   "layers": [
+    [
+     "kk",
+     "kk"
+    ],
+    [
+     "kk",
+     "kk"
+    ],
+    [
+     "kk",
+     "kk"
+    ],
+    [
+     "kk",
+     "kk"
+    ]
+   ]
+  },
+  {
+   "name": "wheelB",
+   "surface": false,
+   "layers": [
+    [
+     "kk",
+     "kk"
+    ],
+    [
+     "kk",
+     "kk"
+    ],
+    [
+     "kk",
+     "kk"
+    ],
+    [
+     "kk",
+     "kk"
+    ]
+   ]
+  },
+  {
+   "name": "wheelC",
+   "surface": false,
+   "layers": [
+    [
+     "kk",
+     "kk"
+    ],
+    [
+     "kk",
+     "kk"
+    ],
+    [
+     "kk",
+     "kk"
+    ],
+    [
+     "kk",
+     "kk"
+    ]
+   ]
+  },
+  {
+   "name": "wheelD",
+   "surface": false,
+   "layers": [
+    [
+     "kk",
+     "kk"
+    ],
+    [
+     "kk",
+     "kk"
+    ],
+    [
+     "kk",
+     "kk"
+    ],
+    [
+     "kk",
+     "kk"
+    ]
+   ]
+  },
+  {
+   "name": "wheelE",
+   "surface": false,
+   "layers": [
+    [
+     "kk",
+     "kk"
+    ],
+    [
+     "kk",
+     "kk"
+    ],
+    [
+     "kk",
+     "kk"
+    ],
+    [
+     "kk",
+     "kk"
+    ]
+   ]
+  },
+  {
+   "name": "wheelF",
+   "surface": false,
+   "layers": [
+    [
+     "kk",
+     "kk"
+    ],
+    [
+     "kk",
+     "kk"
+    ],
+    [
+     "kk",
+     "kk"
+    ],
+    [
+     "kk",
+     "kk"
+    ]
+   ]
+  },
+  {
+   "name": "wingL",
+   "origin": [
+    2,
+    6,
+    -2
+   ],
+   "surface": false,
+   "layers": [
+    [
+     "gggg",
+     "gggg",
+     "gggg"
+    ]
+   ]
+  },
+  {
+   "name": "wingR",
+   "origin": [
+    2,
+    6,
+    3
+   ],
+   "surface": false,
+   "layers": [
+    [
+     "gggg",
+     "gggg",
+     "gggg"
+    ]
+   ]
+  },
+  {
+   "name": "mast",
+   "origin": [
+    2,
+    8,
+    1
+   ],
+   "surface": false,
+   "layers": [
+    [
+     "g",
+     "g"
+    ],
+    [
+     "g",
+     "g"
+    ],
+    [
+     "g",
+     "."
+    ],
+    [
+     "g",
+     "."
+    ],
+    [
+     "g",
+     "."
+    ],
+    [
+     "g",
+     "."
+    ]
+   ],
+   "connectors": [
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      0,
+      4,
+      0
+     ],
+     "quarters": 1,
+     "colour": "g",
+     "attach": [
+      {
+       "body": "camera"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "camera",
+   "surface": false,
+   "layers": [
+    [
+     "dd",
+     "dd"
+    ],
+    [
+     "dd",
+     "dd"
+    ],
+    [
+     "kk",
+     "kk"
+    ]
+   ]
+  },
+  {
+   "name": "armstub",
+   "surface": false,
+   "layers": [
+    [
+     "k"
+    ],
+    [
+     "k"
+    ]
+   ]
+  }
+ ],
+ "details": [
+  {
+   "kind": "bar",
+   "body": "hull",
+   "at": [
+    6,
+    4,
+    2
+   ],
+   "colour": "k",
+   "holder": "k"
+  },
+  {
+   "kind": "bar",
+   "body": "armstub",
+   "at": [
+    0,
+    1,
+    0
+   ],
+   "colour": "k",
+   "holder": "d"
+  }
+ ]
+}

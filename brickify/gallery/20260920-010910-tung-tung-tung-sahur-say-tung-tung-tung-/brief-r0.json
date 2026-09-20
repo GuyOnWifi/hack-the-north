@@ -1,0 +1,321 @@
+{
+ "name": "tung tung tung sahur",
+ "palette": {
+  "t": 70,
+  "d": 308,
+  "n": 19,
+  "k": 0,
+  "a": 70
+ },
+ "root": "body",
+ "bodies": [
+  {
+   "name": "body",
+   "layers": [
+    [
+     ".....",
+     ".d.d.",
+     ".d.d.",
+     "....."
+    ],
+    [
+     ".....",
+     ".....",
+     ".d.d.",
+     "....."
+    ],
+    [
+     ".....",
+     ".....",
+     ".d.d.",
+     "....."
+    ],
+    [
+     ".ttt.",
+     "ttttt",
+     "ttttt",
+     ".ttt."
+    ],
+    [
+     ".ttt.",
+     "ttttt",
+     "ttttt",
+     ".ttt."
+    ],
+    [
+     ".ttt.",
+     "ttttt",
+     "ttttt",
+     ".ttt."
+    ],
+    [
+     ".ttt.",
+     "ttttt",
+     "ttttt",
+     ".ttt."
+    ],
+    [
+     ".ttt.",
+     "ttttt",
+     "ttttt",
+     ".ttt."
+    ],
+    [
+     ".ttt.",
+     "ttttt",
+     "ttttt",
+     ".ttt."
+    ],
+    [
+     ".ttt.",
+     "ttttt",
+     "ttttt",
+     ".ttt."
+    ],
+    [
+     ".ttt.",
+     "ttttt",
+     "ttttt",
+     ".ttt."
+    ],
+    [
+     ".ttt.",
+     "ttttt",
+     "ttttt",
+     ".ttt."
+    ],
+    [
+     ".ttt.",
+     "ttttt",
+     "ttttt",
+     ".ttt."
+    ],
+    [
+     ".ttt.",
+     "ttttt",
+     "ttttt",
+     ".ttt."
+    ],
+    [
+     ".ttt.",
+     "ttttt",
+     "ttttt",
+     ".ttt."
+    ],
+    [
+     ".ttt.",
+     "ttttt",
+     "ttttt",
+     ".ttt."
+    ],
+    [
+     ".ddd.",
+     "ddddd",
+     "ddddd",
+     ".ddd."
+    ],
+    [
+     ".ddd.",
+     "dnnnd",
+     "dnnnd",
+     ".ddd."
+    ]
+   ],
+   "surface": true,
+   "connectors": [
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      1,
+      13,
+      0
+     ],
+     "quarters": 0,
+     "colour": "t",
+     "attach": [
+      {
+       "body": "eyeL"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      3,
+      13,
+      0
+     ],
+     "quarters": 0,
+     "colour": "t",
+     "attach": [
+      {
+       "body": "eyeR"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      2,
+      12,
+      0
+     ],
+     "quarters": 0,
+     "colour": "t",
+     "attach": [
+      {
+       "body": "nose"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      2,
+      9,
+      0
+     ],
+     "quarters": 0,
+     "colour": "t",
+     "attach": [
+      {
+       "body": "mouth"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      0,
+      10,
+      1
+     ],
+     "quarters": 1,
+     "colour": "t",
+     "attach": [
+      {
+       "body": "armL"
+      }
+     ]
+    },
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      4,
+      9,
+      1
+     ],
+     "quarters": 1,
+     "colour": "d",
+     "attach": [
+      {
+       "body": "club",
+       "angle": -85
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "eyeL",
+   "parts": [
+    [
+     "98138",
+     "k",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "eyeR",
+   "parts": [
+    [
+     "98138",
+     "k",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "nose",
+   "parts": [
+    [
+     "6141",
+     "d",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "mouth",
+   "parts": [
+    [
+     "3069b",
+     "k",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "armL",
+   "layers": [
+    [
+     "aa"
+    ],
+    [
+     "aa"
+    ],
+    [
+     "aa"
+    ]
+   ],
+   "surface": true
+  },
+  {
+   "name": "club",
+   "origin": [
+    4,
+    12,
+    1
+   ],
+   "layers": [
+    [
+     "tttt",
+     "..tt"
+    ],
+    [
+     "tttt",
+     "..tt"
+    ],
+    [
+     "tttt",
+     "..tt"
+    ]
+   ],
+   "surface": true
+  }
+ ],
+ "details": []
+}

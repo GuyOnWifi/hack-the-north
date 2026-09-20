@@ -1,0 +1,18 @@
+{"t": 0, "actor": "router", "kind": "route", "text": "'Tung tung tung sahur': concept art, 1 designs to choose from, then up to 1 rounds of notes", "status": "ok"}
+{"t": 0, "actor": "planner", "kind": "distill", "text": "making 'Tung tung tung sahur' buildable", "status": "running"}
+{"t": 7826, "actor": "planner", "kind": "distill", "text": "concept: A LEGO model of a chunky stylised wooden cricket-bat-like character with a long rectangular brick body, a carved face, and short stubby arms and legs, standing upright on a display stand. (changed: Replaced the viral character's thin flat meme-image shape with a chunky stacked-brick plank body, since thin free-standing slabs aren't buildable.; Gave it a calm standing pose instead of the swinging/running motion seen in the meme videos.)", "status": "ok"}
+{"t": 7827, "actor": "designer", "kind": "concept", "text": "drawing the concept as an official LEGO set", "status": "running"}
+{"t": 37438, "actor": "designer", "kind": "concept", "text": "concept ready", "status": "ok"}
+{"t": 37484, "actor": "designer", "kind": "brief", "text": "reading the concept and writing the build brief", "status": "running"}
+{"t": 127819, "actor": "designer", "kind": "brief", "text": "brief written: 10 sub-assemblies", "status": "ok"}
+{"t": 128142, "actor": "inspector", "kind": "reject", "text": "3710 in body 'plank' collides with 3021 in body 'wingR'; 3710 in body 'plank' collides with 3021 in body 'wingR'; 3710 in body 'plank' collides with 3023 in body 'wingL'", "status": "fail"}
+{"t": 134678, "actor": "repair", "kind": "fix", "text": "reworked wingL, wingR to clear the kernel's objections", "status": "ok"}
+{"t": 134744, "actor": "builder", "kind": "build", "text": "round r0: 73 parts, 22 collisions, stands (trimmed 8)", "status": "warn"}
+{"t": 140899, "actor": "critic", "kind": "critique", "text": "comparing the renders with the concept", "status": "running"}
+{"t": 146934, "actor": "critic", "kind": "critique", "text": "score 2/10: Doesn't read as the blocky bat owl; looks like a tall messy brown figure; Body is too tall/narrow \u2014 concept is a wide flat plank slab; Wings are small flat plates angled upward, missing the scalloped bat-wing silhouette", "status": "warn"}
+{"t": 146935, "actor": "designer", "kind": "revise", "text": "reworking the design from the critic's notes", "status": "running"}
+{"t": 240792, "actor": "designer", "kind": "revise", "text": "reworked stand, plank, eyeL", "status": "ok"}
+{"t": 240863, "actor": "builder", "kind": "build", "text": "round r1: 72 parts, 0 collisions, stands (trimmed 4)", "status": "ok"}
+{"t": 246990, "actor": "critic", "kind": "critique", "text": "comparing the renders with the concept", "status": "running"}
+{"t": 255464, "actor": "critic", "kind": "critique", "text": "score 3/10: Reads as a lumpy brown blob, not a bat-like owl/monster at a glance; Wings are flat stud-up plate stacks sticking out sideways instead of angled scalloped bat wings; Extra pair of arm/wing stubs mid-body not in concept", "status": "warn"}
+{"t": 269987, "actor": "scribe", "kind": "done", "text": "best: round 1 scored 3.0/10 (72 parts) in 270s", "status": "ok"}

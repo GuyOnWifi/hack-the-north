@@ -1,0 +1,430 @@
+{
+ "name": "falcon",
+ "palette": {
+  "w": 15,
+  "n": 70,
+  "d": 72,
+  "y": 14,
+  "k": 0,
+  "t": 28
+ },
+ "root": "stand",
+ "bodies": [
+  {
+   "name": "stand",
+   "layers": [
+    [
+     "ttttt",
+     "ttttt",
+     "ttttt",
+     "ttttt"
+    ],
+    [
+     ".....",
+     "..n..",
+     "..n..",
+     "....."
+    ],
+    [
+     ".....",
+     "..n..",
+     "..n..",
+     "....."
+    ],
+    [
+     ".....",
+     "..n..",
+     "..n..",
+     "....."
+    ],
+    [
+     ".....",
+     "..n..",
+     "..n..",
+     "....."
+    ],
+    [
+     ".....",
+     "..n..",
+     "..n..",
+     "....."
+    ],
+    [
+     ".....",
+     "..n..",
+     "..n..",
+     "....."
+    ],
+    [
+     ".....",
+     "nnnnn",
+     "nnnnn",
+     "....."
+    ]
+   ],
+   "connectors": [
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      1,
+      8,
+      1
+     ],
+     "quarters": 0,
+     "colour": "n",
+     "attach": [
+      {
+       "body": "body",
+       "angle": 0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "body",
+   "origin": [
+    0,
+    11,
+    0
+   ],
+   "layers": [
+    [
+     ".....",
+     ".yyw.",
+     ".yyw.",
+     "....."
+    ],
+    [
+     ".....",
+     ".www.",
+     ".www.",
+     "....."
+    ],
+    [
+     ".nww.",
+     "nwwww",
+     "nwwww",
+     ".nww."
+    ],
+    [
+     ".nww.",
+     "nwwww",
+     "nwwww",
+     ".nww."
+    ],
+    [
+     ".nww.",
+     "nwwww",
+     "nwwww",
+     ".nww."
+    ],
+    [
+     ".nww.",
+     "nwwww",
+     "nwwww",
+     ".nww."
+    ],
+    [
+     ".nww.",
+     "nnwww",
+     "nnwww",
+     ".nww."
+    ],
+    [
+     ".nww.",
+     "nnwww",
+     "nnwww",
+     ".nww."
+    ],
+    [
+     ".nww.",
+     "nnwww",
+     "nnwww",
+     ".nww."
+    ],
+    [
+     ".....",
+     ".nww.",
+     ".nww.",
+     "....."
+    ],
+    [
+     ".....",
+     ".nww.",
+     ".nww.",
+     "....."
+    ]
+   ],
+   "connectors": [
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      1,
+      6,
+      0
+     ],
+     "quarters": 0,
+     "colour": "n",
+     "attach": [
+      {
+       "body": "wingL",
+       "angle": 16
+      }
+     ]
+    },
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      1,
+      6,
+      3
+     ],
+     "quarters": 0,
+     "colour": "n",
+     "attach": [
+      {
+       "body": "wingR",
+       "angle": -16
+      }
+     ]
+    },
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      0,
+      3,
+      1
+     ],
+     "quarters": 1,
+     "colour": "n",
+     "attach": [
+      {
+       "body": "tail",
+       "angle": 45
+      }
+     ]
+    },
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      2,
+      9,
+      1
+     ],
+     "quarters": 0,
+     "colour": "w",
+     "attach": [
+      {
+       "body": "head",
+       "angle": 0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "head",
+   "origin": [
+    0,
+    12,
+    0
+   ],
+   "layers": [
+    [
+     ".www.",
+     "wwwww",
+     "wwwww",
+     ".www."
+    ],
+    [
+     ".www.",
+     "wwwww",
+     "wwwww",
+     ".www."
+    ],
+    [
+     ".wgw.",
+     "wwgww",
+     "wwgww",
+     ".wgw."
+    ],
+    [
+     ".....",
+     ".www.",
+     ".www.",
+     "....."
+    ],
+    [
+     ".....",
+     ".www.",
+     ".www.",
+     "....."
+    ]
+   ],
+   "connectors": [
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      3,
+      1,
+      0
+     ],
+     "quarters": 0,
+     "colour": "w",
+     "attach": [
+      {
+       "body": "eyeL"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      3,
+      1,
+      3
+     ],
+     "quarters": 2,
+     "colour": "w",
+     "attach": [
+      {
+       "body": "eyeR"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      4,
+      1,
+      1
+     ],
+     "quarters": 3,
+     "colour": "w",
+     "attach": [
+      {
+       "body": "beak"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "eyeL",
+   "parts": [
+    [
+     "98138",
+     "k",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "eyeR",
+   "parts": [
+    [
+     "98138",
+     "k",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "beak",
+   "layers": [
+    [
+     "yy",
+     "yy"
+    ],
+    [
+     "yy",
+     "yy"
+    ]
+   ]
+  },
+  {
+   "name": "wingL",
+   "origin": [
+    -3,
+    9,
+    -1
+   ],
+   "layers": [
+    [
+     "ddnnnn",
+     "ddnnnn"
+    ],
+    [
+     "...nnn",
+     "...nnn"
+    ]
+   ]
+  },
+  {
+   "name": "wingR",
+   "origin": [
+    -3,
+    9,
+    3
+   ],
+   "layers": [
+    [
+     "ddnnnn",
+     "ddnnnn"
+    ],
+    [
+     "...nnn",
+     "...nnn"
+    ]
+   ]
+  },
+  {
+   "name": "tail",
+   "origin": [
+    -4,
+    6,
+    1
+   ],
+   "layers": [
+    [
+     "dnnn",
+     "dnnn"
+    ],
+    [
+     "..nn",
+     "..nn"
+    ]
+   ]
+  }
+ ],
+ "details": [
+  {
+   "kind": "bar",
+   "body": "beak",
+   "at": [
+    0,
+    1,
+    0
+   ],
+   "colour": "y",
+   "holder": "y"
+  }
+ ]
+}

@@ -1,0 +1,18 @@
+{"t": 0, "actor": "router", "kind": "route", "text": "'a red fox': concept art, 1 designs to choose from, then up to 1 rounds of notes", "status": "ok"}
+{"t": 0, "actor": "planner", "kind": "distill", "text": "making 'a red fox' buildable", "status": "running"}
+{"t": 5724, "actor": "planner", "kind": "distill", "text": "concept: A LEGO model of a chunky sitting fox built from stacked bricks and plates, with a rounded curved-slope body, pointed side-stud ears, and a short thick tail. (changed: Changed running or pouncing pose to a calm sitting pose, since the build system can't do dynamic balance.; Shortened the long flowing tail into a chunky 2-3 brick stub tail, since thin curved shapes can't be freestanding.)", "status": "ok"}
+{"t": 5724, "actor": "designer", "kind": "concept", "text": "drawing the concept as an official LEGO set", "status": "running"}
+{"t": 35221, "actor": "designer", "kind": "concept", "text": "concept ready", "status": "ok"}
+{"t": 35222, "actor": "designer", "kind": "brief", "text": "reading the concept and writing the build brief", "status": "running"}
+{"t": 131558, "actor": "designer", "kind": "brief", "text": "brief written: 8 sub-assemblies", "status": "ok"}
+{"t": 131803, "actor": "inspector", "kind": "reject", "text": "3002 in body 'body' collides with 3021 in body 'tail'; 3002 in body 'body' collides with 3021 in body 'tail'; 3622 in body 'body' collides with 3021 in body 'tail'", "status": "fail"}
+{"t": 136533, "actor": "repair", "kind": "fix", "text": "reworked tail to clear the kernel's objections", "status": "ok"}
+{"t": 136631, "actor": "builder", "kind": "build", "text": "round r0: 144 parts, 0 collisions, stands (trimmed 1)", "status": "ok"}
+{"t": 143233, "actor": "critic", "kind": "critique", "text": "comparing the renders with the concept", "status": "running"}
+{"t": 148689, "actor": "critic", "kind": "critique", "text": "score 3/10: Silhouette reads as a lumpy blob, not a sitting fox, at a glance; Head is not distinct from body - no snout, muzzle or tapered face; Ears are oversized angled slabs tilted outward rather than upright pointed triangles", "status": "warn"}
+{"t": 148691, "actor": "designer", "kind": "revise", "text": "reworking the design from the critic's notes", "status": "running"}
+{"t": 277925, "actor": "designer", "kind": "revise", "text": "reworked body, head, earL", "status": "ok"}
+{"t": 278017, "actor": "builder", "kind": "build", "text": "round r1: 121 parts, 0 collisions, stands (trimmed 4)", "status": "ok"}
+{"t": 284293, "actor": "critic", "kind": "critique", "text": "comparing the renders with the concept", "status": "running"}
+{"t": 290814, "actor": "critic", "kind": "critique", "text": "score 3/10: Does not read as a fox at a glance - looks like a jumbled orange stack; Head is poorly defined: muzzle absent, eyes are side-mounted studs sticking out sideways rather than facing forward; Ears are tall thin 1x1 towers with black caps, far too narrow and set too high/separated from head", "status": "warn"}
+{"t": 290817, "actor": "scribe", "kind": "done", "text": "best: round 0 scored 3.0/10 (144 parts) in 291s", "status": "ok"}

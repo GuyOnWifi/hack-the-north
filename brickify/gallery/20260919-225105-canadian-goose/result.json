@@ -1,0 +1,24 @@
+{
+ "score": 3.0,
+ "round": 0,
+ "label": "r0",
+ "parts": 102,
+ "stands": true,
+ "collisions": 0,
+ "clean": true,
+ "issues": [
+  "Beak is a long thin bar/antenna sticking out like a spike instead of a flat orange wedge bill",
+  "Body is squat and lumpy; no clear goose silhouette or upright posture",
+  "Head is a plain rectangular black block with no shaping or white cheek patch",
+  "Reddish-brown bricks used instead of concept's tan/medium-brown wing colour",
+  "Cream breast is on the wrong side/scattered rather than a clean front-to-belly panel",
+  "Legs/feet missing \u2014 body sits on a single brown plate rather than two standing legs",
+  "Exposed studs and grey plates break the smooth sculpted look of the concept",
+  "Tail is a grey plate stub, missing the dark tapered tail and white rump band",
+  "Neck far too short and thick relative to body; proportions off"
+ ],
+ "issues_kernel": [],
+ "idea": "canadian goose",
+ "distilled": null,
+ "seconds": 32
+}

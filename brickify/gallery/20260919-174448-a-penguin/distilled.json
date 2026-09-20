@@ -1,0 +1,19 @@
+{
+ "subject": "standing penguin with orange beak and feet",
+ "concept": "A chunky, upright penguin with a black back and head, a big white belly, a bright orange beak and two flat orange feet. Short black flippers are attached at the sides, and the whole model stands on its own feet in a calm, symmetrical pose.",
+ "features": [
+  "Black back, head and flippers with a large white belly panel",
+  "Bright orange wedge beak",
+  "Two round white eyes with black pupils on side studs",
+  "Flat orange feet in front of the body",
+  "Short flippers hinged slightly out from the body"
+ ],
+ "simplifications": [
+  "Waddling walk becomes a static standing pose, because mid-motion balance is not buildable.",
+  "Thin, curved flippers become short, chunky black plate-and-slope wings on hinges, at a single fixed angle.",
+  "Feathers and the subtle belly gradient become clean colour blocking: black, white and orange only.",
+  "Realistic face shaping becomes round-tile eyes on side studs and a slope-brick beak.",
+  "Any ice, snow or group-of-penguins scene is dropped, so the build is a single character with no scenery."
+ ],
+ "image_prompt": "A studio product photo of an official LEGO set of a chunky standing penguin with a black back, head and short flippers, a large white belly, a bright orange wedge beak, round white eyes with black pupils, and flat orange feet, built only from real LEGO bricks and plates, chunky stylised proportions, clean colour blocking in black, white and orange, calm static symmetrical pose, whole model in frame, 3/4 view, plain light background"
+}

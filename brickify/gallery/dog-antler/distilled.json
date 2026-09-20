@@ -1,0 +1,19 @@
+{
+ "subject": "sitting dog",
+ "concept": "A chunky sitting puppy in a calm front-facing pose, built from stacked bricks with rounded slopes, big floppy ears on hinges, a round black nose, and a short stubby tail.",
+ "features": [
+  "big floppy ears hinged down the sides of the head",
+  "boxy snout with a round black nose tile",
+  "round eyes on side studs",
+  "white chest patch in contrast to a tan body",
+  "short upright tail of 1-2 bricks"
+ ],
+ "simplifications": [
+  "sitting pose instead of standing or running, so it rests stably on four blocky legs",
+  "floppy ears are flat plates on one hinge angle, not curved organic shapes",
+  "short brick-stub tail instead of a long curled one",
+  "fur, whiskers and face details become colour blocking and round tiles, no printing",
+  "limited to tan, white, black and dark brown for clean colour blocking"
+ ],
+ "image_prompt": "a studio product photo of an official LEGO set of a chunky sitting puppy, tan body with a white chest patch, big dark brown floppy ears hinged down the sides of a boxy head, a square snout with a round black nose, round black eyes, short stubby upright tail, blocky front legs, built only from real LEGO bricks and plates, chunky stylised proportions, clean colour blocking, calm static pose, whole model in frame, 3/4 view, plain light background"
+}

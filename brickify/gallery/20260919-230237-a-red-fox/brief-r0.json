@@ -1,0 +1,437 @@
+{
+ "name": "sitting fox",
+ "palette": {
+  "o": 25,
+  "w": 15,
+  "k": 0
+ },
+ "root": "body",
+ "bodies": [
+  {
+   "name": "body",
+   "layers": [
+    [
+     "..ooo",
+     "kkooo",
+     "kkooo",
+     "..ooo",
+     "kkooo",
+     "kkooo",
+     "..ooo"
+    ],
+    [
+     "..ooo",
+     "kkooo",
+     "kkooo",
+     "..ooo",
+     "kkooo",
+     "kkooo",
+     "..ooo"
+    ],
+    [
+     "..ooo",
+     ".oooo",
+     "woooo",
+     "wwooo",
+     "woooo",
+     ".oooo",
+     "..ooo"
+    ],
+    [
+     "..ooo",
+     ".oooo",
+     "woooo",
+     "wwooo",
+     "woooo",
+     ".oooo",
+     "..ooo"
+    ],
+    [
+     "..ooo",
+     ".oooo",
+     "woooo",
+     "wwooo",
+     "woooo",
+     ".oooo",
+     "..ooo"
+    ],
+    [
+     "...oo",
+     ".oooo",
+     "woooo",
+     "wwooo",
+     "woooo",
+     ".oooo",
+     "...oo"
+    ],
+    [
+     "...oo",
+     ".oooo",
+     "woooo",
+     "wwooo",
+     "woooo",
+     ".oooo",
+     "...oo"
+    ],
+    [
+     ".....",
+     ".oooo",
+     "wwooo",
+     "wwooo",
+     "wwooo",
+     ".oooo",
+     "....."
+    ],
+    [
+     ".....",
+     ".oooo",
+     "wwooo",
+     "wwooo",
+     "wwooo",
+     ".oooo",
+     "....."
+    ],
+    [
+     ".....",
+     ".oooo",
+     ".oooo",
+     ".oooo",
+     ".oooo",
+     ".oooo",
+     "....."
+    ],
+    [
+     ".....",
+     ".ooo.",
+     ".ooo.",
+     ".ooo.",
+     ".ooo.",
+     ".ooo.",
+     "....."
+    ]
+   ],
+   "connectors": [
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      1,
+      11,
+      3
+     ],
+     "quarters": 0,
+     "colour": "o",
+     "attach": [
+      {
+       "body": "head",
+       "angle": 0
+      }
+     ]
+    },
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      4,
+      2,
+      2
+     ],
+     "quarters": 1,
+     "colour": "o",
+     "attach": [
+      {
+       "body": "tail",
+       "angle": -25
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "head",
+   "origin": [
+    -1,
+    14,
+    0
+   ],
+   "layers": [
+    [
+     "..ooo",
+     ".oooo",
+     "wwooo",
+     "wwooo",
+     "wwooo",
+     ".oooo",
+     "..ooo"
+    ],
+    [
+     "..ooo",
+     ".oooo",
+     "wwooo",
+     "wwooo",
+     "wwooo",
+     ".oooo",
+     "..ooo"
+    ],
+    [
+     "..ooo",
+     ".oooo",
+     "ooooo",
+     "ooooo",
+     "ooooo",
+     ".oooo",
+     "..ooo"
+    ],
+    [
+     ".oooo",
+     ".oooo",
+     ".oooo",
+     ".oooo",
+     ".oooo",
+     ".oooo",
+     ".oooo"
+    ],
+    [
+     ".oooo",
+     ".oooo",
+     ".oooo",
+     ".oooo",
+     ".oooo",
+     ".oooo",
+     ".oooo"
+    ],
+    [
+     "..ooo",
+     ".oooo",
+     ".oooo",
+     ".oooo",
+     ".oooo",
+     ".oooo",
+     "..ooo"
+    ],
+    [
+     ".....",
+     "..ooo",
+     "..ooo",
+     "..ooo",
+     "..ooo",
+     "..ooo",
+     "....."
+    ]
+   ],
+   "connectors": [
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      2,
+      7,
+      1
+     ],
+     "quarters": 0,
+     "colour": "o",
+     "attach": [
+      {
+       "body": "earL",
+       "angle": 18
+      }
+     ]
+    },
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      2,
+      7,
+      5
+     ],
+     "quarters": 0,
+     "colour": "o",
+     "attach": [
+      {
+       "body": "earR",
+       "angle": -18
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      1,
+      3,
+      2
+     ],
+     "quarters": 1,
+     "colour": "o",
+     "attach": [
+      {
+       "body": "eyeL"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      1,
+      3,
+      4
+     ],
+     "quarters": 1,
+     "colour": "o",
+     "attach": [
+      {
+       "body": "eyeR"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      0,
+      2,
+      3
+     ],
+     "quarters": 1,
+     "colour": "o",
+     "attach": [
+      {
+       "body": "nose"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "earL",
+   "origin": [
+    2,
+    10,
+    1
+   ],
+   "layers": [
+    [
+     "oo"
+    ],
+    [
+     "oo"
+    ],
+    [
+     "oo"
+    ],
+    [
+     "oo"
+    ],
+    [
+     "kk"
+    ],
+    [
+     ".k"
+    ]
+   ]
+  },
+  {
+   "name": "earR",
+   "origin": [
+    2,
+    10,
+    5
+   ],
+   "layers": [
+    [
+     "oo"
+    ],
+    [
+     "oo"
+    ],
+    [
+     "oo"
+    ],
+    [
+     "oo"
+    ],
+    [
+     "kk"
+    ],
+    [
+     ".k"
+    ]
+   ]
+  },
+  {
+   "name": "eyeL",
+   "parts": [
+    [
+     "98138",
+     "k",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "eyeR",
+   "parts": [
+    [
+     "98138",
+     "k",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "nose",
+   "parts": [
+    [
+     "98138",
+     "k",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "tail",
+   "origin": [
+    5,
+    5,
+    2
+   ],
+   "layers": [
+    [
+     "ooow",
+     "ooow",
+     "ooow"
+    ],
+    [
+     "ooww",
+     "ooww",
+     "ooww"
+    ],
+    [
+     "ooww",
+     "ooww",
+     "ooww"
+    ],
+    [
+     ".oww",
+     ".oww",
+     ".oww"
+    ]
+   ]
+  }
+ ],
+ "details": []
+}

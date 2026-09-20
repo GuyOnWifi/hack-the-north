@@ -1,0 +1,19 @@
+{
+ "subject": "sitting ladybug",
+ "concept": "A LEGO model of a chunky, stylised ladybug built from stacked bricks and plates, with a smooth curved shell of red slopes dotted with black round tiles, sitting on a small green leaf base.",
+ "features": [
+  "glossy red curved shell with black spot tiles",
+  "black head with two round eye tiles",
+  "short bar antennae",
+  "small black legs peeking from under the shell",
+  "green leaf plate base for it to sit on"
+ ],
+ "simplifications": [
+  "Removed any wing-flying pose; ladybug sits still on a leaf base instead of mid-flight",
+  "Thin real antennae replaced with two short chunky bars mounted on the head",
+  "Legs simplified to short stubs tucked under the body rather than jointed, posed limbs",
+  "Spots made from flat round tiles instead of printed or curved details",
+  "Body reduced to two clean sub-assemblies (shell + head) joined with a simple hinge for a slight tilt"
+ ],
+ "image_prompt": "a studio product photo of an official LEGO set of a chunky, stylised sitting ladybug with a smooth red curved shell dotted with black round tiles, a black head with two round eyes and short bar antennae, sitting on a small green leaf plate base, built only from real LEGO bricks and plates, chunky stylised proportions, clean colour blocking, calm static pose, whole model in frame, 3/4 view, plain light background"
+}

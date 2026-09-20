@@ -178,8 +178,13 @@ class H(BaseHTTPRequestHandler):
 
         def push(ev):
             with lock:
-                self.wfile.write(f"data: {json.dumps(ev)}\n\n".encode())
-                self.wfile.flush()
+                try:
+                    self.wfile.write(f"data: {json.dumps(ev)}\n\n".encode())
+                    self.wfile.flush()
+                except (BrokenPipeError, ConnectionResetError, OSError):
+                    # the browser left: stop designing for nobody. The run keeps
+                    # whatever it has already built and saved.
+                    tape.gone = True
 
         # HEARTBEAT: a real `claude -p` design takes 60-130s, and a proxy/browser
         # will drop an SSE connection that goes silent that long — the client then
@@ -197,11 +202,13 @@ class H(BaseHTTPRequestHandler):
                         self.wfile.write(b": ping\n\n")
                         self.wfile.flush()
                 except (BrokenPipeError, ConnectionResetError, OSError):
+                    tape.gone = True  # nobody is listening; the run can stop
                     break
         hb = threading.Thread(target=heartbeat, daemon=True)
         hb.start()
 
         tape = Tape()
+        tape.gone = False
         tape.listeners.append(push)
         try:
             SESSION.build(prompt, tape=tape, sketch=sketch)

@@ -1,0 +1,18 @@
+{"t": 0, "actor": "router", "kind": "route", "text": "'Red bird': concept art, 1 designs to choose from, then up to 1 rounds of notes", "status": "ok"}
+{"t": 0, "actor": "planner", "kind": "distill", "text": "making 'Red bird' buildable", "status": "running"}
+{"t": 12892, "actor": "planner", "kind": "distill", "text": "concept: A LEGO model of a small, round, chunky red bird perched on a simple ground plate, built from stacked bricks and curved slopes with a bright orange beak and wings on side studs. (changed: Flying pose replaced with a calm perched stance on a ground plate, since balance and mid-air poses aren't buildable.; Feathers and realistic plumage simplified into clean red brick color blocking with minimal detail.)", "status": "ok"}
+{"t": 12892, "actor": "designer", "kind": "concept", "text": "drawing the concept as an official LEGO set", "status": "running"}
+{"t": 41241, "actor": "designer", "kind": "concept", "text": "concept ready", "status": "ok"}
+{"t": 41299, "actor": "designer", "kind": "views", "text": "turning the concept to see its side and back", "status": "running"}
+{"t": 41299, "actor": "designer", "kind": "brief", "text": "reading the concept and writing the build brief", "status": "running"}
+{"t": 71529, "actor": "designer", "kind": "views", "text": "got 2 extra view(s): side, back", "status": "ok"}
+{"t": 101505, "actor": "designer", "kind": "brief", "text": "brief written: 7 sub-assemblies", "status": "ok"}
+{"t": 101682, "actor": "builder", "kind": "build", "text": "round r0: 68 parts, 0 collisions, stands", "status": "ok"}
+{"t": 107810, "actor": "critic", "kind": "critique", "text": "comparing the renders with the concept", "status": "running"}
+{"t": 113902, "actor": "critic", "kind": "critique", "text": "score 3/10: Doesn't read as a bird at a glance - looks like a blocky red mass; Eyes are tiny dark studs jutting sideways instead of large white/black round eyes on the face; Beak is a small tan/orange plate instead of a prominent orange wedge beak", "status": "warn"}
+{"t": 113903, "actor": "designer", "kind": "revise", "text": "reworking the design from the critic's notes", "status": "running"}
+{"t": 198053, "actor": "designer", "kind": "revise", "text": "reworked base, body, head", "status": "ok"}
+{"t": 198116, "actor": "builder", "kind": "build", "text": "round r1: 92 parts, 0 collisions, stands (trimmed 3)", "status": "ok"}
+{"t": 203857, "actor": "critic", "kind": "critique", "text": "comparing the renders with the concept", "status": "running"}
+{"t": 209915, "actor": "critic", "kind": "critique", "text": "score 3/10: Silhouette is lumpy and blocky; no smooth round body like concept; Eyes are white cylinders sticking out sideways rather than flat white/black round-tile eyes on the face; Beak is a pale tan/yellow plate slab instead of an orange wedge beak; wrong colour and shape", "status": "warn"}
+{"t": 385489, "actor": "scribe", "kind": "done", "text": "best: round 0 scored 3.0/10 (68 parts) in 385s", "status": "ok"}

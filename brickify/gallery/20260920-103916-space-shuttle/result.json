@@ -1,0 +1,25 @@
+{
+ "score": 3.0,
+ "round": 1,
+ "label": "r1",
+ "parts": 141,
+ "stands": true,
+ "collisions": 0,
+ "clean": true,
+ "issues": [
+  "Build reads as a generic flat blob/jet, not a space shuttle at a glance",
+  "No distinct fuselage: body is a low flat slab instead of a rounded orbiter body with raised cabin",
+  "Missing black nose cone and black underbelly colour blocking",
+  "Tail fin is a tiny thin plate, not the tall swept vertical stabilizer of the concept",
+  "Only three small engine nozzles on the side rather than three main engines clustered at the rear",
+  "Wings lack the concept's delta shape with black leading/trailing edges",
+  "Cockpit windows absent/ambiguous",
+  "Excessive exposed studs and curved slopes give a rough, unfinished look unlike an official set",
+  "Red accent placed oddly on top spine rather than as small fuselage marking",
+  "Display stand is an opaque stack, not the clear angled stand of the concept"
+ ],
+ "issues_kernel": [],
+ "idea": "space shuttle",
+ "distilled": null,
+ "seconds": 303
+}

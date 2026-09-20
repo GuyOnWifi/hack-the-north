@@ -1,0 +1,458 @@
+{
+ "name": "wooden bat-plank character",
+ "palette": {
+  "b": 70,
+  "d": 308,
+  "t": 19,
+  "k": 0,
+  "c": 47
+ },
+ "root": "stand",
+ "bodies": [
+  {
+   "name": "stand",
+   "layers": [
+    [
+     "cccc",
+     "cccc",
+     "cccc",
+     "cccc"
+    ],
+    [
+     "....",
+     ".cc.",
+     ".cc.",
+     "...."
+    ],
+    [
+     "....",
+     ".cc.",
+     ".cc.",
+     "...."
+    ],
+    [
+     "....",
+     ".cc.",
+     ".cc.",
+     "...."
+    ],
+    [
+     "....",
+     ".cc.",
+     ".cc.",
+     "...."
+    ],
+    [
+     "....",
+     ".cc.",
+     ".cc.",
+     "...."
+    ]
+   ],
+   "surface": false,
+   "connectors": [
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      1,
+      5,
+      1
+     ],
+     "quarters": 1,
+     "colour": "c",
+     "attach": [
+      {
+       "body": "plank",
+       "angle": 0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "plank",
+   "origin": [
+    0,
+    8,
+    1
+   ],
+   "surface": false,
+   "layers": [
+    [
+     ".b..b.",
+     ".b..b."
+    ],
+    [
+     ".b..b.",
+     ".b..b."
+    ],
+    [
+     ".b..b.",
+     ".b..b."
+    ],
+    [
+     "bbbbbb",
+     "bbbbbb"
+    ],
+    [
+     "bbbbbb",
+     "bbbbbb"
+    ],
+    [
+     "bbbbbb",
+     "bbbbbb"
+    ],
+    [
+     "bbbbbb",
+     "bbbbbb"
+    ],
+    [
+     "bbbbbb",
+     "bbbbbb"
+    ],
+    [
+     "bbbbbb",
+     "bbbbbb"
+    ],
+    [
+     "bbbbbb",
+     "bbbbbb"
+    ],
+    [
+     "bbbbbb",
+     "bbbbbb"
+    ],
+    [
+     "bbbbbb",
+     "bbbbbb"
+    ],
+    [
+     "bbbbbb",
+     "bbbbbb"
+    ],
+    [
+     ".bbbb.",
+     ".bbbb."
+    ],
+    [
+     ".bbbb.",
+     ".bbbb."
+    ],
+    [
+     ".bbbb.",
+     ".bbbb."
+    ],
+    [
+     ".bbbb.",
+     ".bbbb."
+    ],
+    [
+     ".bbbb.",
+     ".bbbb."
+    ],
+    [
+     "bbbbbb",
+     "bbbbbb"
+    ],
+    [
+     "bbbbbb",
+     "bbbbbb"
+    ],
+    [
+     "bbbbbb",
+     "bbbbbb"
+    ],
+    [
+     ".bbbb.",
+     ".bbbb."
+    ],
+    [
+     ".bbbb.",
+     ".bbbb."
+    ],
+    [
+     ".bbbb.",
+     ".bbbb."
+    ]
+   ],
+   "connectors": [
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      1,
+      18,
+      0
+     ],
+     "quarters": 0,
+     "colour": "b",
+     "attach": [
+      {
+       "body": "eyeL"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      4,
+      18,
+      0
+     ],
+     "quarters": 0,
+     "colour": "b",
+     "attach": [
+      {
+       "body": "eyeR"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      2,
+      13,
+      0
+     ],
+     "quarters": 0,
+     "colour": "k",
+     "attach": [
+      {
+       "body": "mouthL"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      3,
+      13,
+      0
+     ],
+     "quarters": 0,
+     "colour": "k",
+     "attach": [
+      {
+       "body": "mouthR"
+      }
+     ]
+    },
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      0,
+      13,
+      0
+     ],
+     "quarters": 1,
+     "colour": "d",
+     "attach": [
+      {
+       "body": "wingL",
+       "angle": -18
+      }
+     ]
+    },
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      5,
+      13,
+      0
+     ],
+     "quarters": 1,
+     "colour": "d",
+     "attach": [
+      {
+       "body": "wingR",
+       "angle": 18
+      }
+     ]
+    },
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      0,
+      21,
+      0
+     ],
+     "quarters": 1,
+     "colour": "d",
+     "attach": [
+      {
+       "body": "earL",
+       "angle": 18
+      }
+     ]
+    },
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      5,
+      21,
+      0
+     ],
+     "quarters": 1,
+     "colour": "d",
+     "attach": [
+      {
+       "body": "earR",
+       "angle": -18
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "eyeL",
+   "parts": [
+    [
+     "6141",
+     "t",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "eyeR",
+   "parts": [
+    [
+     "6141",
+     "t",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "mouthL",
+   "parts": [
+    [
+     "3070b",
+     "k",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "mouthR",
+   "parts": [
+    [
+     "3070b",
+     "k",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "wingL",
+   "origin": [
+    -4,
+    16,
+    0
+   ],
+   "surface": false,
+   "layers": [
+    [
+     "ddddd",
+     "ddddd",
+     "d.d.d"
+    ]
+   ]
+  },
+  {
+   "name": "wingR",
+   "origin": [
+    5,
+    16,
+    0
+   ],
+   "surface": false,
+   "layers": [
+    [
+     "ddddd",
+     "ddddd",
+     "d.d.d"
+    ]
+   ]
+  },
+  {
+   "name": "earL",
+   "origin": [
+    0,
+    24,
+    0
+   ],
+   "surface": false,
+   "layers": [
+    [
+     "d",
+     "d"
+    ],
+    [
+     "d",
+     "d"
+    ],
+    [
+     "d",
+     "."
+    ],
+    [
+     "d",
+     "."
+    ]
+   ]
+  },
+  {
+   "name": "earR",
+   "origin": [
+    5,
+    24,
+    0
+   ],
+   "surface": false,
+   "layers": [
+    [
+     "d",
+     "d"
+    ],
+    [
+     "d",
+     "d"
+    ],
+    [
+     "d",
+     "."
+    ],
+    [
+     "d",
+     "."
+    ]
+   ]
+  }
+ ],
+ "details": []
+}

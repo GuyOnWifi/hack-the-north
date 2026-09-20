@@ -1,0 +1,19 @@
+{
+ "subject": "sitting frog",
+ "concept": "A LEGO model of a chunky, stylised sitting frog built from stacked bricks and plates, with a rounded curved-slope back and bulging round eyes on top.",
+ "features": [
+  "big round bulging eyes on top of the head",
+  "wide flat mouth line detail on the front",
+  "smooth curved-slope back and rounded body",
+  "chunky folded front legs (small bent bricks, no thin limbs)",
+  "bright green body with a lighter green belly plate"
+ ],
+ "simplifications": [
+  "Replaced a mid-jump pose with a calm seated pose since dynamic poses can't be built",
+  "Made legs short chunky bent bricks instead of thin jointed limbs for stability",
+  "Kept eyes as round tiles/domes on top rather than sculpted organic detail",
+  "Used a simple two-tone green color block instead of mottled skin texture",
+  "Skipped a sticking-out tongue since thin free-standing parts aren't buildable"
+ ],
+ "image_prompt": "a studio product photo of an official LEGO set of a chunky, stylised sitting frog built from stacked bricks and plates, with a rounded curved-slope back, big round bulging eyes on top, chunky folded front legs, bright green body with lighter green belly, built only from real LEGO bricks and plates, chunky stylised proportions, clean colour blocking, calm static pose, whole model in frame, 3/4 view, plain light background"
+}

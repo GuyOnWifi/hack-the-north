@@ -1,0 +1,21 @@
+{"t": 0, "actor": "router", "kind": "route", "text": "'a penguin': distill, concept, views, brief, then build/critique x3 max", "status": "ok"}
+{"t": 0, "actor": "planner", "kind": "distill", "text": "making 'a penguin' buildable", "status": "running"}
+{"t": 8077, "actor": "planner", "kind": "distill", "text": "concept: A chunky, upright penguin with a black back and head, a big white belly, a bright orange beak and two flat orange feet. Short black flippers are attached at the sides, and the whole model stands on its own feet in a calm, symmetrical pose. (changed: Waddling walk becomes a static standing pose, because mid-motion balance is not buildable.; Thin, curved flippers become short, chunky black plate-and-slope wings on hinges, at a single fixed angle.)", "status": "ok"}
+{"t": 8077, "actor": "designer", "kind": "concept", "text": "drawing the concept as an official LEGO set", "status": "running"}
+{"t": 47989, "actor": "designer", "kind": "concept", "text": "concept ready", "status": "ok"}
+{"t": 47989, "actor": "designer", "kind": "views", "text": "turning the concept to see its side and back", "status": "running"}
+{"t": 100774, "actor": "designer", "kind": "views", "text": "got 2 extra view(s): side, back", "status": "ok"}
+{"t": 100775, "actor": "designer", "kind": "brief", "text": "reading the concept and writing the build brief", "status": "running"}
+{"t": 180406, "actor": "designer", "kind": "brief", "text": "brief written: 6 sub-assemblies", "status": "ok"}
+{"t": 180652, "actor": "builder", "kind": "build", "text": "round 0: 136 parts, 0 collisions, stands", "status": "ok"}
+{"t": 199597, "actor": "critic", "kind": "critique", "text": "comparing the renders with the concept", "status": "running"}
+{"t": 268226, "actor": "critic", "kind": "critique", "text": "score 3/10: The body is a straight 6x6 column. The concept has a wide egg-shaped belly that bulges at the middle and tapers at the bottom and shoulders.; The white belly is a flat 4-stud strip that only shows from the front. In the concept it is a wide oval that wraps round to the sides (see the side view).; The eyes are tiny dark dots at the edges of the face. The concept's big white eyes with black pupils are the most important feature and don't show up at all.", "status": "warn"}
+{"t": 268379, "actor": "builder", "kind": "build", "text": "round 1: 172 parts, 0 collisions, stands", "status": "ok"}
+{"t": 290506, "actor": "critic", "kind": "critique", "text": "comparing the renders with the concept", "status": "running"}
+{"t": 346946, "actor": "critic", "kind": "critique", "text": "score 4/10: The eyes are white 2x2 square plates with a small off-centre black dot, so they read as goggles. They need round white eyes with centred black pupils.; The beak sits between the eyes instead of below them, and it is a small square block. It should sit low on the face, just above the white chest, and stick out further.; The feet are thin 1x2 orange plates that barely show. The concept has big, wide orange feet that stick out in front of the belly.", "status": "warn"}
+{"t": 347086, "actor": "inspector", "kind": "reject", "text": "3710 in body 'body' collides with 3938 in body 'flipperL'; 3710 in body 'body' collides with 3795 in body 'flipperL'; 3623 in body 'body' collides with 3938 in body 'flipperR'", "status": "fail"}
+{"t": 450418, "actor": "repair", "kind": "fix", "text": "revised the brief to clear the kernel's objections", "status": "ok"}
+{"t": 450551, "actor": "builder", "kind": "build", "text": "round 2: 212 parts, 0 collisions, stands", "status": "ok"}
+{"t": 476718, "actor": "critic", "kind": "critique", "text": "comparing the renders with the concept", "status": "running"}
+{"t": 559337, "actor": "critic", "kind": "critique", "text": "score 4/10: The eyes barely show: a black 1x1 round tile covers the white 1x1 plate, so each eye reads as a black dot on a black head. The concept has large white eyes with black pupils.; The beak is a stepped orange block with exposed studs facing forward, so it reads as a brick stuck on the face, not a smooth tapered beak.; The head is narrower (6 studs) and boxier than in the concept, where it is as wide as the body.", "status": "warn"}
+{"t": 559339, "actor": "scribe", "kind": "done", "text": "best: round 1 scored 4.0/10 (172 parts) in 559s", "status": "ok"}

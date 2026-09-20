@@ -1,0 +1,19 @@
+{
+ "subject": "yellow school bus",
+ "concept": "A LEGO model of a chunky yellow school bus built from stacked bricks and plates, with a rounded roof, black-and-white striped bumpers, and four rolling wheels.",
+ "features": [
+  "bright yellow boxy body",
+  "black window strip with white window panes",
+  "rounded slope roof",
+  "red-orange front grille and headlights",
+  "black bumpers front and back"
+ ],
+ "simplifications": [
+  "Removed opening doors and moving parts since the build system favors fixed sub-assemblies",
+  "Simplified window shapes to flat tiles in a strip instead of individually framed windows",
+  "Kept the body a simple stacked rectangular block with slopes for the roof to stay within buildable proportions",
+  "Used stickerless color blocking (yellow body, black stripe, red accents) instead of printed detailing",
+  "Static ground pose on rolling wheels rather than any driving/motion depiction"
+ ],
+ "image_prompt": "A studio product photo of an official LEGO set of a chunky yellow school bus built from stacked bricks and plates, with a rounded slope roof, a black-and-white window strip, red-orange front grille and headlights, and four rolling wheels, built only from real LEGO bricks and plates, chunky stylised proportions, clean colour blocking, calm static pose, whole model in frame, 3/4 view, plain light background"
+}

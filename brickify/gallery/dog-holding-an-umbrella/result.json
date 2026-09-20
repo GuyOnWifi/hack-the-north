@@ -1,0 +1,18 @@
+{
+ "score": 5.0,
+ "round": 0,
+ "lab": "dog-holding-an-umbrella-r0",
+ "parts": 240,
+ "issues": [
+  "Umbrella canopy is a small flat slab that sits almost on the dog's head; it needs to be bigger, domed and lifted well clear of the head, like the concept",
+  "No umbrella handle below the paw, so the pole just ends at the fist; the J handle is missing",
+  "Only three legs: the front leg under the raised paw is missing, so the dog looks lopsided",
+  "The raised arm is a white block stuck to the side with no tan foreleg joining it to the chest",
+  "Ears are short round discs that stick out sideways; they should be longer droopy flaps",
+  "Paws are the same size as the legs; the concept has chunky white feet"
+ ],
+ "label": "dog-holding-an-umbrella-r0",
+ "idea": "dog holding an umbrella",
+ "stands": true,
+ "collisions": 0
+}

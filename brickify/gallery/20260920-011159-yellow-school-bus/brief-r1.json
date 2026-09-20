@@ -1,0 +1,307 @@
+{
+ "name": "school bus",
+ "palette": {
+  "y": 14,
+  "k": 0,
+  "w": 15,
+  "o": 25,
+  "a": 191,
+  "c": 47,
+  "r": 4
+ },
+ "root": "bus",
+ "bodies": [
+  {
+   "name": "bus",
+   "surface": true,
+   "layers": [
+    [
+     "kkkkkkkkkkkkkk",
+     "kk..kkkkk..kkk",
+     "kk..kkkkk..kkk",
+     "kkkkkkkkkkkkkk"
+    ],
+    [
+     "kkyyyyyyyyyykk",
+     "kkyyyyyyyyyykk",
+     "kkyyyyyyyyyykk",
+     "kkyyyyyyyyyykk"
+    ],
+    [
+     "oyyyyyyyyyyyyy",
+     "oyyyyyyyyyyyyy",
+     "oyyyyyyyyyyyyy",
+     "oyyyyyyyyyyyyy"
+    ],
+    [
+     "oyyyyyyyyyyyyy",
+     "oyyyyyyyyyyyyy",
+     "oyyyyyyyyyyyyy",
+     "oyyyyyyyyyyyyy"
+    ],
+    [
+     "oyyyyyyyyyyyyy",
+     "oyyyyyyyyyyyyy",
+     "oyyyyyyyyyyyyy",
+     "oyyyyyyyyyyyyy"
+    ],
+    [
+     "kkkkkkkkkkkkkk",
+     "yyyyyyyyyyyyyy",
+     "yyyyyyyyyyyyyy",
+     "kkkkkkkkkkkkkk"
+    ],
+    [
+     "yyyykkkkkkkkkk",
+     "yyyyyyyyyyyyyy",
+     "yyyyyyyyyyyyyy",
+     "yyyykkkkkkkkkk"
+    ],
+    [
+     "....yccyccyccy",
+     "....c........c",
+     "....c........c",
+     "....yccyccyccy"
+    ],
+    [
+     "....yccyccyccy",
+     "....c........c",
+     "....c........c",
+     "....yccyccyccy"
+    ],
+    [
+     "....yccyccyccy",
+     "....c........c",
+     "....c........c",
+     "....yccyccyccy"
+    ],
+    [
+     "....kkkkkkkkkk",
+     "....k........k",
+     "....k........k",
+     "....kkkkkkkkkk"
+    ],
+    [
+     "....yyyyyyyyyy",
+     "....yyyyyyyyyy",
+     "....yyyyyyyyyy",
+     "....yyyyyyyyyy"
+    ],
+    [
+     "....yyyyyyyyyy",
+     "....yyyyyyyyyy",
+     "....yyyyyyyyyy",
+     "....yyyyyyyyyy"
+    ]
+   ],
+   "connectors": [
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      0,
+      3,
+      0
+     ],
+     "quarters": 1,
+     "colour": "y",
+     "attach": [
+      {
+       "body": "lampL"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      0,
+      3,
+      3
+     ],
+     "quarters": 1,
+     "colour": "y",
+     "attach": [
+      {
+       "body": "lampR"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      13,
+      3,
+      0
+     ],
+     "quarters": 3,
+     "colour": "y",
+     "attach": [
+      {
+       "body": "tailL"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      13,
+      3,
+      3
+     ],
+     "quarters": 3,
+     "colour": "y",
+     "attach": [
+      {
+       "body": "tailR"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      4,
+      10,
+      0
+     ],
+     "quarters": 1,
+     "colour": "y",
+     "attach": [
+      {
+       "body": "beaconL"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      4,
+      10,
+      3
+     ],
+     "quarters": 1,
+     "colour": "y",
+     "attach": [
+      {
+       "body": "beaconR"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "lampL",
+   "parts": [
+    [
+     "98138",
+     "a",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "lampR",
+   "parts": [
+    [
+     "98138",
+     "a",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "beaconL",
+   "parts": [
+    [
+     "6141",
+     "o",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "beaconR",
+   "parts": [
+    [
+     "6141",
+     "o",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "tailL",
+   "parts": [
+    [
+     "98138",
+     "r",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "tailR",
+   "parts": [
+    [
+     "98138",
+     "r",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  }
+ ],
+ "details": [
+  {
+   "kind": "wheels",
+   "body": "bus",
+   "at": [
+    2,
+    0,
+    1
+   ],
+   "quarters": 1,
+   "colour": "k",
+   "rim": 71
+  },
+  {
+   "kind": "wheels",
+   "body": "bus",
+   "at": [
+    9,
+    0,
+    1
+   ],
+   "quarters": 1,
+   "colour": "k",
+   "rim": 71
+  }
+ ]
+}

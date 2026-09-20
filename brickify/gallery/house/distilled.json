@@ -1,0 +1,19 @@
+{
+ "subject": "small cottage house",
+ "concept": "A chunky little cottage with bright red walls, a tall steep dark-blue roof, a white door and two square windows, plus a short brick chimney, all sitting on a small green baseplate.",
+ "features": [
+  "tall steep pitched roof built from sloped bricks",
+  "bright red brick walls",
+  "white front door with a round yellow knob",
+  "two square windows with white frames",
+  "short chimney on the roof"
+ ],
+ "simplifications": [
+  "No detailed interior: a solid, closed box of bricks keeps it sturdy and under the part budget",
+  "Garden, fence and paths left out: just a small green base with a couple of round plates as bushes",
+  "Chimney has no smoke: smoke is thin and free-floating, so the chimney is just a short stack of bricks",
+  "Windows use plain framed panels, not printed curtains or shutters, since the build system can't do printed or stickered detail",
+  "Roof is plain stacked slopes in one colour, not individual shingles, so the silhouette stays clean"
+ ],
+ "image_prompt": "a studio product photo of an official LEGO set of a small chunky cottage house with bright red brick walls, a tall steep dark blue pitched roof made of slope bricks, a white front door with a round yellow knob, two square windows with white frames, a short red brick chimney, sitting on a small green baseplate with two round green plate bushes, built only from real LEGO bricks and plates, chunky stylised proportions, clean colour blocking, calm static pose, whole model in frame, 3/4 view, plain light background"
+}

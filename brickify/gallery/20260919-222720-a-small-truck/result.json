@@ -1,0 +1,25 @@
+{
+ "score": 3.0,
+ "round": 0,
+ "label": "r0",
+ "parts": 79,
+ "stands": true,
+ "collisions": 0,
+ "clean": true,
+ "issues": [
+  "Overall silhouette is too low and squashed \u2014 reads as a blobby car/van, not a boxy delivery truck",
+  "Cargo box is rounded/curved on top instead of a flat-topped studded white box",
+  "Cab roof is domed with curved slopes rather than the flat yellow cab roof with pronounced hood",
+  "Cargo box height is far too short relative to cab; concept box is taller than the cab",
+  "Wheels are tiny, half-buried under the body and set flush with the sides; no visible tyre/rim contrast or wheel arches",
+  "Windscreen is a tiny trans strip instead of the large wraparound blue windscreen",
+  "Headlights sit as studs on top of the hood rather than as round lamps on the front face",
+  "Black chassis/bumper replaced with grey plate edge; front and rear bumpers missing",
+  "Extra stray studs on hood and roof break the clean official-set finish",
+  "Red tail-light placement/size inconsistent between sides"
+ ],
+ "issues_kernel": [],
+ "idea": "a small truck",
+ "distilled": null,
+ "seconds": 214
+}

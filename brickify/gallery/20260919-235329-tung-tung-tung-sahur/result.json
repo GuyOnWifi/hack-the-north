@@ -1,0 +1,25 @@
+{
+ "score": 3.0,
+ "round": 1,
+ "label": "r1",
+ "parts": 72,
+ "stands": true,
+ "collisions": 0,
+ "clean": true,
+ "issues": [
+  "Reads as a lumpy brown blob, not a bat-like owl/monster at a glance",
+  "Wings are flat stud-up plate stacks sticking out sideways instead of angled scalloped bat wings",
+  "Extra pair of arm/wing stubs mid-body not in concept",
+  "Eyes misplaced (off-center, too high, uneven) and too small; tan ring look lost",
+  "Mouth is a dark slot tile instead of clean recessed rectangle",
+  "Ears are chunky angled bricks with exposed studs, not smooth pointed wedges",
+  "Body lacks smooth wood-texture panel faces; exposed studs and brick seams everywhere",
+  "Feet are bare brick stubs, missing the angled shoe plates",
+  "Clear stand is a bulky plate cluster rather than a slim display rod",
+  "Inconsistent brown tones (dark vs reddish) break colour blocking"
+ ],
+ "issues_kernel": [],
+ "idea": "Tung tung tung sahur",
+ "distilled": "A LEGO model of a chunky stylised wooden cricket-bat-like character with a long rectangular brick body, a carved face, and short stubby arms and legs, standing upright on a display stand.",
+ "seconds": 270
+}

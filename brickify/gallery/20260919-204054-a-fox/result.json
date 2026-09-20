@@ -1,0 +1,21 @@
+{
+ "score": 5.0,
+ "round": 0,
+ "label": "r0b",
+ "parts": 96,
+ "stands": true,
+ "collisions": 0,
+ "clean": true,
+ "issues": [
+  "Head reads too boxy and sits low/forward, losing the fox's tapered snout and pointed muzzle",
+  "Ears are flat black studded bricks lying nearly horizontal rather than upright triangular tips",
+  "Tail is a stubby dark grey block stuck out sideways, not the bushy white-tipped fox tail",
+  "White chest blocking is a flat slab with no V-shape taper into the muzzle",
+  "Proportions squat: body too wide/short relative to head, no visible seated haunch or front legs",
+  "Eyes are oversized brown discs plus a stray dark disc, making the face read asymmetric"
+ ],
+ "issues_kernel": [],
+ "idea": "a fox",
+ "distilled": "A chunky, sitting fox built from stacked bricks and curved slopes, with a bright orange body, white chest patch, triangular ears, and a short stubby tail.",
+ "seconds": 293
+}

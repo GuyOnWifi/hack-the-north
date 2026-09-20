@@ -1,0 +1,19 @@
+{
+ "subject": "sitting cat with tall ears and curled tail",
+ "concept": "A chunky, symmetrical orange tabby cat sitting upright, facing the viewer, with a round head, two pointed slope-brick ears, a cream muzzle and chest, and a short stubby tail built from two or three bricks curling up behind.",
+ "features": [
+  "Pointed triangular ears made from small slopes",
+  "Round face with big round-tile eyes and a small pink nose",
+  "Orange body with darker stripes across the back and head",
+  "Cream-coloured muzzle and chest patch",
+  "Short chunky tail sticking up behind"
+ ],
+ "simplifications": [
+  "Whiskers dropped, or replaced by two short grey bars per side, because thin flexible whiskers cannot be built reliably",
+  "Long curved tail became a 2-3 brick upright stub because free-standing curves are not buildable",
+  "Stalking or pouncing pose became a calm sitting pose so the model balances on a wide base",
+  "Fur texture and realistic face became flat colour blocking with stripes made from 1-2 stud tile bands, avoiding printed or stickered details",
+  "Paws became simple rounded plates at the base instead of individually shaped toes"
+ ],
+ "image_prompt": "A studio product photo of an official LEGO set of a chunky sitting orange tabby cat with a round head, two pointed slope-brick ears, big round black tile eyes, a small pink round nose, a cream muzzle and chest, darker orange stripe bands across the back, and a short stubby upright tail, built only from real LEGO bricks and plates, chunky stylised proportions, clean colour blocking in orange, cream, black and pink, calm static pose, whole model in frame, 3/4 view, plain light background"
+}

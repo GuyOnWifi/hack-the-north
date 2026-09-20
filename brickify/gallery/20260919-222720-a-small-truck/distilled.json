@@ -1,0 +1,18 @@
+{
+ "subject": "small chunky delivery truck",
+ "concept": "A LEGO model of a small boxy delivery truck with a short hood, a chunky cab, and a rectangular cargo box, built from stacked bricks and plates with rolling wheels.",
+ "features": [
+  "short rounded hood with curved slope",
+  "boxy cargo compartment with contrasting color panel",
+  "big round headlight tiles",
+  "four rolling wheels",
+  "simple two-tone color blocking"
+ ],
+ "simplifications": [
+  "Kept the truck stationary with all wheels on the ground instead of mid-motion",
+  "Simplified cargo box to a plain rectangular brick shape rather than doors that open or complex panels",
+  "Used round tiles for headlights instead of printed or stickered details",
+  "Kept proportions chunky and compact (short length) instead of a long realistic truck"
+ ],
+ "image_prompt": "a studio product photo of an official LEGO set of a small chunky delivery truck with a short rounded hood, boxy cargo compartment, round headlight tiles, and four rolling wheels, built only from real LEGO bricks and plates, chunky stylised proportions, clean two-tone color blocking, calm static pose, whole model in frame, 3/4 view, plain light background"
+}

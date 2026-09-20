@@ -1,0 +1,19 @@
+{"t": 0, "actor": "router", "kind": "route", "text": "'cat': distill, concept, views, brief, then build/critique x3 max", "status": "ok"}
+{"t": 0, "actor": "planner", "kind": "distill", "text": "making 'cat' buildable", "status": "running"}
+{"t": 8995, "actor": "planner", "kind": "distill", "text": "concept: A chunky, symmetrical orange tabby cat sitting upright, facing the viewer, with a round head, two pointed slope-brick ears, a cream muzzle and chest, and a short stubby tail built from two or three bricks curling up behind. (changed: Whiskers dropped, or replaced by two short grey bars per side, because thin flexible whiskers cannot be built reliably; Long curved tail became a 2-3 brick upright stub because free-standing curves are not buildable)", "status": "ok"}
+{"t": 8996, "actor": "designer", "kind": "concept", "text": "drawing the concept as an official LEGO set", "status": "running"}
+{"t": 59106, "actor": "designer", "kind": "concept", "text": "concept ready", "status": "ok"}
+{"t": 59107, "actor": "designer", "kind": "views", "text": "turning the concept to see its side and back", "status": "running"}
+{"t": 104347, "actor": "designer", "kind": "views", "text": "got 2 extra view(s): side, back", "status": "ok"}
+{"t": 104348, "actor": "designer", "kind": "brief", "text": "reading the concept and writing the build brief", "status": "running"}
+{"t": 177240, "actor": "designer", "kind": "brief", "text": "brief written: 4 sub-assemblies", "status": "ok"}
+{"t": 177560, "actor": "builder", "kind": "build", "text": "round 0: 270 parts, 0 collisions, stands", "status": "ok"}
+{"t": 203796, "actor": "critic", "kind": "critique", "text": "comparing the renders with the concept", "status": "running"}
+{"t": 280372, "actor": "critic", "kind": "critique", "text": "score 4/10: The eyes are flat dark-grey 2x2 plates with a big white dot, so they read as goggles. The concept has large, round, glossy black eyes.; A brown arch sits over the eyes and looks like a hat. Tabby stripes should be a thin forehead stripe and side bands instead.; The head is a narrow box the same width as the body. The concept has an oversized round head that is wider than the body.", "status": "warn"}
+{"t": 280524, "actor": "builder", "kind": "build", "text": "round 1: 310 parts, 0 collisions, stands", "status": "ok"}
+{"t": 311342, "actor": "critic", "kind": "critique", "text": "comparing the renders with the concept", "status": "running"}
+{"t": 348986, "actor": "critic", "kind": "critique", "text": "score 4/10: Eyes are flat square 2x2 black plates with studs showing, so they read as sunglasses rather than the big round glossy eyes in the concept; Nose is too small and sits flat in the muzzle, so it disappears; the concept has a clear pink button nose that sticks out; The face lacks depth: the eyes need to stick out from the head the way the domed eyes do in the concept", "status": "warn"}
+{"t": 349162, "actor": "builder", "kind": "build", "text": "round 2: 311 parts, 0 collisions, stands", "status": "ok"}
+{"t": 376093, "actor": "critic", "kind": "critique", "text": "comparing the renders with the concept", "status": "running"}
+{"t": 424743, "actor": "critic", "kind": "critique", "text": "score 5/10: Eyes are black round bricks sticking straight out of the face like cylinders. The concept has large, flat, glossy 2x2 dome eyes with a white highlight.; Ears are short 2x2 stubs. The concept ears are tall, pointed and angled out, with tan inner faces.; The pink nose is small and sits too low under the eyes. It should sit on the tan muzzle, right between and just below the eyes.", "status": "warn"}
+{"t": 424745, "actor": "scribe", "kind": "done", "text": "best: round 2 scored 5.0/10 (311 parts) in 425s", "status": "ok"}

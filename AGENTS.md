@@ -187,20 +187,20 @@ judged the same way.
 
 ## Brand
 
-14. **The brand is BrickedUp, and the mark is the red corner brick.** Use the
+14. **The brand is Bricked, and the mark is the red corner brick.** Use the
     real logo image, never a drawn stand-in: on the splash (big, above the
     wordmark), in the home header as a small lockup (mark + name) above the
     greeting, as the glyph on the yellow "build" buttons, on the app and
     home-screen icons (mark on the app's yellow), and on the PDF manual (cover
-    band plus a "Made with BrickedUp" footer on every page).
+    band plus a "Made with Bricked" footer on every page).
     *How:* `LogoMark` / `LogoLockup` / `Wordmark` in `components/ui/Logo.tsx`;
     the name and logo paths live in `lib/brand.ts` so a rename is one line.
-    Web sizes are in `public/brand/` (trimmed from `brickedup-logo.png`).
+    Web sizes are in `public/brand/` (trimmed from `brand-logo.png`).
     The mark carries the whole app, not just a few spots: `BrickLoader` (the
     logo hopping onto its shadow) replaces every spinner; the lockup sits on
     the Designing, Scanning and Printing screens; the tab bar's scan button,
     the empty inventory, 404 and error pages use the mark; finishing a build
-    stamps it with "Built with BrickedUp"; shared links get `brand/og.png`.
+    stamps it with "Built with Bricked"; shared links get `brand/og.png`.
     *Why:* the first pass (splash, header, icons, PDF) "seems very limited".
 
 ## Performance

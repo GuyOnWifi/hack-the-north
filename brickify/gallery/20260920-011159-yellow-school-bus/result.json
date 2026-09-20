@@ -1,0 +1,25 @@
+{
+ "score": 3.0,
+ "round": 1,
+ "label": "r1",
+ "parts": 185,
+ "stands": true,
+ "collisions": 0,
+ "clean": true,
+ "issues": [
+  "Proportions far too long and low \u2014 concept is a short, stubby chunky bus, render is a stretched van/tram shape",
+  "Wheels tiny, half-buried and barely visible; concept has big chunky black tyres with grey hubs standing proud",
+  "Body colour is pale cream/light yellow instead of bright school-bus yellow",
+  "Front hood section is thin and slab-like; missing the rounded chunky nose and orange grille slats",
+  "Headlights are small yellow studs instead of prominent round lamps; front bumper detail missing",
+  "Roof profile is a simple ribbed arch with an odd raised ridge; lacks the smooth curved-slope roof of concept",
+  "Black beltline stripe is inconsistent and interrupted; window band framing looks ragged",
+  "Windows are white/transparent plates reading as blank panels rather than dark glazed windows",
+  "Rear red lights oversized and stick out sideways; rear bumper/plate detail missing",
+  "Overall looks like a rough digital mockup, not a finished official LEGO set"
+ ],
+ "issues_kernel": [],
+ "idea": "Yellow school bus",
+ "distilled": "A LEGO model of a chunky yellow school bus built from stacked bricks and plates, with a rounded roof, black-and-white striped bumpers, and four rolling wheels.",
+ "seconds": 390
+}

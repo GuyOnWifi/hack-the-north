@@ -1,0 +1,19 @@
+{"t": 0, "actor": "router", "kind": "route", "text": "'hummingbird': concept, brief, build, critique (2 rounds max)", "status": "ok"}
+{"t": 0, "actor": "designer", "kind": "brief", "text": "reading the concept and writing the build brief", "status": "running"}
+{"t": 83082, "actor": "designer", "kind": "brief", "text": "brief written: 8 sub-assemblies", "status": "ok"}
+{"t": 83145, "actor": "inspector", "kind": "reject", "text": "3623 in body 'body' collides with 3020 in body 'tail'; 3010 in body 'body' collides with 3938 in body 'tail'; 3022 in body 'wingR' collides with 3021 in body 'tail'", "status": "fail"}
+{"t": 175613, "actor": "repair", "kind": "fix", "text": "revised the brief to clear the kernel's objections", "status": "ok"}
+{"t": 175658, "actor": "scribe", "kind": "build", "text": "built 118 parts, 0 collisions", "status": "ok"}
+{"t": 194725, "actor": "inspector", "kind": "critique", "text": "comparing the renders with the concept", "status": "running"}
+{"t": 231305, "actor": "inspector", "kind": "critique", "text": "score 4/10: The body is pitched almost upright at 50 degrees, so the beak points to the sky. In the concept the body is diagonal and the long beak is close to horizontal, reaching toward the flower; The wings are small, flat and hidden against the back. The concept has big wings swept up and back, the bird's most recognisable shape; Only a hint of trans light blue shows at the wing tips. The concept has clear pale blue feather tips at the trailing edge of each wing", "status": "warn"}
+{"t": 231358, "actor": "inspector", "kind": "reject", "text": "3021 in body 'body' collides with 3710 in body 'wingR'; 3021 in body 'body' collides with 3710 in body 'wingL'", "status": "fail"}
+{"t": 273939, "actor": "repair", "kind": "fix", "text": "revised the brief to clear the kernel's objections", "status": "ok"}
+{"t": 273984, "actor": "scribe", "kind": "build", "text": "built 113 parts, 0 collisions", "status": "ok"}
+{"t": 293494, "actor": "inspector", "kind": "critique", "text": "comparing the renders with the concept", "status": "running"}
+{"t": 364130, "actor": "inspector", "kind": "critique", "text": "score 5/10: Wings are lumpy splayed paddles with notches, reading more like claws or hands than swept feathers. They should rise up and back from the shoulders in a narrow, near-vertical diagonal fan.; The trans-light-blue feather tips barely show and sit at odd corners instead of trailing the green primaries.; The tail is a two-pronged fork that reads as claws. It should be a single tapered dark wedge pointing down and back.", "status": "warn"}
+{"t": 364191, "actor": "inspector", "kind": "reject", "text": "3021 in body 'body' collides with 3623 in body 'wingR'; 3021 in body 'body' collides with 3623 in body 'wingL'; 3021 in body 'body' collides with 3022 in body 'wingL'", "status": "fail"}
+{"t": 415147, "actor": "repair", "kind": "fix", "text": "revised the brief to clear the kernel's objections", "status": "ok"}
+{"t": 415199, "actor": "scribe", "kind": "build", "text": "built 147 parts, 0 collisions", "status": "ok"}
+{"t": 435448, "actor": "inspector", "kind": "critique", "text": "comparing the renders with the concept", "status": "running"}
+{"t": 477788, "actor": "inspector", "kind": "critique", "text": "score 5/10: Wings are hinged almost vertical (\u00b172\u00b0), so they fold up into a spiky ridge along the back instead of spreading in a raised, swept-back V like the concept; Body tilt of 38\u00b0 is too flat; the concept hovers with the head clearly up at about 50\u00b0; Tail is short and dark green, so it disappears under the body; the concept has a long green tail with black tips hanging down", "status": "warn"}
+{"t": 477789, "actor": "scribe", "kind": "done", "text": "best: round 1 scored 5.0/10 (113 parts)", "status": "ok"}

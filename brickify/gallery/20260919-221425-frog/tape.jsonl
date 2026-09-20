@@ -1,0 +1,20 @@
+{"t": 0, "actor": "router", "kind": "route", "text": "'frog': concept art, 1 designs to choose from, then up to 1 rounds of notes", "status": "ok"}
+{"t": 0, "actor": "planner", "kind": "distill", "text": "making 'frog' buildable", "status": "running"}
+{"t": 6153, "actor": "planner", "kind": "distill", "text": "concept: A LEGO model of a chunky, stylised sitting frog built from stacked bricks and plates, with a rounded curved-slope back and bulging round eyes on top. (changed: Replaced a mid-jump pose with a calm seated pose since dynamic poses can't be built; Made legs short chunky bent bricks instead of thin jointed limbs for stability)", "status": "ok"}
+{"t": 6154, "actor": "designer", "kind": "concept", "text": "drawing the concept as an official LEGO set", "status": "running"}
+{"t": 35872, "actor": "designer", "kind": "concept", "text": "concept ready", "status": "ok"}
+{"t": 35929, "actor": "designer", "kind": "views", "text": "turning the concept to see its side and back", "status": "running"}
+{"t": 35929, "actor": "designer", "kind": "brief", "text": "reading the concept and writing the build brief", "status": "running"}
+{"t": 66559, "actor": "designer", "kind": "views", "text": "got 2 extra view(s): side, back", "status": "ok"}
+{"t": 128296, "actor": "designer", "kind": "brief", "text": "brief written: 5 sub-assemblies", "status": "ok"}
+{"t": 128464, "actor": "inspector", "kind": "reject", "text": "The model would tip over: its centre of mass is 3.1 studs outside the base it stands on, toward -z. Widen or extend the base (or the stand) on that side, or move weight back over it.", "status": "fail"}
+{"t": 161134, "actor": "repair", "kind": "fix", "text": "reworked stand, body to clear the kernel's objections", "status": "ok"}
+{"t": 161235, "actor": "builder", "kind": "build", "text": "round r0: 126 parts, 0 collisions, stands (trimmed 4)", "status": "ok"}
+{"t": 168232, "actor": "critic", "kind": "critique", "text": "comparing the renders with the concept", "status": "running"}
+{"t": 175024, "actor": "critic", "kind": "critique", "text": "score 2/10: Does not read as a frog: looks like an abstract green blob/vehicle on a baseplate; Eyes are tiny dark grey studs on the side of the head, not the large white-and-black domed eyes of the concept; No legs or feet at all; body sits flat on an exposed baseplate", "status": "warn"}
+{"t": 175026, "actor": "designer", "kind": "revise", "text": "reworking the design from the critic's notes", "status": "running"}
+{"t": 283397, "actor": "designer", "kind": "revise", "text": "reworked body, eyeL, eyeR", "status": "ok"}
+{"t": 283486, "actor": "builder", "kind": "build", "text": "round r1: 100 parts, 0 collisions, stands (trimmed 2)", "status": "ok"}
+{"t": 290188, "actor": "critic", "kind": "critique", "text": "comparing the renders with the concept", "status": "running"}
+{"t": 296619, "actor": "critic", "kind": "critique", "text": "score 2/10: Eyes are long horizontal white/black cylinders jutting forward like telescopes instead of round domed eyes sitting atop the head; Does not read as a frog at a glance - looks like a green box/vehicle with gun barrels; No distinct frog body shape: missing arched back, tucked front legs and large rounded haunches", "status": "warn"}
+{"t": 303889, "actor": "scribe", "kind": "done", "text": "best: round 0 scored 2.0/10 (126 parts) in 304s", "status": "ok"}

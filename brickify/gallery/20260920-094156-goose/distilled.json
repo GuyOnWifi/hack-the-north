@@ -1,0 +1,19 @@
+{
+ "subject": "standing goose",
+ "concept": "A LEGO model of a chunky standing goose with a curved white body, black head and neck, and an orange beak, built from stacked bricks and plates with a smooth sloped back.",
+ "features": [
+  "long curved neck built from angled bricks",
+  "black head with round eyes",
+  "short orange bar beak",
+  "white rounded body with wing side-detailing",
+  "small orange plate feet"
+ ],
+ "simplifications": [
+  "Made the goose stand calmly on two flat feet instead of mid-honk or flapping, since balance poses aren't buildable",
+  "Built the neck as a fixed curved stack of bricks rather than a thin free-bending shape",
+  "Simplified feathers into flat colour-blocked plates instead of textured surfaces",
+  "Used a short bar for the beak instead of a thin pointed shape",
+  "Kept wings as flat side details rather than separate lifted/spread parts"
+ ],
+ "image_prompt": "A studio product photo of an official LEGO set of a chunky standing goose with a curved white body, black head and neck, and an orange beak, built only from real LEGO bricks and plates, chunky stylised proportions, clean colour blocking, calm static pose, whole model in frame, 3/4 view, plain light background"
+}

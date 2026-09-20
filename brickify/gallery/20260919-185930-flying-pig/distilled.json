@@ -1,0 +1,19 @@
+{
+ "subject": "pink pig on display stand with small wings",
+ "concept": "A chunky pink pig with a round body, snout, and floppy ears, sitting calmly with two small white wings attached at the sides. The whole model is mounted on a clear tilted display stand so it appears to hover.",
+ "features": [
+  "round pink body with a big rounded snout (round plate on the front)",
+  "two triangular pink ears made from slopes",
+  "two chunky white wings attached at the sides with hinges",
+  "short curly tail simplified to 1-2 small pink bricks",
+  "clear tilted display stand under the belly"
+ ],
+ "simplifications": [
+  "Flying mid-air becomes hovering on a clear tilted display stand, since free flight and balance cannot be built.",
+  "Flapping wings become static wings on side hinges set at one fixed angle, because motion is not buildable.",
+  "Curly tail becomes 1-2 small bricks, since thin curved structures are not buildable.",
+  "Realistic pig face becomes two round-plate eyes and a round-plate snout, since detailed faces need printing or many angles.",
+  "Four legs and hooves become short stubby brick legs, or are hidden entirely by the stand, to keep the silhouette simple and stable."
+ ],
+ "image_prompt": "a studio product photo of an official LEGO set of a chunky pink pig with a round body, big round snout, two small triangular slope ears, two small chunky white wings on the sides and a tiny two-brick tail, hovering on a clear tilted display stand, built only from real LEGO bricks and plates, chunky stylised proportions, clean colour blocking in pink and white with black eyes, calm static pose, whole model in frame, 3/4 view, plain light background"
+}

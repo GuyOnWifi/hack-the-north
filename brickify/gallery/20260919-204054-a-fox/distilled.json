@@ -1,0 +1,19 @@
+{
+ "subject": "sitting fox",
+ "concept": "A chunky, sitting fox built from stacked bricks and curved slopes, with a bright orange body, white chest patch, triangular ears, and a short stubby tail.",
+ "features": [
+  "pointed triangular ears",
+  "orange and white two-tone coloring",
+  "black-tipped short tail",
+  "white muzzle with small round nose",
+  "alert sitting pose"
+ ],
+ "simplifications": [
+  "Changed any implied running or pouncing pose to a calm seated pose for stability.",
+  "Shortened the long bushy tail into a short 2-3 brick stub with a black tile tip to avoid thin free-standing parts.",
+  "Simplified the pointed snout into a chunky stacked-brick muzzle rather than a tapered organic shape.",
+  "Used round tiles for eyes and nose instead of printed or stickered facial details.",
+  "Kept color blocking to two main colors (orange, white) plus black accents for a clean silhouette."
+ ],
+ "image_prompt": "A studio product photo of an official LEGO set of a chunky, sitting fox built from stacked bricks and curved slopes, with a bright orange body, white chest patch, triangular ears, and a short stubby black-tipped tail, built only from real LEGO bricks and plates, chunky stylised proportions, clean colour blocking, calm static pose, whole model in frame, 3/4 view, plain light background"
+}

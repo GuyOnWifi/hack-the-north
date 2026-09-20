@@ -1,0 +1,15 @@
+{"t": 0, "actor": "router", "kind": "route", "text": "'a red tractor': concept art, 3 designs to choose from, then up to 0 rounds of notes", "status": "ok"}
+{"t": 0, "actor": "planner", "kind": "distill", "text": "making 'a red tractor' buildable", "status": "running"}
+{"t": 6493, "actor": "planner", "kind": "distill", "text": "concept: A small stocky LEGO tractor with big rounded rear wheels, smaller front wheels, a boxy engine hood, and a simple cab with a curved-slope roof, standing still on a flat base. (changed: Removed any raised plow/loader attachment to keep silhouette compact and self-supporting; Made exhaust pipe a short fixed bar instead of a thin tall tube to keep it sturdy)", "status": "ok"}
+{"t": 6493, "actor": "designer", "kind": "concept", "text": "drawing the concept as an official LEGO set", "status": "running"}
+{"t": 15609, "actor": "designer", "kind": "concept", "text": "concept ready", "status": "ok"}
+{"t": 15610, "actor": "designer", "kind": "views", "text": "turning the concept to see its side and back", "status": "running"}
+{"t": 15610, "actor": "designer", "kind": "brief", "text": "working up 3 designs from the concept", "status": "running"}
+{"t": 25916, "actor": "designer", "kind": "views", "text": "got 2 extra view(s): side, back", "status": "ok"}
+{"t": 91326, "actor": "designer", "kind": "brief", "text": "3 designs to choose from", "status": "ok"}
+{"t": 91561, "actor": "builder", "kind": "build", "text": "round r0a: 113 parts, 0 collisions, stands", "status": "ok"}
+{"t": 91636, "actor": "builder", "kind": "build", "text": "round r0b: 138 parts, 0 collisions, stands", "status": "ok"}
+{"t": 91682, "actor": "builder", "kind": "build", "text": "round r0c: 97 parts, 0 collisions, stands", "status": "ok"}
+{"t": 115520, "actor": "critic", "kind": "pick", "text": "comparing 3 designs with the concept", "status": "running"}
+{"t": 120699, "actor": "critic", "kind": "pick", "text": "design 3 of 3 reads best: 4/10. No cab/roll-bar structure \u2014 the tractor's signature red canopy and pillars are missing entirely; Wheels are square stud-faced plates rather than round tires; rear wheels not noticeably larger than front", "status": "ok"}
+{"t": 120701, "actor": "scribe", "kind": "done", "text": "best: round 0 scored 4.0/10 (97 parts) in 121s", "status": "ok"}

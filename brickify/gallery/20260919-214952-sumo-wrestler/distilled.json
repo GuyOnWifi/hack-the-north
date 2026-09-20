@@ -1,0 +1,19 @@
+{
+ "subject": "sitting sumo wrestler",
+ "concept": "A LEGO model of a chunky sumo wrestler built from stacked bricks and curved slopes, sitting cross-legged in a stable pose with a rounded belly and a topknot, wearing a simple mawashi belt detail.",
+ "features": [
+  "rounded stacked-brick belly",
+  "curved slopes for smooth shoulders and head",
+  "topknot made from a small bar/plate",
+  "wide symmetrical seated stance",
+  "belt stripe in a contrasting colour"
+ ],
+ "simplifications": [
+  "Replaced a dynamic wrestling stance with a calm seated cross-legged pose for stability",
+  "Turned the mawashi belt into a simple printed-free color-blocked band of plates instead of cloth folds",
+  "Made the topknot a short bar/plate instead of thin sculpted hair",
+  "Exaggerated the round belly and thick limbs using stacked bricks and slopes for a clear, chunky silhouette",
+  "Removed gripping hands or arm gestures, arms rest simply at the sides"
+ ],
+ "image_prompt": "A studio product photo of an official LEGO set of a chunky sumo wrestler sitting cross-legged, built only from real LEGO bricks and plates, rounded belly made from stacked bricks and curved slopes, a small topknot on top, a contrasting color belt band, chunky stylised proportions, clean colour blocking, calm static seated pose, whole model in frame, 3/4 view, plain light background"
+}

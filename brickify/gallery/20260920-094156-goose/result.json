@@ -1,0 +1,23 @@
+{
+ "score": 3.0,
+ "round": 1,
+ "label": "r1",
+ "parts": 97,
+ "stands": true,
+ "collisions": 0,
+ "clean": true,
+ "issues": [
+  "Body is a lumpy cluster of exposed slopes/studs, not the smooth clean ovoid of the concept",
+  "Beak is a stubby 2x2 stud-out block instead of a tapered orange wedge; reads as a box, not a bill",
+  "No visible legs/feet \u2014 only a tiny orange tile flush with the ground instead of standing orange legs",
+  "Head lacks the rounded crown and eye placement is inconsistent (eye on both sides, floating)",
+  "Black tail patch reads as a black blob on the body side rather than a tail at the rear",
+  "Neck is a plain black column with visible studs/gaps, too uniform and attached with a visible gap to the body",
+  "Exposed studs and raw plate edges everywhere break the polished official-set look",
+  "Body too small relative to neck/head; overall silhouette doesn't read as a goose at a glance"
+ ],
+ "issues_kernel": [],
+ "idea": "goose",
+ "distilled": "A LEGO model of a chunky standing goose with a curved white body, black head and neck, and an orange beak, built from stacked bricks and plates with a smooth sloped back.",
+ "seconds": 227
+}

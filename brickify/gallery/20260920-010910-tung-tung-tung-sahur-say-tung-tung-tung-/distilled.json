@@ -1,0 +1,19 @@
+{
+ "subject": "TUNG TUNG TUNG SAHUR baseball bat guy",
+ "concept": "A LEGO model of the meme character TUNG TUNG TUNG SAHUR: a tall chunky wooden log-shaped body with a carved simple face and a short bat-like club attached to one side, standing upright on a small ground plate.",
+ "features": [
+  "tall log-shaped brick-built torso",
+  "simple carved face with round eyes and a flat mouth",
+  "short chunky club/bat merged into the side of the body, not held",
+  "stubby little arms as side studs or small angled bricks",
+  "flat base plate for stable standing"
+ ],
+ "simplifications": [
+  "Removed any mid-swing or action pose; character stands calmly upright since the build system can't do dynamic poses",
+  "Replaced a hand gripping the bat with the bat merged directly into the body as a fixed side attachment, since gripping hands aren't buildable",
+  "Simplified the wooden log texture into clean stacked bricks with subtle color blocking instead of realistic wood grain",
+  "Kept the face simple with round tile eyes and a flat mouth instead of a detailed carved expression",
+  "Used a wedge or short bar for the club instead of a long thin bat to keep it chunky and freestanding"
+ ],
+ "image_prompt": "A studio product photo of an official LEGO set of TUNG TUNG TUNG SAHUR, a tall chunky wooden log-shaped character with a simple carved face and a short club merged into its side, built only from real LEGO bricks and plates, chunky stylised proportions, clean colour blocking, calm static standing pose, whole model in frame, 3/4 view, plain light background"
+}

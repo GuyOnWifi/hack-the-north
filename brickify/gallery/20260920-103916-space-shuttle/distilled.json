@@ -1,0 +1,19 @@
+{
+ "subject": "space shuttle",
+ "concept": "A LEGO model of a chunky space shuttle orbiter perched on a display stand, with stubby delta wings, a rounded nose, and twin rear engines, evoking launch-ready poise without any real flight mechanics.",
+ "features": [
+  "Rounded white nose cone with black tile detailing",
+  "Chunky delta wedge-plate wings on each side",
+  "Black-and-white heat-shield colour blocking on the belly",
+  "Three round engine nozzles stacked at the rear",
+  "Small side-stud cockpit windows"
+ ],
+ "simplifications": [
+  "Removed external fuel tank and booster rockets to keep it a single self-contained model",
+  "Mounted the shuttle on a clear tilted display stand instead of showing it mid-launch or mid-flight",
+  "Simplified the wing shape to flat wedge plates instead of a curved aerodynamic silhouette",
+  "Used tiles and printed-free colour blocking (white/black/grey) instead of decal-based surface detail",
+  "Made the cargo bay a smooth tile-covered top instead of an opening bay with hinges"
+ ],
+ "image_prompt": "a studio product photo of an official LEGO set of a chunky stylised space shuttle orbiter with rounded nose, delta wedge wings, black-and-white colour blocking, and triple rear engine nozzles, mounted on a clear tilted display stand, built only from real LEGO bricks and plates, chunky stylised proportions, clean colour blocking, calm static pose, whole model in frame, 3/4 view, plain light background"
+}

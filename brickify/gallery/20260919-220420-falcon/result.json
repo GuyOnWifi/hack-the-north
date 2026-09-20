@@ -1,0 +1,25 @@
+{
+ "score": 2.0,
+ "round": 0,
+ "label": "r0",
+ "parts": 107,
+ "stands": true,
+ "collisions": 0,
+ "clean": true,
+ "issues": [
+  "Does not read as a falcon/eagle at a glance; looks like an abstract robot/lamp",
+  "Beak is a long thin yellow bar/antenna sticking straight out instead of a short hooked yellow beak",
+  "Wings are small grey/brown plates jutting sideways rather than large brown folded wings with dark grey tips",
+  "No tail; the concept's long brown/grey tail is entirely missing",
+  "Body is a loose stack of exposed studs and gaps, not a smooth sculpted chest",
+  "White/brown colour blocking inverted and patchy; brown appears on the chest and white on the body sides",
+  "Talons/yellow feet barely visible, no gripping claws on the perch",
+  "Perch branch missing; only a short brown stub above the tan base",
+  "Head lacks the white crown and dark grey eye-stripe shaping",
+  "Exposed studs and messy geometry read as unfinished, not an official set"
+ ],
+ "issues_kernel": [],
+ "idea": "falcon",
+ "distilled": "A LEGO model of a chunky stylised falcon perched on a short branch base, built from stacked bricks and plates with wedge-plate wings folded at its sides and a curved slope head.",
+ "seconds": 455
+}

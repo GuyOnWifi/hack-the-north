@@ -1,0 +1,25 @@
+{
+ "score": 2.0,
+ "round": 0,
+ "label": "r0",
+ "parts": 134,
+ "stands": true,
+ "collisions": 0,
+ "clean": true,
+ "issues": [
+  "Does not read as a fox at a glance; looks like an abstract red blob",
+  "Floating/disconnected ear piece hovering off the model in front and right views",
+  "Sitting pose missing - build stands upright on two thick legs, no seated haunch or front legs",
+  "Tail is a small white/red wedge stuck to the side instead of a large curved bushy tail with white tip",
+  "Head not distinguishable from body; no muzzle, snout, or eye placement matching concept",
+  "Ears are grey/orange slabs pointing outward rather than upright black-tipped triangles",
+  "Dark red colour is too deep vs the bright orange-red of the concept",
+  "White chest/bib is fragmented and hidden rather than a large smooth front panel",
+  "Black paws only vaguely present as dark ankle blocks",
+  "Messy stud exposure and gaps; not official-set quality"
+ ],
+ "issues_kernel": [],
+ "idea": "a red fox",
+ "distilled": "A LEGO model of a chunky sitting fox with a bushy stacked tail curled at its side, built from stacked bricks and plates with a curved slope back and pointed ear details.",
+ "seconds": 160
+}

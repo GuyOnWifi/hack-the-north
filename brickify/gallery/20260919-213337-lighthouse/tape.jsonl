@@ -1,0 +1,12 @@
+{"t": 0, "actor": "router", "kind": "route", "text": "'lighthouse': concept art, 3 designs to choose from, then up to 0 rounds of notes", "status": "ok"}
+{"t": 0, "actor": "planner", "kind": "distill", "text": "making 'lighthouse' buildable", "status": "running"}
+{"t": 7136, "actor": "planner", "kind": "distill", "text": "concept: A LEGO model of a chunky cylindrical lighthouse tower with a red-and-white striped body, a lantern room on top, and a small rocky base plate. (changed: Made the tower a straight stacked-brick cylinder instead of a tapering realistic shape, since tapering needs many angled parts; Replaced a rotating light beam with a single bright round tile/dome, since light beams can't be physically built)", "status": "ok"}
+{"t": 7137, "actor": "designer", "kind": "concept", "text": "drawing the concept as an official LEGO set", "status": "running"}
+{"t": 34741, "actor": "designer", "kind": "concept", "text": "concept ready", "status": "ok"}
+{"t": 34810, "actor": "designer", "kind": "views", "text": "turning the concept to see its side and back", "status": "running"}
+{"t": 34810, "actor": "designer", "kind": "brief", "text": "working up 3 designs from the concept", "status": "running"}
+{"t": 61753, "actor": "designer", "kind": "views", "text": "got 2 extra view(s): side, back", "status": "ok"}
+{"t": 91473, "actor": "designer", "kind": "brief", "text": "3 designs to choose from", "status": "ok"}
+{"t": 91685, "actor": "builder", "kind": "build", "text": "round r0a: 105 parts, 0 collisions, stands", "status": "ok"}
+{"t": 91724, "actor": "builder", "kind": "build", "text": "round r0b: 116 parts, 0 collisions, stands", "status": "ok"}
+{"t": 91757, "actor": "builder", "kind": "build", "text": "round r0c: 120 parts, 0 collisions, stands", "status": "ok"}

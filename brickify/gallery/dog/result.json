@@ -1,0 +1,20 @@
+{
+ "score": 5.0,
+ "round": 2,
+ "lab": "dog-r2",
+ "parts": 142,
+ "issues": [
+  "The ears are the dog's signature feature, and they are too small. They are 3x4 studs, sit high on the head and curl like shells from the curved slopes. In the concept they are large flat brown flaps that hang from the top of the head down past the jaw to the shoulders.",
+  "The right ear's rows run downward, so its attach cell has to mirror the left ear's to make both ears hang down.",
+  "The tail is a short stub lying back along the body. The concept has a longer tail pointing up and back with a brown tip.",
+  "The ears have no visible studs. The concept shows the ear flaps studded outward, so the curved slopes should be turned off on the ears.",
+  "The head, muzzle, chest and legs read well: the white muzzle and chest blaze, black nose, eyes and sitting pose match. Keep them."
+ ],
+ "url": "http://localhost:3210/lab?m=dog",
+ "idea": "dog",
+ "distilled": null,
+ "seconds": 526,
+ "label": "dog-r2",
+ "stands": true,
+ "collisions": 0
+}

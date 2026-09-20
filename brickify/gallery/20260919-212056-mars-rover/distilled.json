@@ -1,0 +1,19 @@
+{
+ "subject": "chunky mars rover",
+ "concept": "A stout, boxy Mars rover built from stacked bricks and plates, with six chunky wheels, a raised camera mast, and a solar panel wing on each side, parked calmly on a small red-plate terrain base.",
+ "features": [
+  "six thick round wheels in a low symmetrical stance",
+  "boxy body with grey and silver colour blocking",
+  "raised mast with a round camera head",
+  "two flat solar panel wings jutting from the sides",
+  "short bar antenna and a robotic arm stub on the front"
+ ],
+ "simplifications": [
+  "Replaced posable suspension arms with fixed short bricks connecting wheels to body, since jointed mechanisms aren't buildable",
+  "Made the camera mast a short thick stack instead of a thin tall rod, for stability",
+  "Turned solar panels into flat tile wings mounted at a fixed angle instead of thin extended panels",
+  "Simplified the robotic arm into a short stub bar detail rather than a jointed multi-part arm",
+  "Added a small red-plate terrain stand so the rover reads as 'on Mars' without needing a full scene"
+ ],
+ "image_prompt": "A studio product photo of an official LEGO set of a chunky stylised Mars rover with six thick round wheels, a boxy grey and silver body, a short raised mast with a round camera head, two flat solar panel wings, and a short antenna bar, parked on a small red terrain base plate, built only from real LEGO bricks and plates, clean colour blocking, calm static pose, whole model in frame, 3/4 view, plain light background."
+}

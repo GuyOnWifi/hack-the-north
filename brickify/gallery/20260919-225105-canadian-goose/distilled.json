@@ -1,0 +1,19 @@
+{
+ "subject": "standing canada goose",
+ "concept": "A LEGO model of a standing Canada goose built from stacked bricks and plates, with a curved slope back, a black head and neck, a white chin patch, and a short orange bar beak.",
+ "features": [
+  "black head and neck with white chin strap",
+  "tan-brown chunky body with curved back",
+  "short orange bar beak",
+  "webbed-foot feet on a low base",
+  "small wedge-plate tail and folded wings"
+ ],
+ "simplifications": [
+  "Replaced any flying or honking pose with a calm standing pose, since dynamic action isn't buildable.",
+  "Simplified the long curved neck into a stacked-brick column with a slight forward tilt for recognizability without thin free-standing parts.",
+  "Turned the beak into a short chunky bar instead of a thin pointed shape.",
+  "Rounded webbed feet into simple flat plate shapes attached to a base plate for stability.",
+  "Reduced plumage detail to clean color blocking: black, white, tan/brown, and orange only."
+ ],
+ "image_prompt": "a studio product photo of an official LEGO set of a standing Canada goose with a black head and neck, white chin patch, tan-brown body, and short orange bar beak, built only from real LEGO bricks and plates, chunky stylised proportions, clean colour blocking, calm static pose, whole model in frame, 3/4 view, plain light background"
+}

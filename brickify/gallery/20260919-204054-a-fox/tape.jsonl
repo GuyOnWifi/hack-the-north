@@ -1,0 +1,22 @@
+{"t": 0, "actor": "router", "kind": "route", "text": "'a fox': concept art, 3 designs to choose from, then up to 1 rounds of notes", "status": "ok"}
+{"t": 0, "actor": "planner", "kind": "distill", "text": "making 'a fox' buildable", "status": "running"}
+{"t": 5619, "actor": "planner", "kind": "distill", "text": "concept: A chunky, sitting fox built from stacked bricks and curved slopes, with a bright orange body, white chest patch, triangular ears, and a short stubby tail. (changed: Changed any implied running or pouncing pose to a calm seated pose for stability.; Shortened the long bushy tail into a short 2-3 brick stub with a black tile tip to avoid thin free-standing parts.)", "status": "ok"}
+{"t": 5619, "actor": "designer", "kind": "concept", "text": "drawing the concept as an official LEGO set", "status": "running"}
+{"t": 14206, "actor": "designer", "kind": "concept", "text": "concept ready", "status": "ok"}
+{"t": 14206, "actor": "designer", "kind": "views", "text": "turning the concept to see its side and back", "status": "running"}
+{"t": 14206, "actor": "designer", "kind": "brief", "text": "working up 3 designs from the concept", "status": "running"}
+{"t": 23997, "actor": "designer", "kind": "views", "text": "got 1 extra view(s): side", "status": "ok"}
+{"t": 122890, "actor": "designer", "kind": "brief", "text": "3 designs to choose from", "status": "ok"}
+{"t": 123115, "actor": "builder", "kind": "build", "text": "round r0a: 106 parts, 0 collisions, stands", "status": "ok"}
+{"t": 123161, "actor": "builder", "kind": "build", "text": "round r0b: 96 parts, 0 collisions, stands (trimmed 4)", "status": "ok"}
+{"t": 123205, "actor": "inspector", "kind": "reject", "text": "The model would tip over: its centre of mass is 2.4 studs outside the base it stands on, toward +x. Widen or extend the base (or the stand) on that side, or move weight back over it.", "status": "fail"}
+{"t": 149974, "actor": "repair", "kind": "fix", "text": "reworked body, head to clear the kernel's objections", "status": "ok"}
+{"t": 150042, "actor": "builder", "kind": "build", "text": "round r0c: 111 parts, 0 collisions, tips +x (trimmed 4)", "status": "warn"}
+{"t": 167357, "actor": "critic", "kind": "pick", "text": "comparing 3 designs with the concept", "status": "running"}
+{"t": 174937, "actor": "critic", "kind": "pick", "text": "design 2 of 3 reads best: 5/10. Head reads too boxy and sits low/forward, losing the fox's tapered snout and pointed muzzle; Ears are flat black studded bricks lying nearly horizontal rather than upright triangular tips", "status": "ok"}
+{"t": 174938, "actor": "designer", "kind": "revise", "text": "reworking the design from the critic's notes", "status": "running"}
+{"t": 279237, "actor": "designer", "kind": "revise", "text": "reworked body, head, earL", "status": "ok"}
+{"t": 279287, "actor": "builder", "kind": "build", "text": "round r1: 98 parts, 0 collisions, stands (trimmed 3)", "status": "ok"}
+{"t": 285117, "actor": "critic", "kind": "critique", "text": "comparing the renders with the concept", "status": "running"}
+{"t": 292633, "actor": "critic", "kind": "critique", "text": "score 2/10: Does not read as a sitting fox; looks like an abstract blob with two raised ears; Head/muzzle absent - no snout, no white face mask, no eyes; Body orientation confused: white chest appears on lower rear/side instead of front chest", "status": "warn"}
+{"t": 292634, "actor": "scribe", "kind": "done", "text": "best: round 0 scored 5.0/10 (96 parts) in 293s", "status": "ok"}

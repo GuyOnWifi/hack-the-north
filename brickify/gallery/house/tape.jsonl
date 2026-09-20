@@ -1,0 +1,17 @@
+{"t": 0, "actor": "router", "kind": "route", "text": "'house': distill, concept, views, brief, then build/critique x3 max", "status": "ok"}
+{"t": 0, "actor": "router", "kind": "distill", "text": "making 'house' buildable", "status": "running"}
+{"t": 9767, "actor": "router", "kind": "distill", "text": "concept: A chunky little cottage with bright red walls, a tall steep dark-blue roof, a white door and two square windows, plus a short brick chimney, all sitting on a small green baseplate. (changed: No detailed interior: a solid, closed box of bricks keeps it sturdy and under the part budget; Garden, fence and paths left out: just a small green base with a couple of round plates as bushes)", "status": "ok"}
+{"t": 9767, "actor": "designer", "kind": "concept", "text": "drawing the concept as an official LEGO set", "status": "running"}
+{"t": 56804, "actor": "designer", "kind": "concept", "text": "concept ready (house.png)", "status": "ok"}
+{"t": 56806, "actor": "designer", "kind": "views", "text": "turning the concept to see its side and back", "status": "running"}
+{"t": 107301, "actor": "designer", "kind": "views", "text": "got 2 extra view(s): side, back", "status": "ok"}
+{"t": 107302, "actor": "designer", "kind": "brief", "text": "reading the concept and writing the build brief", "status": "running"}
+{"t": 208102, "actor": "designer", "kind": "brief", "text": "brief written: 2 sub-assemblies", "status": "ok"}
+{"t": 208285, "actor": "scribe", "kind": "build", "text": "round 0: 306 parts, 0 collisions", "status": "ok"}
+{"t": 231161, "actor": "inspector", "kind": "critique", "text": "comparing the renders with the concept", "status": "running"}
+{"t": 409745, "actor": "inspector", "kind": "critique", "text": "score 5/10: Roof looks like a lumpy stepped pyramid: studs show on every step and stray curved slopes arch at the gable ends. The concept has smooth rows of shingles, so the steps are now covered with tiles.; The roof doesn't overhang the gable ends. In the concept it sticks out past the front and back walls.; The door is off-centre at the gable's left edge and has no window. The concept door is centred, with panes at the top and a yellow knob.", "status": "warn"}
+{"t": 409900, "actor": "scribe", "kind": "build", "text": "round 1: 330 parts, 0 collisions", "status": "ok"}
+{"t": 439447, "actor": "inspector", "kind": "critique", "text": "comparing the renders with the concept", "status": "running"}
+{"t": 539952, "actor": "inspector", "kind": "critique", "text": "score 5/10: The roof reads as a lumpy staircase: surface rounding puts curved-slope humps on the gable end of every roof step, so it looks like rolled cloth, not a clean pitched roof; The walls are too short compared with the roof. In the concept the walls are about as tall as the roof, but here the thick stepped eaves take over the model; The bushes are square dark-green 2x2 boxes. The concept has round stacked bushes", "status": "warn"}
+{"t": 540128, "actor": "scribe", "kind": "build", "text": "round 2: 352 parts, 0 collisions", "status": "ok"}
+{"t": 563443, "actor": "inspector", "kind": "critique", "text": "comparing the renders with the concept", "status": "running"}

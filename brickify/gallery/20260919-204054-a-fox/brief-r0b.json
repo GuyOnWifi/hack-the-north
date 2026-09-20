@@ -1,0 +1,342 @@
+{
+ "name": "sitting fox",
+ "palette": {
+  "o": 25,
+  "w": 15,
+  "k": 0,
+  "d": 70
+ },
+ "root": "body",
+ "bodies": [
+  {
+   "name": "body",
+   "layers": [
+    [
+     "kkook",
+     "kkook",
+     "kkook",
+     "kkook",
+     "kkook"
+    ],
+    [
+     "kkook",
+     "kkook",
+     "kkook",
+     "kkook",
+     "kkook"
+    ],
+    [
+     "ooooo",
+     "woooo",
+     "woooo",
+     "woooo",
+     "ooooo"
+    ],
+    [
+     "ooooo",
+     "woooo",
+     "woooo",
+     "woooo",
+     "ooooo"
+    ],
+    [
+     "ooooo",
+     "woooo",
+     "woooo",
+     "woooo",
+     "ooooo"
+    ],
+    [
+     "ooooo",
+     "woooo",
+     "woooo",
+     "woooo",
+     "ooooo"
+    ],
+    [
+     ".....",
+     "wwo..",
+     "wwo..",
+     "wwo..",
+     "....."
+    ],
+    [
+     ".....",
+     "wwo..",
+     "wwo..",
+     "wwo..",
+     "....."
+    ],
+    [
+     ".....",
+     "wwo..",
+     "wwo..",
+     "wwo..",
+     "....."
+    ],
+    [
+     ".....",
+     "wwo..",
+     "wwo..",
+     "wwo..",
+     "....."
+    ],
+    [
+     ".....",
+     "wwo..",
+     "wwo..",
+     "wwo..",
+     "....."
+    ],
+    [
+     ".....",
+     "wwo..",
+     "wwo..",
+     "wwo..",
+     "....."
+    ]
+   ],
+   "connectors": [
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      0,
+      9,
+      2
+     ],
+     "colour": "w",
+     "attach": [
+      {
+       "body": "head",
+       "angle": 0
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      4,
+      2,
+      2
+     ],
+     "quarters": 3,
+     "colour": "o",
+     "attach": [
+      {
+       "body": "tail"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "head",
+   "origin": [
+    -1,
+    12,
+    0
+   ],
+   "layers": [
+    [
+     "..oo",
+     "wwoo",
+     "wwoo",
+     "wwoo",
+     "..oo"
+    ],
+    [
+     "..oo",
+     "wwoo",
+     "wwoo",
+     "wwoo",
+     "..oo"
+    ],
+    [
+     ".ooo",
+     "wooo",
+     "wooo",
+     "wooo",
+     ".ooo"
+    ],
+    [
+     "oooo",
+     "oooo",
+     "oooo",
+     "oooo",
+     "oooo"
+    ],
+    [
+     "oooo",
+     "oooo",
+     "oooo",
+     "oooo",
+     "oooo"
+    ],
+    [
+     "oooo",
+     "oooo",
+     "oooo",
+     "oooo",
+     "oooo"
+    ],
+    [
+     ".o..",
+     ".o..",
+     "....",
+     ".o..",
+     ".o.."
+    ],
+    [
+     ".o..",
+     ".o..",
+     "....",
+     ".o..",
+     ".o.."
+    ],
+    [
+     ".k..",
+     ".k..",
+     "....",
+     ".k..",
+     ".k.."
+    ]
+   ],
+   "connectors": [
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      0,
+      3,
+      1
+     ],
+     "quarters": 1,
+     "colour": "o",
+     "attach": [
+      {
+       "body": "eyeL"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      0,
+      3,
+      3
+     ],
+     "quarters": 1,
+     "colour": "o",
+     "attach": [
+      {
+       "body": "eyeR"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      0,
+      1,
+      2
+     ],
+     "quarters": 1,
+     "colour": "w",
+     "attach": [
+      {
+       "body": "nose"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "tail",
+   "layers": [
+    [
+     "oo",
+     "oo"
+    ],
+    [
+     "oo",
+     "oo"
+    ],
+    [
+     "oo",
+     "oo"
+    ],
+    [
+     "oo",
+     "oo"
+    ],
+    [
+     "oo",
+     "oo"
+    ],
+    [
+     "oo",
+     "oo"
+    ],
+    [
+     "kk",
+     "kk"
+    ],
+    [
+     "kk",
+     "kk"
+    ],
+    [
+     "kk",
+     "kk"
+    ]
+   ]
+  },
+  {
+   "name": "eyeL",
+   "parts": [
+    [
+     "98138",
+     "d",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "eyeR",
+   "parts": [
+    [
+     "98138",
+     "d",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "nose",
+   "parts": [
+    [
+     "98138",
+     "k",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  }
+ ],
+ "details": []
+}

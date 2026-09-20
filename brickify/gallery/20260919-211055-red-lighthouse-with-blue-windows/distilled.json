@@ -1,0 +1,19 @@
+{
+ "subject": "red and white lighthouse with blue windows",
+ "concept": "A chunky, stout LEGO lighthouse tower built from stacked bricks in alternating red and white bands, with small blue round tiles as windows and a rounded top cap holding a lantern room, mounted on a small rocky plate base.",
+ "features": [
+  "Round tapered tower shape built from stacked circular bricks",
+  "Alternating red and white horizontal stripe colour blocking",
+  "Small blue round tiles/plates as evenly spaced windows",
+  "Domed or sloped lantern room top with a light-colored round tile as the lamp",
+  "Small rocky/grassy plate base for grounding the model"
+ ],
+ "simplifications": [
+  "Removed any thin rotating light beam or shining effect since light rays can't be physically built",
+  "Made the tower a simple stacked cylinder shape instead of a tapering curved silhouette, which is easier to brick-build",
+  "Used flat round tiles for windows instead of recessed or printed glass panes",
+  "Kept the color palette to red, white, and blue for clean blocking",
+  "Added a stable flat base instead of implying it sits on a cliff edge over water"
+ ],
+ "image_prompt": "a studio product photo of an official LEGO set of a chunky red and white striped lighthouse tower with small blue round window tiles, a domed lantern room on top with a light-colored lamp tile, built only from real LEGO bricks and plates, chunky stylised proportions, clean colour blocking, calm static pose, mounted on a small rocky plate base, whole model in frame, 3/4 view, plain light background"
+}

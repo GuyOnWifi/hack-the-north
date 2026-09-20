@@ -1,0 +1,19 @@
+{
+ "subject": "chunky red tractor",
+ "concept": "A small stocky LEGO tractor with big rounded rear wheels, smaller front wheels, a boxy engine hood, and a simple cab with a curved-slope roof, standing still on a flat base.",
+ "features": [
+  "oversized rear wheels with smaller front wheels",
+  "boxy red hood with a black grille panel",
+  "simple open cab with curved slope roof",
+  "round headlight tiles on the front",
+  "short exhaust pipe bar behind the cab"
+ ],
+ "simplifications": [
+  "Removed any raised plow/loader attachment to keep silhouette compact and self-supporting",
+  "Made exhaust pipe a short fixed bar instead of a thin tall tube to keep it sturdy",
+  "Kept cab open and boxy instead of curved glass shapes, since the system can't build curved organic panels",
+  "Fixed wheels in a static rolling pose rather than any dynamic tilt or motion",
+  "Simplified grille and lights to flat tiles/plates instead of printed or stickered details"
+ ],
+ "image_prompt": "A studio product photo of an official LEGO set of a chunky stylised red tractor with big rounded rear wheels, smaller front wheels, a boxy red hood with black grille panel, a simple open cab with curved-slope roof, round headlight tiles, and a short exhaust pipe bar, built only from real LEGO bricks and plates, clean colour blocking in red, black, and yellow, calm static pose, whole model in frame, 3/4 view, plain light background"
+}

@@ -1,0 +1,533 @@
+{
+ "name": "flying-pig",
+ "palette": {
+  "p": 29,
+  "d": 5,
+  "w": 15,
+  "k": 0,
+  "c": 47
+ },
+ "root": "stand",
+ "bodies": [
+  {
+   "name": "stand",
+   "surface": false,
+   "layers": [
+    [
+     "cccc",
+     "cccc",
+     "cccc",
+     "cccc"
+    ],
+    [
+     "....",
+     ".cc.",
+     ".cc.",
+     "...."
+    ],
+    [
+     "....",
+     ".cc.",
+     ".cc.",
+     "...."
+    ],
+    [
+     "....",
+     ".cc.",
+     ".cc.",
+     "...."
+    ],
+    [
+     "....",
+     ".cc.",
+     ".cc.",
+     "...."
+    ],
+    [
+     "....",
+     ".cc.",
+     ".cc.",
+     "...."
+    ],
+    [
+     "....",
+     ".cc.",
+     ".cc.",
+     "...."
+    ]
+   ],
+   "connectors": [
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      1,
+      7,
+      1
+     ],
+     "quarters": 1,
+     "colour": "c",
+     "attach": [
+      {
+       "body": "body",
+       "angle": -22
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "body",
+   "origin": [
+    -4,
+    10,
+    -1
+   ],
+   "layers": [
+    [
+     ".........",
+     "..d...d..",
+     ".....p...",
+     ".....p...",
+     ".........",
+     "..d...d..",
+     "........."
+    ],
+    [
+     ".........",
+     "..p...p..",
+     ".....p...",
+     ".....p...",
+     ".........",
+     "..p...p..",
+     "........."
+    ],
+    [
+     ".........",
+     "..p...p..",
+     ".....p...",
+     ".....p...",
+     ".........",
+     "..p...p..",
+     "........."
+    ],
+    [
+     ".........",
+     "..p...p..",
+     "...ppp...",
+     "..ppppp..",
+     "...ppp...",
+     "..p...p..",
+     "........."
+    ],
+    [
+     ".........",
+     "..ppppp..",
+     ".ppppppp.",
+     ".ppppppp.",
+     ".ppppppp.",
+     "..ppppp..",
+     "........."
+    ],
+    [
+     "...ppp...",
+     ".ppppppp.",
+     "ppppppppp",
+     "ppppppppp",
+     "ppppppppp",
+     ".ppppppp.",
+     "...ppp..."
+    ],
+    [
+     "..ppppp..",
+     ".ppppppp.",
+     "ppppppppp",
+     "ppppppppp",
+     "ppppppppp",
+     ".ppppppp.",
+     "..ppppp.."
+    ],
+    [
+     "..ppppp..",
+     ".ppppppp.",
+     "ppppppppp",
+     "ppppppppp",
+     "ppppppppp",
+     ".ppppppp.",
+     "..ppppp.."
+    ],
+    [
+     "..ppppp..",
+     ".ppppppp.",
+     "ppppppppp",
+     "ppppppppp",
+     "ppppppppp",
+     ".ppppppp.",
+     "..ppppp.."
+    ],
+    [
+     "..ppppp..",
+     ".ppppppp.",
+     "ppppppppp",
+     "ppppppppp",
+     "ppppppppp",
+     ".ppppppp.",
+     "..ppppp.."
+    ],
+    [
+     "...ppp...",
+     ".ppppppp.",
+     "ppppppppp",
+     "ppppppppp",
+     "ppppppppp",
+     ".ppppppp.",
+     "...ppp..."
+    ],
+    [
+     ".........",
+     ".........",
+     "..ppppp..",
+     "..ppppp..",
+     "..ppppp..",
+     ".........",
+     "........."
+    ],
+    [
+     ".........",
+     ".........",
+     "..ppppp..",
+     "..ppppp..",
+     "..ppppp..",
+     ".........",
+     "........."
+    ],
+    [
+     ".........",
+     ".........",
+     "...ppp...",
+     "..ppppp..",
+     "...ppp...",
+     ".........",
+     "........."
+    ]
+   ],
+   "connectors": [
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      0,
+      8,
+      3
+     ],
+     "quarters": 1,
+     "colour": "p",
+     "attach": [
+      {
+       "body": "snout"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      1,
+      10,
+      1
+     ],
+     "quarters": 1,
+     "colour": "p",
+     "attach": [
+      {
+       "body": "eyeL"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      1,
+      10,
+      5
+     ],
+     "quarters": 1,
+     "colour": "p",
+     "attach": [
+      {
+       "body": "eyeR"
+      }
+     ]
+    },
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      2,
+      12,
+      2
+     ],
+     "quarters": 0,
+     "colour": "p",
+     "attach": [
+      {
+       "body": "earL",
+       "angle": 32
+      }
+     ]
+    },
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      2,
+      12,
+      4
+     ],
+     "quarters": 0,
+     "colour": "p",
+     "attach": [
+      {
+       "body": "earR",
+       "angle": -32
+      }
+     ]
+    },
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      4,
+      11,
+      0
+     ],
+     "quarters": 0,
+     "colour": "p",
+     "attach": [
+      {
+       "body": "wingL",
+       "angle": -28
+      }
+     ]
+    },
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      4,
+      11,
+      6
+     ],
+     "quarters": 0,
+     "colour": "p",
+     "attach": [
+      {
+       "body": "wingR",
+       "angle": 28
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      8,
+      10,
+      3
+     ],
+     "quarters": 3,
+     "colour": "p",
+     "attach": [
+      {
+       "body": "tail"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "snout",
+   "surface": false,
+   "layers": [
+    [
+     "pp",
+     "pp"
+    ],
+    [
+     "pp",
+     "pp"
+    ]
+   ],
+   "parts": [
+    [
+     "98138",
+     "d",
+     [
+      0,
+      2,
+      0
+     ]
+    ],
+    [
+     "98138",
+     "d",
+     [
+      1,
+      2,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "eyeL",
+   "parts": [
+    [
+     "98138",
+     "k",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "eyeR",
+   "parts": [
+    [
+     "98138",
+     "k",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "earL",
+   "origin": [
+    2,
+    15,
+    2
+   ],
+   "layers": [
+    [
+     "pp"
+    ],
+    [
+     "pp"
+    ],
+    [
+     "pp"
+    ],
+    [
+     "p."
+    ]
+   ]
+  },
+  {
+   "name": "earR",
+   "origin": [
+    2,
+    15,
+    4
+   ],
+   "layers": [
+    [
+     "pp"
+    ],
+    [
+     "pp"
+    ],
+    [
+     "pp"
+    ],
+    [
+     "p."
+    ]
+   ]
+  },
+  {
+   "name": "wingL",
+   "origin": [
+    4,
+    14,
+    -3
+   ],
+   "layers": [
+    [
+     "..w",
+     ".ww",
+     "www",
+     "www"
+    ],
+    [
+     "...",
+     "..w",
+     ".ww",
+     "www"
+    ]
+   ]
+  },
+  {
+   "name": "wingR",
+   "origin": [
+    4,
+    14,
+    6
+   ],
+   "layers": [
+    [
+     "www",
+     "www",
+     ".ww",
+     "..w"
+    ],
+    [
+     "www",
+     ".ww",
+     "..w",
+     "..."
+    ]
+   ]
+  },
+  {
+   "name": "tail",
+   "parts": [
+    [
+     "3062b",
+     "p",
+     [
+      0,
+      0,
+      0
+     ]
+    ],
+    [
+     "3062b",
+     "p",
+     [
+      0,
+      3,
+      0
+     ]
+    ],
+    [
+     "6141",
+     "d",
+     [
+      0,
+      6,
+      0
+     ]
+    ]
+   ]
+  }
+ ],
+ "details": []
+}

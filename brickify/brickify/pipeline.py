@@ -933,21 +933,76 @@ REPLAY_SECONDS = float(os.environ.get("BRICKIFY_REPLAY_SECONDS", 20))
 REPLAY_GAP = 2.2  # no single step of a replay drags longer than this
 
 
+# Words that carry no meaning when matching one idea against another.
+FILLER = {"a", "an", "the", "some", "my", "our", "of", "with", "and", "in", "on", "for", "please", "build", "me", "make"}
+
+
+def _words(idea: str) -> list[str]:
+    return [w for w in re.findall(r"[a-z0-9]+", (idea or "").lower()) if w not in FILLER]
+
+
+def record(run_dir: Path) -> dict | None:
+    """A run's record, with anything stale in it repaired from what is on disk.
+
+    Runs outlive the code that wrote them: rounds used to be numbered and are
+    now labelled, records used to be written only at the end. The model is
+    always there, so the paths are rebuilt rather than trusted."""
+    f = run_dir / "result.json"
+    if not f.exists():
+        return None
+    try:
+        r = json.loads(f.read_text())
+    except ValueError:
+        return None
+    label = r.get("label") or r.get("lab")
+    ldr = Path(r["ldr"]) if r.get("ldr") else None
+    if not (ldr and ldr.exists()):
+        ldr = run_dir / f"{label}.ldr" if label else None
+    if not (ldr and ldr.exists()):
+        made = sorted(run_dir.glob("*.ldr"))
+        if not made:
+            return None
+        ldr = made[-1]
+    label = ldr.stem
+    rnd = r.get("round", int(label[-1]) if label[-1:].isdigit() else 0)
+    brief = Path(r["brief"]) if r.get("brief") else None
+    if not (brief and brief.exists()):  # brief-r2.json vs the older brief-2.json
+        brief = next((b for b in (run_dir / f"brief-{label}.json", run_dir / f"brief-{rnd}.json") if b.exists()), None)
+    if not brief:
+        written = sorted(run_dir.glob("brief-*.json"))
+        if not written:
+            return None
+        brief = written[-1]
+    return {**r, "label": label, "round": rnd, "ldr": str(ldr), "brief": str(brief),
+            "run": str(run_dir), "idea": r.get("idea") or run_dir.name.replace("-", " "),
+            "parts": r.get("parts") or sum(1 for line in ldr.read_text().splitlines() if line.startswith("1 "))}
+
+
 def cached(idea: str) -> tuple[Path, dict] | None:
-    """The newest finished run of the same idea, if there is one."""
-    want = slugify(idea)
-    found = None
+    """The model you already made that answers this, if there is one.
+
+    "bus" finds the yellow school bus, and case and articles never matter. The
+    rule: every word you typed must appear in the saved idea, and the thing
+    itself (the last word) must be the same - so "bus" finds a school bus, but
+    "dog" doesn't hand you the dog holding an umbrella. The closest match wins,
+    then the newest."""
+    want = _words(idea)
+    if not want:
+        return None
+    best = None
     for d in sorted(RUNS.glob("*")):
-        f = d / "result.json"
-        if not f.exists():
+        if d.name.startswith(".") or d.name == "removed":
             continue
-        try:
-            r = json.loads(f.read_text())
-        except ValueError:
+        r = record(d)
+        if not r:
             continue
-        if slugify(r.get("idea") or "") == want and r.get("ldr") and Path(r["ldr"]).exists():
-            found = (d, r)
-    return found
+        have = _words(r.get("idea") or d.name.replace("-", " "))
+        if not have or have[-1] != want[-1] or not set(want) <= set(have):
+            continue
+        rank = (0 if have == want else 1, len(have) - len(want), d.name)
+        if best is None or rank[:2] < best[0][:2] or (rank[:2] == best[0][:2] and rank[2] > best[0][2]):
+            best = (rank, d, r)
+    return (best[1], best[2]) if best else None
 
 
 def _chunks(ldr: str, n: int = 5) -> list[str]:
@@ -986,9 +1041,15 @@ def replay(idea: str, run_dir: Path, result: dict, on_event: Listener | None, on
 
     ldr = Path(result["ldr"]).read_text()
     pieces = _chunks(ldr)
-    art = {"concept": run_dir / "concept.png", **{k: run_dir / f"concept-{k}.png" for k in VIEW_ANGLES}}
+    def picture(stem: str) -> Path | None:
+        return next((p for p in (run_dir / f"{stem}.png", run_dir / f"{stem}.jpg") if p.exists()), None)
 
-    tape.emit("router", "route", f"'{idea}': you have built this before, so here it is again")
+    art = {k: v for k, v in {"concept": picture("concept"), **{k: picture(f"concept-{k}") for k in VIEW_ANGLES}}.items() if v}
+
+    same = slugify(result.get("idea") or "") == slugify(idea)
+    tape.emit("router", "route",
+              f"'{idea}': you have built this before, so here it is again" if same
+              else f"'{idea}': that is the {result.get('idea')} you made earlier")
     last = 0
     for e in events:
         time.sleep(min((e["t"] - last) * rate / 1000, REPLAY_GAP))
@@ -996,7 +1057,7 @@ def replay(idea: str, run_dir: Path, result: dict, on_event: Listener | None, on
         if e["kind"] in ("route", "choices", "pick", "done", "steer", "error"):
             continue
         tape.emit(e["actor"], e["kind"], e["text"], e.get("status", "ok"))
-        if e["kind"] == "concept" and "ready" in e["text"] and on_image and art["concept"].exists():
+        if e["kind"] == "concept" and "ready" in e["text"] and on_image and art.get("concept"):
             on_image({"role": "concept", "path": str(art["concept"])})
         if e["kind"] == "views" and on_image:
             for role, f in art.items():
@@ -1013,7 +1074,7 @@ def replay(idea: str, run_dir: Path, result: dict, on_event: Listener | None, on
     best = dict(result)
     if on_choice:
         run = Run(idea, slugify(idea), run_dir, tape)
-        run.concept = art["concept"] if art["concept"].exists() else None
+        run.concept = art.get("concept")
         run.views = {k: v for k, v in art.items() if k != "concept" and v.exists()}
         run.on_choice = on_choice
         rounds_built = _rounds_on_disk(run_dir, best)
@@ -1028,13 +1089,14 @@ def _rounds_on_disk(run_dir: Path, best: dict) -> list[dict]:
     out = []
     for ldr in sorted(run_dir.glob("r*.ldr")):
         label = ldr.stem
-        brief = run_dir / f"brief-{label}.json"
-        shots = run_dir / f"views-{label}"
-        if not brief.exists() or not (shots / "front.png").exists():
+        rnd = int(label[1]) if label[1:2].isdigit() else 0
+        brief = next((b for b in (run_dir / f"brief-{label}.json", run_dir / f"brief-{rnd}.json") if b.exists()), None)
+        shots = next((v for v in (run_dir / f"views-{label}", run_dir / f"views-r{rnd}") if (v / "front.png").exists()), None)
+        if not brief or not shots:
             continue
         parts = sum(1 for line in ldr.read_text().splitlines() if line.startswith("1 "))
         out.append({"label": label, "style": "First build" if label.endswith("0") else "After the critic's notes",
-                    "brief": json.loads(brief.read_text()), "shots": shots, "round": int(label[1]) if label[1:2].isdigit() else 0,
+                    "brief": json.loads(brief.read_text()), "shots": shots, "round": rnd,
                     "report": {"parts": parts, "collisions": 0, "stands": {"stable": best.get("stands", True)}},
                     "score": best.get("score") if label == best.get("label") else None,
                     "issues": [], "problems": []})

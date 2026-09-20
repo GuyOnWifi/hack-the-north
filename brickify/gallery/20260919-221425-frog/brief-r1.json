@@ -1,0 +1,321 @@
+{
+ "name": "chunky frog",
+ "palette": {
+  "g": 2,
+  "l": 27,
+  "w": 15,
+  "k": 0
+ },
+ "root": "body",
+ "bodies": [
+  {
+   "name": "body",
+   "layers": [
+    [
+     "......gg.",
+     "gg....gg.",
+     "gg.......",
+     "gg.......",
+     "gg....gg.",
+     "......gg."
+    ],
+    [
+     "......gg.",
+     "gg....gg.",
+     "gg.......",
+     "gg.......",
+     "gg....gg.",
+     "......gg."
+    ],
+    [
+     "......gg.",
+     ".llllggg.",
+     ".llllggg.",
+     ".llllggg.",
+     ".llllggg.",
+     "......gg."
+    ],
+    [
+     "......gg.",
+     ".llllggg.",
+     ".llllggg.",
+     ".llllggg.",
+     ".llllggg.",
+     "......gg."
+    ],
+    [
+     ".lllgggg.",
+     "lllllgggg",
+     "lllllgggg",
+     "lllllgggg",
+     "lllllgggg",
+     ".lllgggg."
+    ],
+    [
+     ".lllgggg.",
+     "lllllgggg",
+     "lllllgggg",
+     "lllllgggg",
+     "lllllgggg",
+     ".lllgggg."
+    ],
+    [
+     ".lllgggg.",
+     "lllllgggg",
+     "lllllgggg",
+     "lllllgggg",
+     "lllllgggg",
+     ".lllgggg."
+    ],
+    [
+     ".ggggggg.",
+     "ggggggggg",
+     "ggggggggg",
+     "ggggggggg",
+     "ggggggggg",
+     ".ggggggg."
+    ],
+    [
+     "..gggggg.",
+     ".gggggggg",
+     ".gggggggg",
+     ".gggggggg",
+     ".gggggggg",
+     "..gggggg."
+    ],
+    [
+     "..gggggg.",
+     ".gggggggg",
+     ".gggggggg",
+     ".gggggggg",
+     ".gggggggg",
+     "..gggggg."
+    ],
+    [
+     "..gggggg.",
+     ".ggggggg.",
+     ".ggggggg.",
+     ".ggggggg.",
+     ".ggggggg.",
+     "..gggggg."
+    ],
+    [
+     ".........",
+     "...ggggg.",
+     "...gggggg",
+     "...gggggg",
+     "...ggggg.",
+     "........."
+    ],
+    [
+     ".........",
+     "....gggg.",
+     "....gggg.",
+     "....gggg.",
+     "....gggg.",
+     "........."
+    ],
+    [
+     ".........",
+     ".........",
+     ".....ggg.",
+     ".....ggg.",
+     ".........",
+     "........."
+    ]
+   ],
+   "surface": true,
+   "parts": [
+    [
+     "6141",
+     "g",
+     [
+      1,
+      11,
+      2
+     ]
+    ],
+    [
+     "6141",
+     "g",
+     [
+      1,
+      11,
+      3
+     ]
+    ]
+   ],
+   "connectors": [
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      1,
+      8,
+      1
+     ],
+     "quarters": 1,
+     "colour": "g",
+     "attach": [
+      {
+       "body": "eyeL"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      1,
+      8,
+      4
+     ],
+     "quarters": 1,
+     "colour": "g",
+     "attach": [
+      {
+       "body": "eyeR"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "eyeL",
+   "parts": [
+    [
+     "3062b",
+     "w",
+     [
+      0,
+      0,
+      0
+     ]
+    ],
+    [
+     "3062b",
+     "w",
+     [
+      0,
+      3,
+      0
+     ]
+    ],
+    [
+     "98138",
+     "k",
+     [
+      0,
+      6,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "eyeR",
+   "parts": [
+    [
+     "3062b",
+     "w",
+     [
+      0,
+      0,
+      0
+     ]
+    ],
+    [
+     "3062b",
+     "w",
+     [
+      0,
+      3,
+      0
+     ]
+    ],
+    [
+     "98138",
+     "k",
+     [
+      0,
+      6,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "hindL",
+   "layers": [
+    [
+     ".gg.",
+     "gggg",
+     "gggg",
+     ".gg."
+    ],
+    [
+     ".gg.",
+     "gggg",
+     "gggg",
+     ".gg."
+    ]
+   ],
+   "surface": true
+  },
+  {
+   "name": "hindR",
+   "layers": [
+    [
+     ".gg.",
+     "gggg",
+     "gggg",
+     ".gg."
+    ],
+    [
+     ".gg.",
+     "gggg",
+     "gggg",
+     ".gg."
+    ]
+   ],
+   "surface": true
+  },
+  {
+   "name": "stand",
+   "layers": [
+    [
+     "ggggggggggggg",
+     "ggggggggggggg",
+     "ggggggggggggg",
+     "ggggggggggggg",
+     "ggggggggggggg",
+     "ggggggggggggg",
+     "ggggggggggggg",
+     "ggggggggggggg",
+     "ggggggggggggg"
+    ]
+   ],
+   "surface": false,
+   "connectors": [
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      0,
+      1,
+      6
+     ],
+     "quarters": 1,
+     "colour": "g",
+     "attach": [
+      {
+       "body": "body",
+       "angle": 0
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "details": []
+}

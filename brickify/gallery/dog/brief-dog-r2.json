@@ -1,0 +1,493 @@
+{
+ "name": "dog",
+ "palette": {
+  "t": 19,
+  "w": 15,
+  "r": 70,
+  "k": 0
+ },
+ "root": "dog",
+ "bodies": [
+  {
+   "name": "dog",
+   "surface": true,
+   "layers": [
+    [
+     "........",
+     "tt..tttt",
+     "tt..tttt",
+     "..wwttt.",
+     "..wwttt.",
+     "tt..tttt",
+     "tt..tttt",
+     "........"
+    ],
+    [
+     "........",
+     "tt..tttt",
+     "tt..tttt",
+     "..wwttt.",
+     "..wwttt.",
+     "tt..tttt",
+     "tt..tttt",
+     "........"
+    ],
+    [
+     "........",
+     "tt..tttt",
+     "tt..tttt",
+     "..wwttt.",
+     "..wwttt.",
+     "tt..tttt",
+     "tt..tttt",
+     "........"
+    ],
+    [
+     "........",
+     ".t..tttt",
+     ".tttttt.",
+     "..wtttt.",
+     "..wtttt.",
+     ".tttttt.",
+     ".t..tttt",
+     "........"
+    ],
+    [
+     "........",
+     ".t..tttt",
+     ".tttttt.",
+     "..wtttt.",
+     "..wtttt.",
+     ".tttttt.",
+     ".t..tttt",
+     "........"
+    ],
+    [
+     "........",
+     ".t..tttt",
+     ".tttttt.",
+     "..wtttt.",
+     "..wtttt.",
+     ".tttttt.",
+     ".t..tttt",
+     "........"
+    ],
+    [
+     "........",
+     ".t..tttt",
+     ".tttttt.",
+     ".wwtttt.",
+     ".wwtttt.",
+     ".tttttt.",
+     ".t..tttt",
+     "........"
+    ],
+    [
+     "........",
+     ".t..tttt",
+     ".tttttt.",
+     ".wwtttt.",
+     ".wwtttt.",
+     ".tttttt.",
+     ".t..tttt",
+     "........"
+    ],
+    [
+     "........",
+     ".t..tttt",
+     ".tttttt.",
+     ".wwtttt.",
+     ".wwtttt.",
+     ".tttttt.",
+     ".t..tttt",
+     "........"
+    ],
+    [
+     "........",
+     "..t.tt..",
+     "..tttt..",
+     ".wwtt...",
+     ".wwtt...",
+     "..tttt..",
+     "..t.tt..",
+     "........"
+    ],
+    [
+     "........",
+     "..t.tt..",
+     "..tttt..",
+     ".wwtt...",
+     ".wwtt...",
+     "..tttt..",
+     "..t.tt..",
+     "........"
+    ],
+    [
+     "........",
+     "..t.tt..",
+     "..tttt..",
+     ".wwtt...",
+     ".wwtt...",
+     "..tttt..",
+     "..t.tt..",
+     "........"
+    ],
+    [
+     "........",
+     "........",
+     "..ttt...",
+     ".wwtt...",
+     ".wwtt...",
+     "..ttt...",
+     "........",
+     "........"
+    ],
+    [
+     "........",
+     "........",
+     "..ttt...",
+     ".wwtt...",
+     ".wwtt...",
+     "..ttt...",
+     "........",
+     "........"
+    ],
+    [
+     "........",
+     "........",
+     "..ttt...",
+     ".wwtt...",
+     ".wwtt...",
+     "..ttt...",
+     "........",
+     "........"
+    ],
+    [
+     "........",
+     ".ttttt..",
+     ".wtttt..",
+     "wwtttt..",
+     "wwtttt..",
+     ".wtttt..",
+     ".ttttt..",
+     "........"
+    ],
+    [
+     "........",
+     ".ttttt..",
+     ".wtttt..",
+     "wwtttt..",
+     "wwtttt..",
+     ".wtttt..",
+     ".ttttt..",
+     "........"
+    ],
+    [
+     "........",
+     ".ttttt..",
+     ".wtttt..",
+     "wwtttt..",
+     "wwtttt..",
+     ".wtttt..",
+     ".ttttt..",
+     "........"
+    ],
+    [
+     ".ttttt..",
+     ".ttttt..",
+     ".wtttt..",
+     "wwtttt..",
+     "wwtttt..",
+     ".wtttt..",
+     ".ttttt..",
+     ".ttttt.."
+    ],
+    [
+     ".ttttt..",
+     ".ttttt..",
+     ".wtttt..",
+     "wwtttt..",
+     "wwtttt..",
+     ".wtttt..",
+     ".ttttt..",
+     ".ttttt.."
+    ],
+    [
+     ".ttttt..",
+     ".ttttt..",
+     ".wtttt..",
+     "wwtttt..",
+     "wwtttt..",
+     ".wtttt..",
+     ".ttttt..",
+     ".ttttt.."
+    ],
+    [
+     ".ttttt..",
+     ".ttttt..",
+     ".ttttt..",
+     ".wtttt..",
+     ".wtttt..",
+     ".ttttt..",
+     ".ttttt..",
+     ".ttttt.."
+    ],
+    [
+     ".ttttt..",
+     ".ttttt..",
+     ".ttttt..",
+     ".wtttt..",
+     ".wtttt..",
+     ".ttttt..",
+     ".ttttt..",
+     ".ttttt.."
+    ],
+    [
+     ".ttttt..",
+     ".ttttt..",
+     ".ttttt..",
+     ".wtttt..",
+     ".wtttt..",
+     ".ttttt..",
+     ".ttttt..",
+     ".ttttt.."
+    ],
+    [
+     "..ttt...",
+     ".ttttt..",
+     ".ttttt..",
+     ".ttttt..",
+     ".ttttt..",
+     ".ttttt..",
+     ".ttttt..",
+     "..ttt..."
+    ],
+    [
+     "..ttt...",
+     ".ttttt..",
+     ".ttttt..",
+     ".ttttt..",
+     ".ttttt..",
+     ".ttttt..",
+     ".ttttt..",
+     "..ttt..."
+    ],
+    [
+     "..ttt...",
+     ".ttttt..",
+     ".ttttt..",
+     ".ttttt..",
+     ".ttttt..",
+     ".ttttt..",
+     ".ttttt..",
+     "..ttt..."
+    ]
+   ],
+   "connectors": [
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      0,
+      18,
+      3
+     ],
+     "quarters": 1,
+     "colour": "w",
+     "attach": [
+      {
+       "body": "nose"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      1,
+      21,
+      2
+     ],
+     "quarters": 1,
+     "colour": "t",
+     "attach": [
+      {
+       "body": "eyeL"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      1,
+      21,
+      5
+     ],
+     "quarters": 1,
+     "colour": "t",
+     "attach": [
+      {
+       "body": "eyeR"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      3,
+      21,
+      0
+     ],
+     "quarters": 0,
+     "colour": "t",
+     "attach": [
+      {
+       "body": "earL",
+       "cell": [
+        1,
+        1
+       ]
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      3,
+      21,
+      7
+     ],
+     "quarters": 2,
+     "colour": "t",
+     "attach": [
+      {
+       "body": "earR",
+       "cell": [
+        1,
+        1
+       ]
+      }
+     ]
+    },
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      6,
+      9,
+      3
+     ],
+     "quarters": 1,
+     "colour": "t",
+     "attach": [
+      {
+       "body": "tail",
+       "angle": 60
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "nose",
+   "parts": [
+    [
+     "3062b",
+     "k",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "eyeL",
+   "parts": [
+    [
+     "98138",
+     "k",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "eyeR",
+   "parts": [
+    [
+     "98138",
+     "k",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "earL",
+   "surface": true,
+   "layers": [
+    [
+     "rrr",
+     "rrr",
+     "rrr",
+     "rrr"
+    ],
+    [
+     "rrr",
+     "rrr",
+     "rrr",
+     "rrr"
+    ]
+   ]
+  },
+  {
+   "name": "earR",
+   "surface": true,
+   "layers": [
+    [
+     "rrr",
+     "rrr",
+     "rrr",
+     "rrr"
+    ],
+    [
+     "rrr",
+     "rrr",
+     "rrr",
+     "rrr"
+    ]
+   ]
+  },
+  {
+   "name": "tail",
+   "origin": [
+    6,
+    12,
+    3
+   ],
+   "surface": true,
+   "layers": [
+    [
+     "tttr",
+     "tttr"
+    ],
+    [
+     "tttr",
+     "tttr"
+    ]
+   ]
+  }
+ ],
+ "details": []
+}

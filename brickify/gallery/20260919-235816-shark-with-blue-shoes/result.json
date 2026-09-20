@@ -1,0 +1,25 @@
+{
+ "score": 3.0,
+ "round": 0,
+ "label": "r0",
+ "parts": 99,
+ "stands": true,
+ "collisions": 0,
+ "clean": true,
+ "issues": [
+  "Head is disproportionately huge and detached-looking, floating over a tiny body",
+  "No recognizable shark silhouette at a glance - reads as a random grey blob",
+  "Teeth rendered as round white studs/cylinders instead of pointed jagged teeth",
+  "Missing dorsal fin on the back; only stray plates stick out",
+  "Side fins are misplaced plates jutting awkwardly from the belly/hips, not arm-like flippers",
+  "White belly of concept is largely absent; grey and white are mixed randomly",
+  "Snout/jaw shape is a flat white slab, losing the pointed shark nose",
+  "Legs are thin and the blue shoes are bare plates with no shoe shape",
+  "Visible gaps, exposed studs and unfinished surfaces - not official-set quality",
+  "Front view is cropped/misframed, body barely fills the frame"
+ ],
+ "issues_kernel": [],
+ "idea": "shark with shoes",
+ "distilled": null,
+ "seconds": 30
+}

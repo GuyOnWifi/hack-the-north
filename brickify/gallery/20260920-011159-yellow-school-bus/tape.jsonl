@@ -1,0 +1,18 @@
+{"t": 0, "actor": "router", "kind": "route", "text": "'Yellow school bus': concept art, 1 designs to choose from, then up to 1 rounds of notes", "status": "ok"}
+{"t": 1, "actor": "planner", "kind": "distill", "text": "making 'Yellow school bus' buildable", "status": "running"}
+{"t": 6211, "actor": "planner", "kind": "distill", "text": "concept: A LEGO model of a chunky yellow school bus built from stacked bricks and plates, with a rounded roof, black-and-white striped bumpers, and four rolling wheels. (changed: Removed opening doors and moving parts since the build system favors fixed sub-assemblies; Simplified window shapes to flat tiles in a strip instead of individually framed windows)", "status": "ok"}
+{"t": 6212, "actor": "designer", "kind": "concept", "text": "drawing the concept as an official LEGO set", "status": "running"}
+{"t": 36369, "actor": "designer", "kind": "concept", "text": "concept ready", "status": "ok"}
+{"t": 36410, "actor": "designer", "kind": "brief", "text": "reading the concept and writing the build brief", "status": "running"}
+{"t": 36410, "actor": "designer", "kind": "views", "text": "turning the concept to see its side and back", "status": "running"}
+{"t": 65900, "actor": "designer", "kind": "views", "text": "got 2 extra view(s): side, back", "status": "ok"}
+{"t": 92191, "actor": "designer", "kind": "brief", "text": "brief written: 5 sub-assemblies", "status": "ok"}
+{"t": 92242, "actor": "builder", "kind": "build", "text": "round r0: 113 parts, 0 collisions, stands", "status": "ok"}
+{"t": 104146, "actor": "critic", "kind": "critique", "text": "comparing the renders with the concept", "status": "running"}
+{"t": 111070, "actor": "critic", "kind": "critique", "text": "score 2/10: Does not read as a school bus at a glance - looks like a lumpy yellow block/train car; Windows are solid white tiles instead of dark transparent/black glazing, only 2 windows per side vs 4; Roof is a jumble of exposed studs and random raised plates instead of the smooth ribbed curved roof", "status": "warn"}
+{"t": 111070, "actor": "designer", "kind": "revise", "text": "reworking the design from the critic's notes", "status": "running"}
+{"t": 184787, "actor": "designer", "kind": "revise", "text": "reworked bus, lampL, lampR", "status": "ok"}
+{"t": 184875, "actor": "builder", "kind": "build", "text": "round r1: 185 parts, 0 collisions, stands", "status": "ok"}
+{"t": 200656, "actor": "critic", "kind": "critique", "text": "comparing the renders with the concept", "status": "running"}
+{"t": 210339, "actor": "critic", "kind": "critique", "text": "score 3/10: Proportions far too long and low \u2014 concept is a short, stubby chunky bus, render is a stretched van/tram shape; Wheels tiny, half-buried and barely visible; concept has big chunky black tyres with grey hubs standing proud; Body colour is pale cream/light yellow instead of bright school-bus yellow", "status": "warn"}
+{"t": 390391, "actor": "scribe", "kind": "done", "text": "best: round 1 scored 3.0/10 (185 parts) in 390s", "status": "ok"}

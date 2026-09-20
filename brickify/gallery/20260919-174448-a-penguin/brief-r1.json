@@ -1,0 +1,510 @@
+{
+ "name": "penguin",
+ "palette": {
+  "k": 0,
+  "w": 15,
+  "o": 25
+ },
+ "root": "body",
+ "bodies": [
+  {
+   "name": "body",
+   "surface": true,
+   "layers": [
+    [
+     ".oo..oo.",
+     ".oo..oo.",
+     ".okkkko.",
+     "..kkkk..",
+     "..kkkk..",
+     "........",
+     "........"
+    ],
+    [
+     "........",
+     ".wwwwww.",
+     ".kwwwwk.",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     "........"
+    ],
+    [
+     "........",
+     ".wwwwww.",
+     ".kwwwwk.",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     "........"
+    ],
+    [
+     ".wwwwww.",
+     "wwwwwwww",
+     "kwwwwwwk",
+     "kkkkkkkk",
+     "kkkkkkkk",
+     "kkkkkkkk",
+     ".kkkkkk."
+    ],
+    [
+     ".wwwwww.",
+     "wwwwwwww",
+     "kwwwwwwk",
+     "kkkkkkkk",
+     "kkkkkkkk",
+     "kkkkkkkk",
+     ".kkkkkk."
+    ],
+    [
+     ".wwwwww.",
+     "wwwwwwww",
+     "kwwwwwwk",
+     "kkkkkkkk",
+     "kkkkkkkk",
+     "kkkkkkkk",
+     ".kkkkkk."
+    ],
+    [
+     ".wwwwww.",
+     "wwwwwwww",
+     "kwwwwwwk",
+     "kkkkkkkk",
+     "kkkkkkkk",
+     "kkkkkkkk",
+     ".kkkkkk."
+    ],
+    [
+     ".wwwwww.",
+     "wwwwwwww",
+     "kwwwwwwk",
+     "kkkkkkkk",
+     "kkkkkkkk",
+     "kkkkkkkk",
+     ".kkkkkk."
+    ],
+    [
+     ".wwwwww.",
+     "wwwwwwww",
+     "kwwwwwwk",
+     "kkkkkkkk",
+     "kkkkkkkk",
+     "kkkkkkkk",
+     ".kkkkkk."
+    ],
+    [
+     ".wwwwww.",
+     "wwwwwwww",
+     "kwwwwwwk",
+     "kkkkkkkk",
+     "kkkkkkkk",
+     "kkkkkkkk",
+     ".kkkkkk."
+    ],
+    [
+     ".wwwwww.",
+     "wwwwwwww",
+     "kwwwwwwk",
+     "kkkkkkkk",
+     "kkkkkkkk",
+     "kkkkkkkk",
+     ".kkkkkk."
+    ],
+    [
+     ".wwwwww.",
+     "wwwwwwww",
+     "kwwwwwwk",
+     "kkkkkkkk",
+     "kkkkkkkk",
+     "kkkkkkkk",
+     ".kkkkkk."
+    ],
+    [
+     ".wwwwww.",
+     "wwwwwwww",
+     "kwwwwwwk",
+     "kkkkkkkk",
+     "kkkkkkkk",
+     "kkkkkkkk",
+     ".kkkkkk."
+    ],
+    [
+     ".wwwwww.",
+     "wwwwwwww",
+     "kwwwwwwk",
+     "kkkkkkkk",
+     "kkkkkkkk",
+     "kkkkkkkk",
+     ".kkkkkk."
+    ],
+    [
+     ".wwwwww.",
+     "wwwwwwww",
+     "kwwwwwwk",
+     "kkkkkkkk",
+     "kkkkkkkk",
+     "kkkkkkkk",
+     ".kkkkkk."
+    ],
+    [
+     ".wwwwww.",
+     "wwwwwwww",
+     "kwwwwwwk",
+     "kkkkkkkk",
+     "kkkkkkkk",
+     "kkkkkkkk",
+     ".kkkkkk."
+    ],
+    [
+     ".wwwwww.",
+     "wwwwwwww",
+     "kwwwwwwk",
+     "kkkkkkkk",
+     "kkkkkkkk",
+     "kkkkkkkk",
+     ".kkkkkk."
+    ],
+    [
+     ".wwwwww.",
+     "wwwwwwww",
+     "kwwwwwwk",
+     "kkkkkkkk",
+     "kkkkkkkk",
+     "kkkkkkkk",
+     ".kkkkkk."
+    ],
+    [
+     "........",
+     ".wwwwww.",
+     ".kwwwwk.",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     "........"
+    ],
+    [
+     "........",
+     ".wwwwww.",
+     ".kwwwwk.",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     "........"
+    ],
+    [
+     "........",
+     "..wwww..",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     "........"
+    ],
+    [
+     "........",
+     "..wwww..",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     "........"
+    ],
+    [
+     "........",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     "........"
+    ],
+    [
+     "........",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     "........"
+    ],
+    [
+     "........",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     "........"
+    ],
+    [
+     "........",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     "........"
+    ],
+    [
+     "........",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     "........"
+    ],
+    [
+     "........",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     "........"
+    ],
+    [
+     "........",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     "........"
+    ],
+    [
+     "........",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     "........"
+    ],
+    [
+     "........",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     "........"
+    ],
+    [
+     "........",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     "........"
+    ],
+    [
+     "........",
+     "........",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     ".kkkkkk.",
+     "........",
+     "........"
+    ],
+    [
+     "........",
+     "........",
+     "..kkkk..",
+     "..kkkk..",
+     "..kkkk..",
+     "........",
+     "........"
+    ]
+   ],
+   "connectors": [
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      0,
+      15,
+      2
+     ],
+     "quarters": 1,
+     "colour": "k",
+     "attach": [
+      {
+       "body": "flipperL",
+       "angle": 80
+      }
+     ]
+    },
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      7,
+      15,
+      2
+     ],
+     "quarters": 1,
+     "colour": "k",
+     "attach": [
+      {
+       "body": "flipperR",
+       "angle": -80
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      1,
+      28,
+      1
+     ],
+     "quarters": 0,
+     "colour": "k",
+     "attach": [
+      {
+       "body": "eyeL"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      6,
+      28,
+      1
+     ],
+     "quarters": 0,
+     "colour": "k",
+     "attach": [
+      {
+       "body": "eyeR"
+      }
+     ]
+    },
+    {
+     "part": "11211",
+     "kind": "side",
+     "at": [
+      3,
+      23,
+      1
+     ],
+     "quarters": 0,
+     "colour": "k",
+     "stud": 0,
+     "attach": [
+      {
+       "body": "beak"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "flipperL",
+   "origin": [
+    -4,
+    18,
+    2
+   ],
+   "surface": true,
+   "layers": [
+    [
+     "kkkkk",
+     ".kkkk"
+    ],
+    [
+     "..kkk",
+     "...kk"
+    ]
+   ]
+  },
+  {
+   "name": "flipperR",
+   "origin": [
+    7,
+    18,
+    2
+   ],
+   "surface": true,
+   "layers": [
+    [
+     "kkkkk",
+     "kkkk."
+    ],
+    [
+     "kkk..",
+     "kk..."
+    ]
+   ]
+  },
+  {
+   "name": "eyeL",
+   "surface": false,
+   "layers": [
+    [
+     "ww",
+     "ww"
+    ]
+   ],
+   "parts": [
+    [
+     "98138",
+     "k",
+     [
+      0,
+      1,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "eyeR",
+   "surface": false,
+   "layers": [
+    [
+     "ww",
+     "ww"
+    ]
+   ],
+   "parts": [
+    [
+     "98138",
+     "k",
+     [
+      0,
+      1,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "beak",
+   "surface": true,
+   "layers": [
+    [
+     "oo",
+     "oo"
+    ],
+    [
+     "oo",
+     "oo"
+    ],
+    [
+     "oo",
+     "oo"
+    ],
+    [
+     "oo"
+    ]
+   ]
+  }
+ ],
+ "details": []
+}

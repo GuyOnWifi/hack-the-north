@@ -1,0 +1,308 @@
+{
+ "name": "tractor",
+ "palette": {
+  "r": 4,
+  "y": 14,
+  "k": 0,
+  "w": 15,
+  "g": 71
+ },
+ "root": "body",
+ "bodies": [
+  {
+   "name": "body",
+   "layers": [
+    [
+     "yyyyyyyy",
+     "yyyyyyyy",
+     "yyyyyyyy",
+     "yyyyyyyy"
+    ],
+    [
+     "yyyyyyyy",
+     "yyyyyyyy",
+     "yyyyyyyy",
+     "yyyyyyyy"
+    ],
+    [
+     "krrrrrrr",
+     "krrrrrrr",
+     "krrrrrrr",
+     "krrrrrrr"
+    ],
+    [
+     "krrrrrrr",
+     "krrrrrrr",
+     "krrrrrrr",
+     "krrrrrrr"
+    ],
+    [
+     "krrrrrrr",
+     "krrrrrrr",
+     "krrrrrrr",
+     "krrrrrrr"
+    ],
+    [
+     "....rrrr",
+     "....rrrr",
+     "....rrrr",
+     "....rrrr"
+    ],
+    [
+     "....r..r",
+     "....r...",
+     "....r...",
+     "....r..r"
+    ],
+    [
+     "....r..r",
+     "....r...",
+     "....r...",
+     "....r..r"
+    ],
+    [
+     "....r..r",
+     "....r...",
+     "....r...",
+     "....r..r"
+    ],
+    [
+     "....r..r",
+     "....r...",
+     "....r...",
+     "....r..r"
+    ],
+    [
+     "....rrrr",
+     "....rrrr",
+     "....rrrr",
+     "....rrrr"
+    ]
+   ],
+   "surface": true,
+   "connectors": [
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      5,
+      4,
+      0
+     ],
+     "quarters": 0,
+     "colour": "k",
+     "attach": [
+      {
+       "body": "wheelRL",
+       "cell": [
+        1,
+        1
+       ]
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      5,
+      4,
+      3
+     ],
+     "quarters": 2,
+     "colour": "k",
+     "attach": [
+      {
+       "body": "wheelRR",
+       "cell": [
+        1,
+        1
+       ]
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      1,
+      2,
+      0
+     ],
+     "quarters": 0,
+     "colour": "k",
+     "attach": [
+      {
+       "body": "wheelFL",
+       "cell": [
+        1,
+        1
+       ]
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      1,
+      2,
+      3
+     ],
+     "quarters": 2,
+     "colour": "k",
+     "attach": [
+      {
+       "body": "wheelFR",
+       "cell": [
+        1,
+        1
+       ]
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      0,
+      2,
+      0
+     ],
+     "quarters": 1,
+     "colour": "k",
+     "attach": [
+      {
+       "body": "lampL"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      0,
+      2,
+      3
+     ],
+     "quarters": 1,
+     "colour": "k",
+     "attach": [
+      {
+       "body": "lampR"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "wheelRL",
+   "surface": false,
+   "layers": [
+    [
+     ".kk.",
+     "kkkk",
+     "kkkk",
+     ".kk."
+    ],
+    [
+     ".kk.",
+     "kyyk",
+     "kyyk",
+     ".kk."
+    ]
+   ]
+  },
+  {
+   "name": "wheelRR",
+   "surface": false,
+   "layers": [
+    [
+     ".kk.",
+     "kkkk",
+     "kkkk",
+     ".kk."
+    ],
+    [
+     ".kk.",
+     "kyyk",
+     "kyyk",
+     ".kk."
+    ]
+   ]
+  },
+  {
+   "name": "wheelFL",
+   "surface": false,
+   "layers": [
+    [
+     "kkk",
+     "kkk",
+     "kkk"
+    ],
+    [
+     "kkk",
+     "kyk",
+     "kkk"
+    ]
+   ]
+  },
+  {
+   "name": "wheelFR",
+   "surface": false,
+   "layers": [
+    [
+     "kkk",
+     "kkk",
+     "kkk"
+    ],
+    [
+     "kkk",
+     "kyk",
+     "kkk"
+    ]
+   ]
+  },
+  {
+   "name": "lampL",
+   "parts": [
+    [
+     "98138",
+     "w",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "lampR",
+   "parts": [
+    [
+     "98138",
+     "w",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  }
+ ],
+ "details": [
+  {
+   "kind": "bar",
+   "body": "body",
+   "at": [
+    3,
+    5,
+    0
+   ],
+   "colour": "g",
+   "holder": "g"
+  }
+ ]
+}

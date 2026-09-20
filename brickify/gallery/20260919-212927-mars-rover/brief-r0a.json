@@ -1,0 +1,372 @@
+{
+ "name": "mars-rover",
+ "palette": {
+  "g": 71,
+  "d": 72,
+  "k": 0,
+  "w": 15,
+  "y": 28,
+  "b": 272,
+  "r": 320
+ },
+ "root": "chassis",
+ "bodies": [
+  {
+   "name": "chassis",
+   "surface": false,
+   "layers": [
+    [
+     "......",
+     "gggggg",
+     "gggggg",
+     "......"
+    ],
+    [
+     "dddddd",
+     "dddddd",
+     "dddddd",
+     "dddddd"
+    ],
+    [
+     "yyyyyy",
+     "yyyyyy",
+     "yyyyyy",
+     "yyyyyy"
+    ],
+    [
+     "gggggg",
+     "gggggg",
+     "gggggg",
+     "gggggg"
+    ],
+    [
+     "gggggg",
+     "gggggg",
+     "gggggg",
+     "gggggg"
+    ],
+    [
+     "gggggg",
+     "gggggg",
+     "gggggg",
+     "gggggg"
+    ]
+   ],
+   "parts": [
+    [
+     "3069b",
+     "d",
+     [
+      1,
+      6,
+      1
+     ]
+    ],
+    [
+     "3070b",
+     "r",
+     [
+      0,
+      6,
+      1
+     ]
+    ],
+    [
+     "3070b",
+     "r",
+     [
+      0,
+      6,
+      2
+     ]
+    ]
+   ],
+   "connectors": [
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      4,
+      6,
+      1
+     ],
+     "colour": "d",
+     "attach": [
+      {
+       "body": "mast",
+       "angle": 0
+      }
+     ]
+    },
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      1,
+      6,
+      0
+     ],
+     "colour": "g",
+     "attach": [
+      {
+       "body": "wingL",
+       "angle": -20
+      }
+     ]
+    },
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      1,
+      6,
+      3
+     ],
+     "colour": "g",
+     "attach": [
+      {
+       "body": "wingR",
+       "angle": 20
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "mast",
+   "origin": [
+    4,
+    9,
+    0
+   ],
+   "surface": false,
+   "layers": [
+    [
+     "...",
+     "gg.",
+     "..."
+    ],
+    [
+     "...",
+     ".g.",
+     "..."
+    ],
+    [
+     "...",
+     ".g.",
+     "..."
+    ],
+    [
+     "...",
+     ".g.",
+     "..."
+    ],
+    [
+     "...",
+     ".g.",
+     "..."
+    ],
+    [
+     "...",
+     ".g.",
+     "..."
+    ],
+    [
+     "...",
+     ".g.",
+     "..."
+    ],
+    [
+     "gg.",
+     "gg.",
+     "gg."
+    ],
+    [
+     "gg.",
+     "gg.",
+     "gg."
+    ],
+    [
+     "gg.",
+     "gg.",
+     "gg."
+    ]
+   ],
+   "connectors": [
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      1,
+      7,
+      0
+     ],
+     "quarters": 3,
+     "colour": "g",
+     "attach": [
+      {
+       "body": "eyeL"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      1,
+      7,
+      2
+     ],
+     "quarters": 3,
+     "colour": "g",
+     "attach": [
+      {
+       "body": "eyeR"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "eyeL",
+   "parts": [
+    [
+     "6141",
+     "w",
+     [
+      0,
+      0,
+      0
+     ]
+    ],
+    [
+     "98138",
+     "k",
+     [
+      0,
+      1,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "eyeR",
+   "parts": [
+    [
+     "6141",
+     "w",
+     [
+      0,
+      0,
+      0
+     ]
+    ],
+    [
+     "98138",
+     "k",
+     [
+      0,
+      1,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "wingL",
+   "origin": [
+    1,
+    9,
+    -3
+   ],
+   "surface": false,
+   "layers": [
+    [
+     "gggg",
+     "gggg",
+     "gggg",
+     "gggg"
+    ],
+    [
+     "bbbb",
+     "bbbb",
+     "bbbb",
+     "bbbb"
+    ]
+   ]
+  },
+  {
+   "name": "wingR",
+   "origin": [
+    1,
+    9,
+    3
+   ],
+   "surface": false,
+   "layers": [
+    [
+     "gggg",
+     "gggg",
+     "gggg",
+     "gggg"
+    ],
+    [
+     "bbbb",
+     "bbbb",
+     "bbbb",
+     "bbbb"
+    ]
+   ]
+  }
+ ],
+ "details": [
+  {
+   "kind": "wheels",
+   "body": "chassis",
+   "at": [
+    0,
+    0,
+    1
+   ],
+   "quarters": 1,
+   "colour": "k",
+   "rim": "d"
+  },
+  {
+   "kind": "wheels",
+   "body": "chassis",
+   "at": [
+    2,
+    0,
+    1
+   ],
+   "quarters": 1,
+   "colour": "k",
+   "rim": "d"
+  },
+  {
+   "kind": "wheels",
+   "body": "chassis",
+   "at": [
+    4,
+    0,
+    1
+   ],
+   "quarters": 1,
+   "colour": "k",
+   "rim": "d"
+  },
+  {
+   "kind": "bar",
+   "body": "mast",
+   "at": [
+    0,
+    10,
+    1
+   ],
+   "colour": "k",
+   "holder": "d"
+  }
+ ]
+}

@@ -1,0 +1,449 @@
+{
+ "name": "sitting-puppy",
+ "palette": {
+  "t": 19,
+  "w": 15,
+  "b": 70,
+  "k": 0
+ },
+ "root": "body",
+ "bodies": [
+  {
+   "name": "body",
+   "surface": true,
+   "layers": [
+    [
+     "tt...ttt",
+     "tt...ttt",
+     ".www....",
+     ".www....",
+     "tt...ttt",
+     "tt...ttt"
+    ],
+    [
+     "tt...ttt",
+     "tt...ttt",
+     ".www....",
+     ".www....",
+     "tt...ttt",
+     "tt...ttt"
+    ],
+    [
+     "tt...ttt",
+     "tt...ttt",
+     ".www....",
+     ".www....",
+     "tt...ttt",
+     "tt...ttt"
+    ],
+    [
+     ".tt.tttt",
+     ".tt.tttt",
+     ".wwtttt.",
+     ".wwtttt.",
+     ".tt.tttt",
+     ".tt.tttt"
+    ],
+    [
+     ".tt.tttt",
+     ".tt.tttt",
+     ".wwtttt.",
+     ".wwtttt.",
+     ".tt.tttt",
+     ".tt.tttt"
+    ],
+    [
+     ".tt.tttt",
+     ".tt.tttt",
+     ".wwtttt.",
+     ".wwtttt.",
+     ".tt.tttt",
+     ".tt.tttt"
+    ],
+    [
+     ".tt.ttt.",
+     ".tttttt.",
+     ".wwttttt",
+     ".wwttttt",
+     ".tttttt.",
+     ".tt.ttt."
+    ],
+    [
+     ".tt.ttt.",
+     ".tttttt.",
+     ".wwttttt",
+     ".wwttttt",
+     ".tttttt.",
+     ".tt.ttt."
+    ],
+    [
+     ".tt.ttt.",
+     ".tttttt.",
+     ".wwttttt",
+     ".wwttttt",
+     ".tttttt.",
+     ".tt.ttt."
+    ],
+    [
+     "........",
+     ".tttttt.",
+     ".wwttttt",
+     ".wwttttt",
+     ".tttttt.",
+     "........"
+    ],
+    [
+     "........",
+     ".tttttt.",
+     ".wwttttt",
+     ".wwttttt",
+     ".tttttt.",
+     "........"
+    ],
+    [
+     "........",
+     ".tttttt.",
+     ".wwttttt",
+     ".wwttttt",
+     ".tttttt.",
+     "........"
+    ],
+    [
+     "........",
+     ".wtttt..",
+     ".wtttt.t",
+     ".wtttt.t",
+     ".wtttt..",
+     "........"
+    ],
+    [
+     "........",
+     ".wtttt..",
+     ".wtttt.b",
+     ".wtttt.b",
+     ".wtttt..",
+     "........"
+    ],
+    [
+     "........",
+     ".wtttt..",
+     ".wtttt.b",
+     ".wtttt.b",
+     ".wtttt..",
+     "........"
+    ],
+    [
+     ".tttttt.",
+     "wwttttt.",
+     "wwttttt.",
+     "wwttttt.",
+     "wwttttt.",
+     ".tttttt."
+    ],
+    [
+     ".tttttt.",
+     "wwttttt.",
+     "wwttttt.",
+     "wwttttt.",
+     "wwttttt.",
+     ".tttttt."
+    ],
+    [
+     ".tttttt.",
+     "wwttttt.",
+     "wwttttt.",
+     "wwttttt.",
+     "wwttttt.",
+     ".tttttt."
+    ],
+    [
+     ".tttttt.",
+     "wtttttt.",
+     "ttttttt.",
+     "ttttttt.",
+     "wtttttt.",
+     ".tttttt."
+    ],
+    [
+     ".tttttt.",
+     "wtttttt.",
+     "ttttttt.",
+     "ttttttt.",
+     "wtttttt.",
+     ".tttttt."
+    ],
+    [
+     ".tttttt.",
+     "wtttttt.",
+     "ttttttt.",
+     "ttttttt.",
+     "wtttttt.",
+     ".tttttt."
+    ],
+    [
+     ".tttttt.",
+     "wtttttt.",
+     "wwttttt.",
+     "wwttttt.",
+     "wtttttt.",
+     ".tttttt."
+    ],
+    [
+     ".tttttt.",
+     ".tttttt.",
+     ".tttttt.",
+     ".tttttt.",
+     ".tttttt.",
+     ".tttttt."
+    ],
+    [
+     ".tttttt.",
+     ".tttttt.",
+     ".tttttt.",
+     ".tttttt.",
+     ".tttttt.",
+     ".tttttt."
+    ],
+    [
+     ".tttttt.",
+     ".tttttt.",
+     ".tttttt.",
+     ".tttttt.",
+     ".tttttt.",
+     ".tttttt."
+    ],
+    [
+     ".tttttt.",
+     ".tttttt.",
+     ".tttttt.",
+     ".tttttt.",
+     ".tttttt.",
+     ".tttttt."
+    ],
+    [
+     ".tttttt.",
+     ".tttttt.",
+     ".tttttt.",
+     ".tttttt.",
+     ".tttttt.",
+     ".tttttt."
+    ],
+    [
+     ".tttttt.",
+     ".tttttt.",
+     ".tttttt.",
+     ".tttttt.",
+     ".tttttt.",
+     ".tttttt."
+    ],
+    [
+     ".tttttt.",
+     ".tttttt.",
+     ".tttttt.",
+     ".tttttt.",
+     ".tttttt.",
+     ".tttttt."
+    ],
+    [
+     ".tttttt.",
+     ".tttttt.",
+     ".tttttt.",
+     ".tttttt.",
+     ".tttttt.",
+     ".tttttt."
+    ]
+   ],
+   "connectors": [
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      0,
+      18,
+      2
+     ],
+     "quarters": 1,
+     "colour": "t",
+     "attach": [
+      {
+       "body": "nose"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      1,
+      22,
+      1
+     ],
+     "quarters": 1,
+     "colour": "t",
+     "attach": [
+      {
+       "body": "eyeL"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      1,
+      22,
+      4
+     ],
+     "quarters": 1,
+     "colour": "t",
+     "attach": [
+      {
+       "body": "eyeR"
+      }
+     ]
+    },
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      3,
+      30,
+      0
+     ],
+     "quarters": 0,
+     "colour": "b",
+     "attach": [
+      {
+       "body": "earL",
+       "angle": 85
+      }
+     ]
+    },
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      3,
+      30,
+      5
+     ],
+     "quarters": 0,
+     "colour": "b",
+     "attach": [
+      {
+       "body": "earR",
+       "angle": -85
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "nose",
+   "parts": [
+    [
+     "3062b",
+     "k",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "eyeL",
+   "parts": [
+    [
+     "98138",
+     "k",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "eyeR",
+   "parts": [
+    [
+     "98138",
+     "k",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "earL",
+   "origin": [
+    2,
+    33,
+    -4
+   ],
+   "surface": false,
+   "layers": [
+    [
+     ".bb.",
+     "bbbb",
+     "bbbb",
+     "bbbb",
+     ".bb."
+    ],
+    [
+     ".bb.",
+     "bbbb",
+     "bbbb",
+     "bbbb",
+     ".bb."
+    ],
+    [
+     ".bb.",
+     "bbbb",
+     "bbbb",
+     "bbbb",
+     ".bb."
+    ]
+   ]
+  },
+  {
+   "name": "earR",
+   "origin": [
+    2,
+    33,
+    5
+   ],
+   "surface": false,
+   "layers": [
+    [
+     ".bb.",
+     "bbbb",
+     "bbbb",
+     "bbbb",
+     ".bb."
+    ],
+    [
+     ".bb.",
+     "bbbb",
+     "bbbb",
+     "bbbb",
+     ".bb."
+    ],
+    [
+     ".bb.",
+     "bbbb",
+     "bbbb",
+     "bbbb",
+     ".bb."
+    ]
+   ]
+  }
+ ],
+ "details": []
+}

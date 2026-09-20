@@ -1,0 +1,20 @@
+{
+ "score": 6.0,
+ "round": 0,
+ "label": "r0a",
+ "parts": 86,
+ "stands": true,
+ "collisions": 0,
+ "clean": true,
+ "issues": [
+  "Tower is blocky and stepped rather than smoothly tapering; stripe bands are uneven and misaligned between faces",
+  "Lantern room is too small and the clear section barely reads as glazing; black gallery lacks the railing detail of the concept",
+  "Base is plain grey plates with only two curved slopes instead of the dark blue rocky outcrop",
+  "Exposed studs and a stray red stud on the tower wall break the clean painted-tower look",
+  "Overall proportions are narrow/tall compared with the concept's stout tower on a wide rock base"
+ ],
+ "issues_kernel": [],
+ "idea": "Red lighthouse with blue windows",
+ "distilled": "A chunky, stout LEGO lighthouse tower built from stacked bricks in alternating red and white bands, with small blue round tiles as windows and a rounded top cap holding a lantern room, mounted on a small rocky plate base.",
+ "seconds": 97
+}

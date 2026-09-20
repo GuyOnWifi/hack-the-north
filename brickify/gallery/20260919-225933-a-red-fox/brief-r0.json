@@ -1,0 +1,510 @@
+{
+ "name": "sitting fox",
+ "palette": {
+  "r": 320,
+  "o": 25,
+  "w": 15,
+  "k": 0
+ },
+ "root": "body",
+ "bodies": [
+  {
+   "name": "body",
+   "layers": [
+    [
+     "kk.kkk",
+     "kk.kkk",
+     "...kkk",
+     "kk.kkk",
+     "kk.kkk"
+    ],
+    [
+     "kk.kkk",
+     "kk.kkk",
+     "...kkk",
+     "kk.kkk",
+     "kk.kkk"
+    ],
+    [
+     "kk.kkk",
+     "kk.kkk",
+     "...kkk",
+     "kk.kkk",
+     "kk.kkk"
+    ],
+    [
+     "rr.rrr",
+     "rr.rrr",
+     "...rrr",
+     "rr.rrr",
+     "rr.rrr"
+    ],
+    [
+     "rr.rrr",
+     "rr.rrr",
+     "...rrr",
+     "rr.rrr",
+     "rr.rrr"
+    ],
+    [
+     "rr.rrr",
+     "rr.rrr",
+     "...rrr",
+     "rr.rrr",
+     "rr.rrr"
+    ],
+    [
+     "rr.rrr",
+     "rrrrrr",
+     "rrrrrr",
+     "rrrrrr",
+     "rr.rrr"
+    ],
+    [
+     "rr.rrr",
+     "rrrrrr",
+     "rrrrrr",
+     "rrrrrr",
+     "rr.rrr"
+    ],
+    [
+     "rr.rrr",
+     "rrrrrr",
+     "rrrrrr",
+     "rrrrrr",
+     "rr.rrr"
+    ],
+    [
+     "rrrrrr",
+     "wrrrrr",
+     "wrrrrr",
+     "wrrrrr",
+     "rrrrrr"
+    ],
+    [
+     "rrrrrr",
+     "wrrrrr",
+     "wrrrrr",
+     "wrrrrr",
+     "rrrrrr"
+    ],
+    [
+     "rrrrrr",
+     "wrrrrr",
+     "wrrrrr",
+     "wrrrrr",
+     "rrrrrr"
+    ],
+    [
+     "rrrr..",
+     "wrrr..",
+     "wrrr..",
+     "wrrr..",
+     "rrrr.."
+    ],
+    [
+     "rrrr..",
+     "wrrr..",
+     "wrrr..",
+     "wrrr..",
+     "rrrr.."
+    ],
+    [
+     "rrrr..",
+     "wrrr..",
+     "wrrr..",
+     "wrrr..",
+     "rrrr.."
+    ]
+   ],
+   "connectors": [
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      1,
+      12,
+      2
+     ],
+     "quarters": 0,
+     "colour": "r",
+     "attach": [
+      {
+       "body": "head",
+       "angle": 0
+      }
+     ]
+    },
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      4,
+      9,
+      3
+     ],
+     "quarters": 1,
+     "colour": "r",
+     "attach": [
+      {
+       "body": "tail",
+       "angle": -25
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "head",
+   "origin": [
+    -1,
+    15,
+    -1
+   ],
+   "layers": [
+    [
+     ".rrrr",
+     ".rrrr",
+     "wwrrr",
+     "wwrrr",
+     "wwrrr",
+     ".rrrr",
+     ".rrrr"
+    ],
+    [
+     ".rrrr",
+     ".rrrr",
+     "wwrrr",
+     "wwrrr",
+     "wwrrr",
+     ".rrrr",
+     ".rrrr"
+    ],
+    [
+     ".rrrr",
+     ".rrrr",
+     "wwrrr",
+     "wwrrr",
+     "wwrrr",
+     ".rrrr",
+     ".rrrr"
+    ],
+    [
+     ".rrrr",
+     "rrrrr",
+     "rrrrr",
+     "rrrrr",
+     "rrrrr",
+     "rrrrr",
+     ".rrrr"
+    ],
+    [
+     ".rrrr",
+     "rrrrr",
+     "rrrrr",
+     "rrrrr",
+     "rrrrr",
+     "rrrrr",
+     ".rrrr"
+    ],
+    [
+     ".rrrr",
+     "rrrrr",
+     "rrrrr",
+     "rrrrr",
+     "rrrrr",
+     "rrrrr",
+     ".rrrr"
+    ],
+    [
+     "..rrr",
+     ".rrrr",
+     ".rrrr",
+     ".rrrr",
+     ".rrrr",
+     ".rrrr",
+     "..rrr"
+    ],
+    [
+     "..rrr",
+     ".rrrr",
+     ".rrrr",
+     ".rrrr",
+     ".rrrr",
+     ".rrrr",
+     "..rrr"
+    ],
+    [
+     "..rrr",
+     ".rrrr",
+     ".rrrr",
+     ".rrrr",
+     ".rrrr",
+     ".rrrr",
+     "..rrr"
+    ]
+   ],
+   "connectors": [
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      2,
+      6,
+      0
+     ],
+     "quarters": 0,
+     "colour": "r",
+     "attach": [
+      {
+       "body": "earL",
+       "angle": 12
+      }
+     ]
+    },
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      2,
+      6,
+      5
+     ],
+     "quarters": 0,
+     "colour": "r",
+     "attach": [
+      {
+       "body": "earR",
+       "angle": -12
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      0,
+      3,
+      2
+     ],
+     "quarters": 1,
+     "colour": "r",
+     "attach": [
+      {
+       "body": "eyeL"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      0,
+      3,
+      4
+     ],
+     "quarters": 1,
+     "colour": "r",
+     "attach": [
+      {
+       "body": "eyeR"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      0,
+      0,
+      3
+     ],
+     "quarters": 1,
+     "colour": "w",
+     "attach": [
+      {
+       "body": "nose"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "earL",
+   "origin": [
+    2,
+    9,
+    0
+   ],
+   "layers": [
+    [
+     "or",
+     "or"
+    ],
+    [
+     "or",
+     "or"
+    ],
+    [
+     "or",
+     "or"
+    ],
+    [
+     "or",
+     "or"
+    ],
+    [
+     "kr",
+     "kr"
+    ],
+    [
+     "kk",
+     ".."
+    ],
+    [
+     "kk",
+     ".."
+    ]
+   ]
+  },
+  {
+   "name": "earR",
+   "origin": [
+    2,
+    9,
+    5
+   ],
+   "layers": [
+    [
+     "ro",
+     "ro"
+    ],
+    [
+     "ro",
+     "ro"
+    ],
+    [
+     "ro",
+     "ro"
+    ],
+    [
+     "ro",
+     "ro"
+    ],
+    [
+     "rk",
+     "rk"
+    ],
+    [
+     "..",
+     "kk"
+    ],
+    [
+     "..",
+     "kk"
+    ]
+   ]
+  },
+  {
+   "name": "tail",
+   "origin": [
+    4,
+    12,
+    3
+   ],
+   "layers": [
+    [
+     "rrr",
+     "rrr"
+    ],
+    [
+     "rrr",
+     "rrr"
+    ],
+    [
+     "rrr",
+     "rrr"
+    ],
+    [
+     "rrr",
+     "rrr"
+    ],
+    [
+     "rrr",
+     "rrr"
+    ],
+    [
+     "rrr",
+     "rrr"
+    ],
+    [
+     ".rr",
+     ".rr"
+    ],
+    [
+     ".rr",
+     ".rr"
+    ],
+    [
+     ".rw",
+     ".rw"
+    ],
+    [
+     ".rw",
+     ".rw"
+    ],
+    [
+     "..w",
+     "..w"
+    ],
+    [
+     "..w",
+     "..w"
+    ]
+   ]
+  },
+  {
+   "name": "eyeL",
+   "parts": [
+    [
+     "98138",
+     "k",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "eyeR",
+   "parts": [
+    [
+     "98138",
+     "k",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "nose",
+   "parts": [
+    [
+     "3069b",
+     "k",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  }
+ ],
+ "details": []
+}

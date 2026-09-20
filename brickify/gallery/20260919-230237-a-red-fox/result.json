@@ -1,0 +1,25 @@
+{
+ "score": 3.0,
+ "round": 0,
+ "label": "r0",
+ "parts": 144,
+ "stands": true,
+ "collisions": 0,
+ "clean": true,
+ "issues": [
+  "Silhouette reads as a lumpy blob, not a sitting fox, at a glance",
+  "Head is not distinct from body - no snout, muzzle or tapered face",
+  "Ears are oversized angled slabs tilted outward rather than upright pointed triangles",
+  "Eyes are two black round plates stuck on the side, misaligned and too low",
+  "White chest/bib is a small offset block on one side instead of a centered front blaze",
+  "Tail is a tiny white/orange stub hanging off the back rather than a large curled tail with white tip",
+  "No front legs or black paws visible from the front; only a couple of dark plates at the base",
+  "Exposed studs and gaps everywhere; surfaces unfinished, not official-set quality",
+  "Overall proportions too tall and narrow compared to the broad seated concept"
+ ],
+ "issues_kernel": [],
+ "idea": "a red fox",
+ "distilled": "A LEGO model of a chunky sitting fox built from stacked bricks and plates, with a rounded curved-slope body, pointed side-stud ears, and a short thick tail.",
+ "seconds": 291,
+ "kept": false
+}

@@ -1,0 +1,19 @@
+{
+ "subject": "lego chess knight",
+ "concept": "A LEGO model of a chess knight piece, built as a chunky stylised horse head and neck rising from a round chess-piece base, sitting stationary and proud like a display statuette.",
+ "features": [
+  "round stepped base like a traditional chess piece",
+  "curved neck built from stacked bricks and slopes",
+  "stylised horse head with pointed ear bricks and a flowing mane ridge",
+  "simple round eye tile and short bar for the muzzle line",
+  "two-tone colour block: dark body with a lighter mane stripe"
+ ],
+ "simplifications": [
+  "Removed the traditional thin carved horse silhouette in favor of a chunky stacked-brick head and neck, since thin curved shapes can't stand freely.",
+  "Simplified the mane into a ridge of stacked plates instead of flowing carved strands.",
+  "Made the base a simple stepped cylinder of bricks instead of a lathe-turned chess base, since that's easy to build with round plates.",
+  "Kept the pose completely static and upright, matching a real chess piece's stillness so no balancing or action pose is needed.",
+  "Reduced facial detail to one eye tile and a bar-nose, keeping recognisability without needing printed or curved organic surfaces."
+ ],
+ "image_prompt": "a studio product photo of an official LEGO set of a chunky stylised chess knight piece with a round stepped base, curved stacked-brick neck, and a horse head with pointed ear bricks and a mane ridge, built only from real LEGO bricks and plates, chunky stylised proportions, clean colour blocking, calm static pose, whole model in frame, 3/4 view, plain light background"
+}

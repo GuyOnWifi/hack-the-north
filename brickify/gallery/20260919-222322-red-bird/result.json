@@ -1,0 +1,25 @@
+{
+ "score": 3.0,
+ "round": 0,
+ "label": "r0",
+ "parts": 68,
+ "stands": true,
+ "collisions": 0,
+ "clean": true,
+ "issues": [
+  "Doesn't read as a bird at a glance - looks like a blocky red mass",
+  "Eyes are tiny dark studs jutting sideways instead of large white/black round eyes on the face",
+  "Beak is a small tan/orange plate instead of a prominent orange wedge beak",
+  "Wings are vertical upright wedge plates sticking up like fins rather than swept-back angled wings",
+  "Body lacks the rounded egg-shaped silhouette of the concept",
+  "Head not distinguished from body; no separate raised head block with studs",
+  "Colour blocking inconsistent - mixed bright red/dark red with tan pieces not in concept",
+  "Feet are flat tan plates in wrong positions, not orange feet under body",
+  "Exposed studs and unresolved surfaces make it look unfinished, not an official set",
+  "Baseplate is off-centre and model overhangs the plate edge"
+ ],
+ "issues_kernel": [],
+ "idea": "Red bird",
+ "distilled": null,
+ "seconds": 34
+}

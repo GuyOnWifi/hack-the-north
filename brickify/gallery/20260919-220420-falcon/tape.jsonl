@@ -1,0 +1,20 @@
+{"t": 0, "actor": "router", "kind": "route", "text": "'falcon': concept art, 1 designs to choose from, then up to 1 rounds of notes", "status": "ok"}
+{"t": 1, "actor": "planner", "kind": "distill", "text": "making 'falcon' buildable", "status": "running"}
+{"t": 6221, "actor": "planner", "kind": "distill", "text": "concept: A LEGO model of a chunky stylised falcon perched on a short branch base, built from stacked bricks and plates with wedge-plate wings folded at its sides and a curved slope head. (changed: Replaced mid-flight pose with a calm perched stance since dynamic flying poses aren't buildable; Turned spread wings into folded wedge-plate wings against the body for a stable, simple silhouette)", "status": "ok"}
+{"t": 6223, "actor": "designer", "kind": "concept", "text": "drawing the concept as an official LEGO set", "status": "running"}
+{"t": 36131, "actor": "designer", "kind": "concept", "text": "concept ready", "status": "ok"}
+{"t": 36161, "actor": "designer", "kind": "brief", "text": "reading the concept and writing the build brief", "status": "running"}
+{"t": 36161, "actor": "designer", "kind": "views", "text": "turning the concept to see its side and back", "status": "running"}
+{"t": 65384, "actor": "designer", "kind": "views", "text": "got 2 extra view(s): side, back", "status": "ok"}
+{"t": 149930, "actor": "designer", "kind": "brief", "text": "brief written: 9 sub-assemblies", "status": "ok"}
+{"t": 149999, "actor": "inspector", "kind": "reject", "text": "3022 in body 'body' collides with 3021 in body 'tail'; 3022 in body 'body' collides with 3938 in body 'tail'; 3022 in body 'body' collides with 3022 in body 'tail'", "status": "fail"}
+{"t": 154376, "actor": "repair", "kind": "fix", "text": "reworked tail to clear the kernel's objections", "status": "ok"}
+{"t": 154450, "actor": "builder", "kind": "build", "text": "round r0: 107 parts, 0 collisions, stands (trimmed 6)", "status": "ok"}
+{"t": 160866, "actor": "critic", "kind": "critique", "text": "comparing the renders with the concept", "status": "running"}
+{"t": 167370, "actor": "critic", "kind": "critique", "text": "score 2/10: Does not read as a falcon/eagle at a glance; looks like an abstract robot/lamp; Beak is a long thin yellow bar/antenna sticking straight out instead of a short hooked yellow beak; Wings are small grey/brown plates jutting sideways rather than large brown folded wings with dark grey tips", "status": "warn"}
+{"t": 167370, "actor": "designer", "kind": "revise", "text": "reworking the design from the critic's notes", "status": "running"}
+{"t": 262027, "actor": "designer", "kind": "revise", "text": "reworked stand, body, head", "status": "ok"}
+{"t": 262123, "actor": "builder", "kind": "build", "text": "round r1: 176 parts, 0 collisions, stands (trimmed 13)", "status": "ok"}
+{"t": 268254, "actor": "critic", "kind": "critique", "text": "comparing the renders with the concept", "status": "running"}
+{"t": 274973, "actor": "critic", "kind": "critique", "text": "score 2/10: Does not read as a falcon/eagle at a glance \u2014 looks like a jumble of brown wedges; Head is a raw white brick mass with exposed studs, no smooth sculpted crown or dark eye stripe; Beak is a yellow 2x2 brick stack sticking out sideways, not a hooked beak; misaligned on head", "status": "warn"}
+{"t": 454998, "actor": "scribe", "kind": "done", "text": "best: round 0 scored 2.0/10 (107 parts) in 455s", "status": "ok"}

@@ -1,0 +1,19 @@
+{
+ "subject": "shark with blue shoes",
+ "concept": "A LEGO model of a chunky, stylised shark standing upright on two short legs, wearing oversized blue LEGO shoes, with a rounded grey body and small triangular fin details.",
+ "features": [
+  "big triangular dorsal fin",
+  "wide grinning mouth with triangle teeth",
+  "chunky blue shoe feet",
+  "small side fins",
+  "grey and white colour blocking"
+ ],
+ "simplifications": [
+  "Changed swimming pose to a calm standing pose on two stud-built legs so it can stand upright with shoes visible",
+  "Made the shoes chunky blocky bricks instead of soft rounded sneaker shapes, since the system builds from bricks and plates",
+  "Kept the tail short and stubby rather than long and curved, since thin curved tails aren't buildable",
+  "Simplified the mouth to a flat panel with a few tooth studs instead of a detailed organic mouth",
+  "Reduced fins to a few wedge plates for a clean recognisable silhouette"
+ ],
+ "image_prompt": "a studio product photo of an official LEGO set of a chunky, stylised shark standing upright on two short legs, wearing oversized blue LEGO shoes, with a rounded grey body, small triangular dorsal fin, and a wide grinning mouth with triangle teeth, built only from real LEGO bricks and plates, chunky stylised proportions, clean colour blocking, calm static pose, whole model in frame, 3/4 view, plain light background"
+}

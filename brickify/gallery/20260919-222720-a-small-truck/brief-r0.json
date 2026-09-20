@@ -1,0 +1,163 @@
+{
+ "name": "delivery-truck",
+ "palette": {
+  "y": 14,
+  "w": 15,
+  "d": 72,
+  "t": 43,
+  "s": 71,
+  "k": 0,
+  "r": 4
+ },
+ "root": "chassis",
+ "bodies": [
+  {
+   "name": "chassis",
+   "surface": true,
+   "layers": [
+    [
+     "dddddddddd",
+     "d..dddd..d",
+     "d..dddd..d",
+     "dddddddddd"
+    ],
+    [
+     "dyyyyyyyyy",
+     "dyyyyyyyyy",
+     "dyyyyyyyyy",
+     "dyyyyyyyyy"
+    ],
+    [
+     "yyyyyywwwr",
+     "yyyyyywwww",
+     "yyyyyywwww",
+     "yyyyyywwwr"
+    ],
+    [
+     "yyyyyywwww",
+     "yyyyyywwww",
+     "yyyyyywwww",
+     "yyyyyywwww"
+    ],
+    [
+     "....yywwww",
+     "....t.wwww",
+     "....t.wwww",
+     "....yywwww"
+    ],
+    [
+     "....yywwww",
+     "....t.wwww",
+     "....t.wwww",
+     "....yywwww"
+    ],
+    [
+     "....yywwww",
+     "....t.wwww",
+     "....t.wwww",
+     "....yywwww"
+    ],
+    [
+     "....yywwww",
+     "....yywwww",
+     "....yywwww",
+     "....yywwww"
+    ],
+    [
+     "......wwww",
+     "......wwww",
+     "......wwww",
+     "......wwww"
+    ]
+   ],
+   "connectors": [
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      0,
+      2,
+      0
+     ],
+     "quarters": 1,
+     "colour": "y",
+     "attach": [
+      {
+       "body": "headlightL"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      0,
+      2,
+      3
+     ],
+     "quarters": 1,
+     "colour": "y",
+     "attach": [
+      {
+       "body": "headlightR"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "headlightL",
+   "parts": [
+    [
+     "98138",
+     "s",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "headlightR",
+   "parts": [
+    [
+     "98138",
+     "s",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  }
+ ],
+ "details": [
+  {
+   "kind": "wheels",
+   "body": "chassis",
+   "at": [
+    1,
+    0,
+    1
+   ],
+   "quarters": 1,
+   "colour": "k",
+   "rim": "s"
+  },
+  {
+   "kind": "wheels",
+   "body": "chassis",
+   "at": [
+    7,
+    0,
+    1
+   ],
+   "quarters": 1,
+   "colour": "k",
+   "rim": "s"
+  }
+ ]
+}

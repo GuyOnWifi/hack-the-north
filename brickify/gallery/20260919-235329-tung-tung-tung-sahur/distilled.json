@@ -1,0 +1,19 @@
+{
+ "subject": "tung tung tung sahur bat",
+ "concept": "A LEGO model of a chunky stylised wooden cricket-bat-like character with a long rectangular brick body, a carved face, and short stubby arms and legs, standing upright on a display stand.",
+ "features": [
+  "long flat plank-like body in brown tones",
+  "simple carved face with round eyes and open mouth",
+  "short stubby cylindrical arms sticking out sideways",
+  "small stubby legs or a stand for balance",
+  "textured wood-grain colour blocking in browns and tans"
+ ],
+ "simplifications": [
+  "Replaced the viral character's thin flat meme-image shape with a chunky stacked-brick plank body, since thin free-standing slabs aren't buildable.",
+  "Gave it a calm standing pose instead of the swinging/running motion seen in the meme videos.",
+  "Turned the face into simple round tile eyes and a plate mouth instead of a printed sticker face.",
+  "Made arms and legs short stubby brick-built stumps instead of thin dangling limbs.",
+  "Added a display stand to keep the tall plank shape stable and free-standing."
+ ],
+ "image_prompt": "a studio product photo of an official LEGO set of a chunky stylised wooden bat-shaped character with a long rectangular plank body, carved round eyes, an open mouth, short stubby arms and legs, standing on a clear display stand, built only from real LEGO bricks and plates, chunky stylised proportions, clean colour blocking in browns and tans, calm static pose, whole model in frame, 3/4 view, plain light background"
+}

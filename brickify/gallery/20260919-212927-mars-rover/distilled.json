@@ -1,0 +1,19 @@
+{
+ "subject": "chunky mars rover",
+ "concept": "A LEGO model of a chunky Mars rover with six rolling wheels, a boxy body, a raised camera mast, and a solar panel wing on each side.",
+ "features": [
+  "six real rolling wheels on short axles",
+  "boxy stacked-brick body in grey with a red/gold accent stripe",
+  "raised camera mast with two round eye-like lenses",
+  "flat wedge-plate solar panels angled out on each side",
+  "short bar antenna on top"
+ ],
+ "simplifications": [
+  "Kept the rover stationary on its wheels instead of mid-drive or tilted on rocky terrain, since dynamic poses aren't buildable",
+  "Made solar panels flat wedge plates instead of thin fragile panels, for a sturdy chunky build",
+  "Simplified the camera mast into a short chunky post topped with round tile eyes instead of a detailed instrument cluster",
+  "Reduced antenna to a single short bar instead of thin wiring or a dish arm, avoiding fragile thin parts",
+  "Used clean 3-color blocking (grey, gold, black) instead of realistic weathered metal textures"
+ ],
+ "image_prompt": "a studio product photo of an official LEGO set of a chunky Mars rover with six rolling wheels, a boxy grey body with a gold accent stripe, a raised camera mast with round lens eyes, and angled wedge-plate solar panels on each side, built only from real LEGO bricks and plates, chunky stylised proportions, clean colour blocking, calm static pose, whole model in frame, 3/4 view, plain light background"
+}

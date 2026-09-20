@@ -1,0 +1,11 @@
+{"t": 0, "actor": "router", "kind": "route", "text": "'Chess piece Knight': concept art, 1 designs to choose from, then up to 1 rounds of notes", "status": "ok"}
+{"t": 0, "actor": "planner", "kind": "distill", "text": "making 'Chess piece Knight' buildable", "status": "running"}
+{"t": 7730, "actor": "planner", "kind": "distill", "text": "concept: A LEGO model of a chess knight piece, built as a chunky stylised horse head and neck rising from a round chess-piece base, sitting stationary and proud like a display statuette. (changed: Removed the traditional thin carved horse silhouette in favor of a chunky stacked-brick head and neck, since thin curved shapes can't stand freely.; Simplified the mane into a ridge of stacked plates instead of flowing carved strands.)", "status": "ok"}
+{"t": 7731, "actor": "designer", "kind": "concept", "text": "drawing the concept as an official LEGO set", "status": "running"}
+{"t": 35202, "actor": "designer", "kind": "concept", "text": "concept ready", "status": "ok"}
+{"t": 35251, "actor": "designer", "kind": "views", "text": "turning the concept to see its side and back", "status": "running"}
+{"t": 35251, "actor": "designer", "kind": "brief", "text": "reading the concept and writing the build brief", "status": "running"}
+{"t": 63080, "actor": "designer", "kind": "views", "text": "got 2 extra view(s): side, back", "status": "ok"}
+{"t": 100040, "actor": "designer", "kind": "brief", "text": "brief written: 5 sub-assemblies", "status": "ok"}
+{"t": 100118, "actor": "builder", "kind": "build", "text": "round r0: 109 parts, 0 collisions, stands (trimmed 4)", "status": "ok"}
+{"t": 108315, "actor": "critic", "kind": "critique", "text": "comparing the renders with the concept", "status": "running"}

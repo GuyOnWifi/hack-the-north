@@ -1,0 +1,18 @@
+{"t": 0, "actor": "router", "kind": "route", "text": "'dog': distill, concept, views, brief, then build/critique x3 max", "status": "ok"}
+{"t": 0, "actor": "router", "kind": "distill", "text": "making 'dog' buildable", "status": "running"}
+{"t": 8959, "actor": "router", "kind": "distill", "text": "concept: A chunky sitting puppy in a calm front-facing pose, built from stacked bricks with rounded slopes, big floppy ears on hinges, a round black nose, and a short stubby tail. (changed: sitting pose instead of standing or running, so it rests stably on four blocky legs; floppy ears are flat plates on one hinge angle, not curved organic shapes)", "status": "ok"}
+{"t": 8960, "actor": "designer", "kind": "concept", "text": "drawing the concept as an official LEGO set", "status": "running"}
+{"t": 57501, "actor": "designer", "kind": "concept", "text": "concept ready (dog.png)", "status": "ok"}
+{"t": 57502, "actor": "designer", "kind": "views", "text": "turning the concept to see its side and back", "status": "running"}
+{"t": 118753, "actor": "designer", "kind": "views", "text": "got 2 extra view(s): side, back", "status": "ok"}
+{"t": 118754, "actor": "designer", "kind": "brief", "text": "reading the concept and writing the build brief", "status": "running"}
+{"t": 195509, "actor": "designer", "kind": "brief", "text": "brief written: 7 sub-assemblies", "status": "ok"}
+{"t": 195603, "actor": "inspector", "kind": "reject", "text": "3622 in body 'body' collides with 3022 in body 'tail'; 3622 in body 'body' collides with 3022 in body 'tail'; 3622 in body 'body' collides with 3938 in body 'tail'", "status": "fail"}
+{"t": 248155, "actor": "repair", "kind": "fix", "text": "revised the brief to clear the kernel's objections", "status": "ok"}
+{"t": 248244, "actor": "scribe", "kind": "build", "text": "round 0: 139 parts, 0 collisions", "status": "ok"}
+{"t": 268344, "actor": "inspector", "kind": "critique", "text": "comparing the renders with the concept", "status": "running"}
+{"t": 352918, "actor": "inspector", "kind": "critique", "text": "score 3/10: The ears stick straight up like antlers. The hinge angles have the wrong sign, so they swing up instead of hanging down the sides of the head as floppy brown ears.; The build is a tall, narrow column. The concept is a squat, chunky sitting puppy with a big head, and here the head is no wider than the body and does not stand out.; The haunches do not read. The concept has big rounded back thighs on the sides, with long back paws sticking forward. The render shows boxy stacked legs.", "status": "warn"}
+{"t": 353027, "actor": "inspector", "kind": "reject", "text": "3001 in body 'body' collides with 3021 in body 'tail'; 3001 in body 'body' collides with 3021 in body 'tail'; 3001 in body 'body' collides with 3938 in body 'tail'", "status": "fail"}
+{"t": 413618, "actor": "repair", "kind": "fix", "text": "revised the brief to clear the kernel's objections", "status": "ok"}
+{"t": 413718, "actor": "scribe", "kind": "build", "text": "round 1: 142 parts, 0 collisions", "status": "ok"}
+{"t": 438693, "actor": "inspector", "kind": "critique", "text": "comparing the renders with the concept", "status": "running"}

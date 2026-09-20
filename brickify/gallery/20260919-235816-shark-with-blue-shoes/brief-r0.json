@@ -1,0 +1,486 @@
+{
+ "name": "shark-standing",
+ "palette": {
+  "g": 71,
+  "w": 15,
+  "b": 1,
+  "r": 320,
+  "k": 0
+ },
+ "root": "body",
+ "bodies": [
+  {
+   "name": "body",
+   "layers": [
+    [
+     "bbbb..",
+     "bbbb..",
+     "......",
+     "bbbb..",
+     "bbbb.."
+    ],
+    [
+     "bbbb..",
+     "bbbb..",
+     "......",
+     "bbbb..",
+     "bbbb.."
+    ],
+    [
+     ".bbb..",
+     ".bbb..",
+     "......",
+     ".bbb..",
+     ".bbb.."
+    ],
+    [
+     ".gg...",
+     ".gg...",
+     "......",
+     ".gg...",
+     ".gg..."
+    ],
+    [
+     ".gg...",
+     ".gg...",
+     "......",
+     ".gg...",
+     ".gg..."
+    ],
+    [
+     ".gg...",
+     ".gg...",
+     "......",
+     ".gg...",
+     ".gg..."
+    ],
+    [
+     ".ggg..",
+     "wwgg..",
+     "wwgg..",
+     "wwgg..",
+     ".ggg.."
+    ],
+    [
+     ".ggg..",
+     "wwgg..",
+     "wwgg..",
+     "wwgg..",
+     ".ggg.."
+    ],
+    [
+     ".ggg..",
+     "wwgg..",
+     "wwgg..",
+     "wwgg..",
+     ".ggg.."
+    ],
+    [
+     ".ggg..",
+     "wwgg..",
+     "wwgg..",
+     "wwgg..",
+     ".ggg.."
+    ],
+    [
+     ".ggg..",
+     "wwgg..",
+     "wwgg..",
+     "wwgg..",
+     ".ggg.."
+    ],
+    [
+     ".ggg..",
+     "wwgg..",
+     "wwgg..",
+     "wwgg..",
+     ".ggg.."
+    ],
+    [
+     ".ggg..",
+     "wwgg..",
+     "wwgg..",
+     "wwgg..",
+     ".ggg.."
+    ],
+    [
+     "......",
+     ".wgg..",
+     "wwgg..",
+     ".wgg..",
+     "......"
+    ],
+    [
+     "......",
+     ".wgg..",
+     "wwgg..",
+     ".wgg..",
+     "......"
+    ]
+   ],
+   "connectors": [
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      1,
+      13,
+      1
+     ],
+     "quarters": 1,
+     "colour": "g",
+     "attach": [
+      {
+       "body": "head",
+       "angle": -6
+      }
+     ]
+    },
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      3,
+      13,
+      2
+     ],
+     "quarters": 1,
+     "colour": "g",
+     "attach": [
+      {
+       "body": "dorsal",
+       "angle": -25
+      }
+     ]
+    },
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      1,
+      9,
+      0
+     ],
+     "quarters": 0,
+     "colour": "g",
+     "attach": [
+      {
+       "body": "finL",
+       "angle": 55
+      }
+     ]
+    },
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      1,
+      9,
+      4
+     ],
+     "quarters": 0,
+     "colour": "g",
+     "attach": [
+      {
+       "body": "finR",
+       "angle": -55
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "head",
+   "origin": [
+    -4,
+    16,
+    0
+   ],
+   "layers": [
+    [
+     ".wwww.",
+     "wwwwwg",
+     "wwwwwg",
+     "wwwwwg",
+     ".wwww."
+    ],
+    [
+     ".wwww.",
+     "wwwwwg",
+     "wwwwwg",
+     "wwwwwg",
+     ".wwww."
+    ],
+    [
+     ".wwwwg",
+     "rrwwwg",
+     "rrwwwg",
+     "rrwwwg",
+     ".wwwwg"
+    ],
+    [
+     ".wwggg",
+     "wwwggg",
+     "wwwggg",
+     "wwwggg",
+     ".wwggg"
+    ],
+    [
+     ".ggggg",
+     "gggggg",
+     "gggggg",
+     "gggggg",
+     ".ggggg"
+    ],
+    [
+     ".ggggg",
+     "gggggg",
+     "gggggg",
+     "gggggg",
+     ".ggggg"
+    ],
+    [
+     ".ggggg",
+     "gggggg",
+     "gggggg",
+     "gggggg",
+     ".ggggg"
+    ],
+    [
+     "......",
+     ".ggggg",
+     ".ggggg",
+     ".ggggg",
+     "......"
+    ]
+   ],
+   "connectors": [
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      2,
+      5,
+      0
+     ],
+     "quarters": 0,
+     "colour": "g",
+     "attach": [
+      {
+       "body": "eyeL"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      2,
+      5,
+      4
+     ],
+     "quarters": 2,
+     "colour": "g",
+     "attach": [
+      {
+       "body": "eyeR"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      0,
+      2,
+      1
+     ],
+     "quarters": 1,
+     "colour": "r",
+     "attach": [
+      {
+       "body": "tooth1"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      0,
+      2,
+      2
+     ],
+     "quarters": 1,
+     "colour": "r",
+     "attach": [
+      {
+       "body": "tooth2"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      0,
+      2,
+      3
+     ],
+     "quarters": 1,
+     "colour": "r",
+     "attach": [
+      {
+       "body": "tooth3"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "dorsal",
+   "origin": [
+    3,
+    16,
+    2
+   ],
+   "layers": [
+    [
+     "gg",
+     "gg"
+    ],
+    [
+     "gg",
+     "gg"
+    ],
+    [
+     "gg",
+     "gg"
+    ],
+    [
+     "gg",
+     "gg"
+    ],
+    [
+     ".g",
+     ".g"
+    ],
+    [
+     ".g",
+     ".g"
+    ]
+   ]
+  },
+  {
+   "name": "finL",
+   "origin": [
+    1,
+    12,
+    -2
+   ],
+   "layers": [
+    [
+     "gg",
+     "gg",
+     "gg"
+    ],
+    [
+     "..",
+     "gg",
+     "gg"
+    ]
+   ]
+  },
+  {
+   "name": "finR",
+   "origin": [
+    1,
+    12,
+    4
+   ],
+   "layers": [
+    [
+     "gg",
+     "gg",
+     "gg"
+    ],
+    [
+     "gg",
+     "gg",
+     ".."
+    ]
+   ]
+  },
+  {
+   "name": "eyeL",
+   "parts": [
+    [
+     "98138",
+     "k",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "eyeR",
+   "parts": [
+    [
+     "98138",
+     "k",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "tooth1",
+   "parts": [
+    [
+     "98138",
+     "w",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "tooth2",
+   "parts": [
+    [
+     "98138",
+     "w",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "tooth3",
+   "parts": [
+    [
+     "98138",
+     "w",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  }
+ ],
+ "details": []
+}

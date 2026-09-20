@@ -1,0 +1,308 @@
+{
+ "name": "chunky red bird",
+ "palette": {
+  "d": 320,
+  "r": 4,
+  "o": 25,
+  "w": 15,
+  "k": 0,
+  "s": 71
+ },
+ "root": "base",
+ "bodies": [
+  {
+   "name": "base",
+   "surface": false,
+   "layers": [
+    [
+     "ssssss",
+     "ssssss",
+     "ssssss",
+     "ssssss",
+     "ssssss",
+     "ssssss"
+    ]
+   ],
+   "parts": [
+    [
+     "3069b",
+     "o",
+     [
+      4,
+      1,
+      1
+     ]
+    ],
+    [
+     "3069b",
+     "o",
+     [
+      4,
+      1,
+      4
+     ]
+    ]
+   ],
+   "connectors": [
+    {
+     "part": "3937",
+     "kind": "hinge",
+     "at": [
+      2,
+      1,
+      2
+     ],
+     "colour": "d",
+     "attach": [
+      {
+       "body": "body",
+       "angle": 0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "body",
+   "origin": [
+    0,
+    4,
+    1
+   ],
+   "layers": [
+    [
+     "..ddd.",
+     ".ddddd",
+     ".ddddd",
+     ".ddddd",
+     "..ddd."
+    ],
+    [
+     "..ddd.",
+     ".ddddd",
+     ".ddddd",
+     ".ddddd",
+     "..ddd."
+    ],
+    [
+     ".ddddd",
+     ".ddddd",
+     "dddddd",
+     ".ddddd",
+     ".ddddd"
+    ],
+    [
+     ".ddddd",
+     ".ddddd",
+     "dddddd",
+     ".ddddd",
+     ".ddddd"
+    ],
+    [
+     ".rrrrr",
+     ".rrrrr",
+     "rrrrrr",
+     ".rrrrr",
+     ".rrrrr"
+    ],
+    [
+     "..rrr.",
+     ".rrrrr",
+     ".rrrrr",
+     ".rrrrr",
+     "..rrr."
+    ],
+    [
+     "..rrr.",
+     ".rrrrr",
+     ".rrrrr",
+     ".rrrrr",
+     "..rrr."
+    ],
+    [
+     "......",
+     "..rrr.",
+     "..rrr.",
+     "..rrr.",
+     "......"
+    ],
+    [
+     "......",
+     "..rrr.",
+     "..rrr.",
+     "..rrr.",
+     "......"
+    ]
+   ],
+   "connectors": [
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      5,
+      5,
+      1
+     ],
+     "quarters": 3,
+     "colour": "r",
+     "attach": [
+      {
+       "body": "eyeL"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      5,
+      5,
+      3
+     ],
+     "quarters": 3,
+     "colour": "r",
+     "attach": [
+      {
+       "body": "eyeR"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      5,
+      4,
+      2
+     ],
+     "quarters": 3,
+     "colour": "r",
+     "attach": [
+      {
+       "body": "beak"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      3,
+      3,
+      0
+     ],
+     "quarters": 0,
+     "colour": "d",
+     "attach": [
+      {
+       "body": "wingL"
+      }
+     ]
+    },
+    {
+     "part": "87087",
+     "kind": "side",
+     "at": [
+      3,
+      3,
+      4
+     ],
+     "quarters": 2,
+     "colour": "d",
+     "attach": [
+      {
+       "body": "wingR"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "eyeL",
+   "parts": [
+    [
+     "6141",
+     "w",
+     [
+      0,
+      0,
+      0
+     ]
+    ],
+    [
+     "98138",
+     "k",
+     [
+      0,
+      1,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "eyeR",
+   "parts": [
+    [
+     "6141",
+     "w",
+     [
+      0,
+      0,
+      0
+     ]
+    ],
+    [
+     "98138",
+     "k",
+     [
+      0,
+      1,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "beak",
+   "surface": false,
+   "layers": [
+    [
+     "oo"
+    ],
+    [
+     "o."
+    ]
+   ]
+  },
+  {
+   "name": "wingL",
+   "parts": [
+    [
+     "41770",
+     "r",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  },
+  {
+   "name": "wingR",
+   "parts": [
+    [
+     "41769",
+     "r",
+     [
+      0,
+      0,
+      0
+     ]
+    ]
+   ]
+  }
+ ],
+ "details": []
+}

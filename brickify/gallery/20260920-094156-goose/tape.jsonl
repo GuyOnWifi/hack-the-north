@@ -1,0 +1,19 @@
+{"t": 0, "actor": "router", "kind": "route", "text": "'goose': concept art, 1 designs to choose from, then up to 1 rounds of notes", "status": "ok"}
+{"t": 1, "actor": "planner", "kind": "distill", "text": "making 'goose' buildable", "status": "running"}
+{"t": 6015, "actor": "planner", "kind": "distill", "text": "concept: A LEGO model of a chunky standing goose with a curved white body, black head and neck, and an orange beak, built from stacked bricks and plates with a smooth sloped back. (changed: Made the goose stand calmly on two flat feet instead of mid-honk or flapping, since balance poses aren't buildable; Built the neck as a fixed curved stack of bricks rather than a thin free-bending shape)", "status": "ok"}
+{"t": 6016, "actor": "designer", "kind": "concept", "text": "drawing the concept as an official LEGO set", "status": "running"}
+{"t": 35879, "actor": "designer", "kind": "concept", "text": "concept ready", "status": "ok"}
+{"t": 35928, "actor": "designer", "kind": "views", "text": "turning the concept to see its side and back", "status": "running"}
+{"t": 35928, "actor": "designer", "kind": "brief", "text": "reading the concept and writing the build brief", "status": "running"}
+{"t": 66172, "actor": "designer", "kind": "views", "text": "got 2 extra view(s): side, back", "status": "ok"}
+{"t": 134631, "actor": "designer", "kind": "brief", "text": "brief written: 7 sub-assemblies", "status": "ok"}
+{"t": 134685, "actor": "builder", "kind": "build", "text": "round r0: 86 parts, 0 collisions, stands", "status": "ok"}
+{"t": 140831, "actor": "critic", "kind": "critique", "text": "comparing the renders with the concept", "status": "running"}
+{"t": 146040, "actor": "critic", "kind": "critique", "text": "score 3/10: Body is a small lumpy jumble of exposed studs and plates, not the smooth rounded goose body of the concept; Neck is far too tall and thin relative to the tiny body, ruining proportions; Beak is a plain 2x2 brick stuck on the side of the head rather than a tapered wedge/slope pointing forward", "status": "warn"}
+{"t": 146041, "actor": "designer", "kind": "revise", "text": "reworking the design from the critic's notes", "status": "running"}
+{"t": 211279, "actor": "designer", "kind": "revise", "text": "reworked body, neck, beak", "status": "ok"}
+{"t": 211357, "actor": "builder", "kind": "build", "text": "round r1: 97 parts, 0 collisions, stands", "status": "ok"}
+{"t": 217588, "actor": "critic", "kind": "critique", "text": "comparing the renders with the concept", "status": "running"}
+{"t": 223799, "actor": "critic", "kind": "critique", "text": "score 3/10: Body is a lumpy cluster of exposed slopes/studs, not the smooth clean ovoid of the concept; Beak is a stubby 2x2 stud-out block instead of a tapered orange wedge; reads as a box, not a bill; No visible legs/feet \u2014 only a tiny orange tile flush with the ground instead of standing orange legs", "status": "warn"}
+{"t": 227153, "actor": "critic", "kind": "pick", "text": "you kept after the critic's notes", "status": "ok"}
+{"t": 227154, "actor": "scribe", "kind": "done", "text": "best: round 1 scored 3.0/10 (97 parts) in 227s", "status": "ok"}

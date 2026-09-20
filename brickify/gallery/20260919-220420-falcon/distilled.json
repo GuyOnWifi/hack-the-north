@@ -1,0 +1,19 @@
+{
+ "subject": "perched falcon on stand",
+ "concept": "A LEGO model of a chunky stylised falcon perched on a short branch base, built from stacked bricks and plates with wedge-plate wings folded at its sides and a curved slope head.",
+ "features": [
+  "sharp hooked bar beak",
+  "folded wedge-plate wings with a contrasting color stripe",
+  "round tile eyes with a fierce brow detail",
+  "short stacked-brick perch with clawed feet",
+  "brown and white color-blocked chest plumage"
+ ],
+ "simplifications": [
+  "Replaced mid-flight pose with a calm perched stance since dynamic flying poses aren't buildable",
+  "Turned spread wings into folded wedge-plate wings against the body for a stable, simple silhouette",
+  "Simplified feather texture into clean color-blocked plate sections instead of many small overlapping parts",
+  "Made talons chunky bricks gripping a stubby branch instead of thin gripping claws",
+  "Kept beak as a short straight bar instead of a fine curved shape"
+ ],
+ "image_prompt": "a studio product photo of an official LEGO set of a chunky stylised falcon perched on a short branch base, built only from real LEGO bricks and plates, wedge-plate wings folded at its sides, curved slope head with a bar beak and round tile eyes, brown and white color-blocked plumage, chunky stylised proportions, clean colour blocking, calm static pose, whole model in frame, 3/4 view, plain light background"
+}

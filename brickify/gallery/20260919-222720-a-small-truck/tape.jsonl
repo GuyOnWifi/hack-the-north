@@ -1,0 +1,18 @@
+{"t": 0, "actor": "router", "kind": "route", "text": "'A small truck': concept art, 1 designs to choose from, then up to 1 rounds of notes", "status": "ok"}
+{"t": 0, "actor": "planner", "kind": "distill", "text": "making 'A small truck' buildable", "status": "running"}
+{"t": 5155, "actor": "planner", "kind": "distill", "text": "concept: A LEGO model of a small boxy delivery truck with a short hood, a chunky cab, and a rectangular cargo box, built from stacked bricks and plates with rolling wheels. (changed: Kept the truck stationary with all wheels on the ground instead of mid-motion; Simplified cargo box to a plain rectangular brick shape rather than doors that open or complex panels)", "status": "ok"}
+{"t": 5156, "actor": "designer", "kind": "concept", "text": "drawing the concept as an official LEGO set", "status": "running"}
+{"t": 35666, "actor": "designer", "kind": "concept", "text": "concept ready", "status": "ok"}
+{"t": 35698, "actor": "designer", "kind": "views", "text": "turning the concept to see its side and back", "status": "running"}
+{"t": 35698, "actor": "designer", "kind": "brief", "text": "reading the concept and writing the build brief", "status": "running"}
+{"t": 65332, "actor": "designer", "kind": "views", "text": "got 2 extra view(s): side, back", "status": "ok"}
+{"t": 85859, "actor": "designer", "kind": "brief", "text": "brief written: 3 sub-assemblies", "status": "ok"}
+{"t": 85892, "actor": "builder", "kind": "build", "text": "round r0: 79 parts, 0 collisions, stands", "status": "ok"}
+{"t": 92155, "actor": "critic", "kind": "critique", "text": "comparing the renders with the concept", "status": "running"}
+{"t": 99005, "actor": "critic", "kind": "critique", "text": "score 3/10: Overall silhouette is too low and squashed \u2014 reads as a blobby car/van, not a boxy delivery truck; Cargo box is rounded/curved on top instead of a flat-topped studded white box; Cab roof is domed with curved slopes rather than the flat yellow cab roof with pronounced hood", "status": "warn"}
+{"t": 99006, "actor": "designer", "kind": "revise", "text": "reworking the design from the critic's notes", "status": "running"}
+{"t": 129974, "actor": "designer", "kind": "revise", "text": "reworked chassis", "status": "ok"}
+{"t": 130063, "actor": "builder", "kind": "build", "text": "round r1: 63 parts, 0 collisions, stands", "status": "ok"}
+{"t": 136715, "actor": "critic", "kind": "critique", "text": "comparing the renders with the concept", "status": "running"}
+{"t": 143550, "actor": "critic", "kind": "critique", "text": "score 3/10: Cab is a flat stack of exposed-stud plates with no hood/roof shaping \u2014 reads as a brick slab, not a truck cab; Windscreen is a tiny sliver of trans-blue instead of the tall wraparound windshield; cab has no visible roof over it; Wheels are tiny and half-buried in the chassis; no wheel arches, ride height far too low so the model reads as a train car", "status": "warn"}
+{"t": 147696, "actor": "scribe", "kind": "done", "text": "best: round 0 scored 3.0/10 (79 parts) in 148s", "status": "ok"}

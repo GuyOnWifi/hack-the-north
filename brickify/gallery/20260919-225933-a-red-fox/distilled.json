@@ -1,0 +1,18 @@
+{
+ "subject": "sitting red fox",
+ "concept": "A LEGO model of a chunky sitting fox with a bushy stacked tail curled at its side, built from stacked bricks and plates with a curved slope back and pointed ear details.",
+ "features": [
+  "large triangular ears",
+  "white chest patch",
+  "black-tipped tail",
+  "pointed snout with black nose tile",
+  "bushy tail curled beside body"
+ ],
+ "simplifications": [
+  "Changed a running or pouncing pose to a calm sitting pose, since dynamic action poses aren't buildable",
+  "Made the tail a short curled stack of bricks 3-4 studs long instead of a long flowing tail",
+  "Simplified the face to flat side-stud eyes and a nose tile instead of a realistic muzzle",
+  "Used clean color blocking (orange-red, white, black) instead of blended fur texture"
+ ],
+ "image_prompt": "a studio product photo of an official LEGO set of a chunky sitting red fox with large triangular ears, a white chest patch, and a curled black-tipped bushy tail, built only from real LEGO bricks and plates, chunky stylised proportions, clean colour blocking, calm static sitting pose, whole model in frame, 3/4 view, plain light background"
+}

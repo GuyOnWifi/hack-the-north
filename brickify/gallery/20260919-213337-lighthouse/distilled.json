@@ -1,0 +1,19 @@
+{
+ "subject": "striped lighthouse",
+ "concept": "A LEGO model of a chunky cylindrical lighthouse tower with a red-and-white striped body, a lantern room on top, and a small rocky base plate.",
+ "features": [
+  "Tall round-brick tower with alternating red and white stripes",
+  "Glass-look lantern room at the top with a round tile light",
+  "Short conical roof cap",
+  "Small rock/grass base plate with a tuft of studs for texture",
+  "Tiny round window details along the tower side"
+ ],
+ "simplifications": [
+  "Made the tower a straight stacked-brick cylinder instead of a tapering realistic shape, since tapering needs many angled parts",
+  "Replaced a rotating light beam with a single bright round tile/dome, since light beams can't be physically built",
+  "Removed sea, waves and cliffs, since flowing water can't be built and would add a second scene",
+  "Kept the base small and flat instead of jagged rocks, since thin jagged shapes are fragile",
+  "Fixed the model upright with no railing figures or ladders, since thin railings and tiny accessories are hard to build stably"
+ ],
+ "image_prompt": "a studio product photo of an official LEGO set of a chunky cylindrical lighthouse tower with red-and-white striped body, a lantern room on top with a round light tile, a short conical roof cap, and a small rock/grass base plate, built only from real LEGO bricks and plates, chunky stylised proportions, clean colour blocking, calm static pose, whole model in frame, 3/4 view, plain light background"
+}
