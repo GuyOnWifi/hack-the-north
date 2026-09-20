@@ -40,6 +40,41 @@ const BL_FALLBACK = 86; // Light Bluish Gray
 
 const blColour = (ldraw: number) => LDRAW_TO_BL[ldraw] ?? BL_FALLBACK;
 
+// LDraw part number -> BrickLink part number, where they differ. Verified against
+// BrickLink's catalog (a valid P=<id> renders; an invalid one 302s to notFound):
+//   3068b/3069b/4865a  — BrickLink dropped the mold-variant letter for these
+//   6141               — LEGO design id; BrickLink numbers the round 1x1 plate 4073
+//   3842a              — renumbered to 193a2
+//   3829a              — only sold as the complete assembly 3829c01
+//   3626bp01           — legacy print code doesn't resolve; use the plain head
+// (Do NOT blanket-strip suffixes: 2412b, 3044a, 3794a, 4865b, most pNN prints are
+// valid BrickLink parts. Only these specific ids are wrong.)
+const PART_REMAP: Record<string, string> = {
+  "3068b": "3068",
+  "3069b": "3069",
+  "4865a": "4865",
+  "6141": "4073",
+  "3842a": "193a2",
+  "3829a": "3829c01",
+  "3626bp01": "3626",
+};
+
+// LDraw parts with NO BrickLink Part equivalent — omitted so the whole upload
+// isn't rejected for a few unmatchable pieces: `20` (unidentifiable), `3828`
+// (steering wheel sub-part, only sold inside 3829c01), `u9132` (unofficial part).
+const PART_SKIP = new Set<string>(["20", "3828", "u9132"]);
+
+const blPart = (ldraw: string) => PART_REMAP[ldraw] ?? ldraw;
+export const isBuyable = (ldraw: string) => !PART_SKIP.has(ldraw);
+
+/** How many pieces map to BrickLink vs. can't — for an honest UI line. */
+export function buyableSummary(parts: BuildPart[]): { buyable: number; skipped: number } {
+  let buyable = 0;
+  let skipped = 0;
+  for (const p of parts) (isBuyable(p.part) ? (buyable += p.count) : (skipped += p.count));
+  return { buyable, skipped };
+}
+
 /** Rough per-part price (USD) so we can show a ballpark total. Not live pricing —
  * a small base plus a little per stud of footprint. Labelled "est." in the UI. */
 export function estimatePart(part: BuildPart): number {
@@ -66,11 +101,13 @@ export function partCount(parts: BuildPart[]): number {
 export function wantedListXml(parts: BuildPart[]): string {
   const merged = new Map<string, { id: string; colour: number; qty: number }>();
   for (const p of parts) {
+    if (!isBuyable(p.part)) continue; // no BrickLink match — omit, don't fail the upload
+    const id = blPart(p.part);
     const colour = blColour(p.colour);
-    const key = `${p.part}|${colour}`;
+    const key = `${id}|${colour}`;
     const e = merged.get(key);
     if (e) e.qty += p.count;
-    else merged.set(key, { id: p.part, colour, qty: p.count });
+    else merged.set(key, { id, colour, qty: p.count });
   }
   const items = [...merged.values()]
     .map(

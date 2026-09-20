@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ShoppingCart, X, ExternalLink } from "lucide-react";
 import { ChunkyButton } from "@/components/ui/controls";
-import { BRICKLINK_UPLOAD_URL, wantedListXml, estimateTotal, estimatePart, partCount } from "@/lib/bricklink";
+import { BRICKLINK_UPLOAD_URL, wantedListXml, estimateTotal, estimatePart, partCount, buyableSummary } from "@/lib/bricklink";
 import { colourHex, colourName } from "@/lib/data";
 import type { BuildPart } from "@/lib/types";
 
@@ -16,6 +16,7 @@ export function BuyBricks({ parts }: { parts: BuildPart[] }) {
   if (!parts.length) return null;
   const total = estimateTotal(parts);
   const n = partCount(parts);
+  const { skipped } = buyableSummary(parts);
   const rows = [...parts].sort((a, b) => estimatePart(b) - estimatePart(a));
 
   const exportToBrickLink = async () => {
@@ -49,6 +50,7 @@ export function BuyBricks({ parts }: { parts: BuildPart[] }) {
             </div>
             <p className="mt-1 shrink-0 text-[14px] text-ink-soft">
               {n} pieces · <span className="font-[700] text-ink">~${total.toFixed(2)}</span> est.
+              {skipped > 0 && <span className="text-ink-soft"> · {skipped} not on BrickLink</span>}
             </p>
 
             <div className="no-scrollbar mt-3 min-h-0 flex-1 overflow-y-auto rounded-[14px] border border-[#ececec]">
