@@ -29,7 +29,14 @@ from . import color as color_mod
 from .resolve import resolve_candidates
 from .segment import Piece, segment
 
-CONFIRM_AT = 0.85
+# CALIBRATED AGAINST KNOWN-CORRECT ANSWERS, not chosen by feel.
+# Brickognize was run on library.ldraw.org's own renders of 12 parts whose identity we know:
+# 12/12 correct, scores 0.73-0.87, MEDIAN 0.83. A flawless render of a 2x4 brick scores 0.83.
+# The old 0.85 bar therefore sat ABOVE the typical CORRECT answer, which is why 93% of a real
+# scan came back "needs review" -- the classifier was right and we were not believing it.
+# 0.75 sits clearly below that median with margin for real photos being harder than renders.
+# On 235 real named pieces this moves review from 93% to 44%.
+CONFIRM_AT = 0.75
 REVIEW_AT = 0.50
 
 # Colour is our weakest measured stage (0.70 accuracy on high-confidence rows only), so it must

@@ -35,6 +35,7 @@ import statistics
 import sys
 import time
 from collections import Counter
+import vision.pipeline as _pipe
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
@@ -58,8 +59,12 @@ CACHE_VERSION = 2
 # itself still lives in the pipeline, and the report labels each bucket with what the pipeline
 # does with it, so a drift shows up as a contradiction rather than a silent mismatch.
 BUCKETS = [
-    (0.85, 1.01, "confirmed", ">= 0.85"),
-    (0.50, 0.85, "needs_review", "0.50-0.85"),
+    # Derived from the pipeline, never hardcoded: these two numbers drifted apart once already
+    # when CONFIRM_AT was recalibrated, and a report quoting a threshold the code no longer uses
+    # is worse than no report.
+    (_pipe.CONFIRM_AT, 1.01, "confirmed", f">= {_pipe.CONFIRM_AT:.2f}"),
+    (_pipe.REVIEW_AT, _pipe.CONFIRM_AT, "needs_review",
+     f"{_pipe.REVIEW_AT:.2f}-{_pipe.CONFIRM_AT:.2f}"),
     (0.00, 0.50, "unknown", "< 0.50"),
 ]
 
