@@ -28,6 +28,9 @@ from ldraw import to_ldr
 # inventory switches to SOLVE mode (design within a real, finite bin).
 SESSION = Session(Inventory({}, unlimited=True))
 
+# where a POSTed reference sketch is stored (single-user demo: one current sketch)
+SKETCH_PATH = "/tmp/bricked_sketch.png"
+
 
 def _payload(vid=None):
     v = SESSION.versions.get(vid or SESSION.head)
@@ -86,8 +89,11 @@ class H(BaseHTTPRequestHandler):
             # Include the sequenced 0 STEP markers (HANDOFF: "LDrawLoader reads steps natively").
             return self._send(200, to_ldr(v.build, _payload()["steps"]) if v else "", "text/plain")
         if u.path == "/api/build_stream":
-            prompt = parse_qs(u.query).get("prompt", ["build a rover"])[0]
-            return self._stream_build(prompt)
+            q = parse_qs(u.query)
+            prompt = q.get("prompt", ["build a rover"])[0]
+            use_sketch = q.get("sketch", ["0"])[0] in ("1", "true")
+            sketch = SKETCH_PATH if use_sketch and os.path.exists(SKETCH_PATH) else None
+            return self._stream_build(prompt, sketch)
         if u.path == "/api/compare":
             # split-screen: 'LLM places bricks' (floats/topples) vs our solver
             from pipeline import compare
@@ -95,7 +101,7 @@ class H(BaseHTTPRequestHandler):
             return self._send(200, compare(prompt, SESSION.inv))
         self._send(404, {"error": "not found"})
 
-    def _stream_build(self, prompt):
+    def _stream_build(self, prompt, sketch=None):
         """Run a build and stream each tape event live as Server-Sent Events.
         Synchronous: the handler thread writes as Tape.emit fires."""
         import threading
@@ -141,7 +147,7 @@ class H(BaseHTTPRequestHandler):
         tape = Tape()
         tape.listeners.append(push)
         try:
-            SESSION.build(prompt, tape=tape)
+            SESSION.build(prompt, tape=tape, sketch=sketch)
             done = _payload()
             done["event"] = "done"
             push(done)
@@ -181,6 +187,16 @@ class H(BaseHTTPRequestHandler):
                 SESSION.inv = Inventory(counts) if counts else Inventory({}, unlimited=True)
                 return self._send(200, {"ok": True, "elements": len(counts),
                                         "mode": "solve" if counts else "imagine"})
+            elif self.path == "/api/sketch":
+                # store a reference sketch (data URL or bare base64 PNG) for the
+                # next build_stream?sketch=1 — the planner builds toward it.
+                import base64
+                data = body.get("image", "")
+                if "," in data:
+                    data = data.split(",", 1)[1]
+                with open(SKETCH_PATH, "wb") as f:
+                    f.write(base64.b64decode(data))
+                return self._send(200, {"ok": True})
             else:
                 return self._send(404, {"error": "not found"})
         except Exception as e:
