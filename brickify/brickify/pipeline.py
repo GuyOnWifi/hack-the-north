@@ -1161,9 +1161,8 @@ def main():
     ap = argparse.ArgumentParser(prog="brickify.pipeline", description="Idea -> LEGO model (see module docstring).")
     ap.add_argument("idea", nargs="?", help='what to build, e.g. "dog" or "hummingbird" (or the change, with --edit)')
     ap.add_argument("--concept", type=Path, help="use this concept image instead of generating one")
-    ap.add_argument("--rounds", type=int, default=0, help="rounds of critic notes after the first build. Default 0: "
-                    "measured over four runs, revising the winner scored worse every time (5->3, 5->3, 5->2, 5->2), "
-                    "so the pipeline ships the best of --fan candidates instead")
+    ap.add_argument("--rounds", type=int, default=1, help="rounds of critic notes after the first build (default 1, "
+                    "same as the app: the critic reworks it once, then you choose between the versions)")
     ap.add_argument("--fresh", action="store_true", help="design it again instead of replaying one you already made")
     ap.add_argument("--fan", type=int, default=1, help="candidate designs to write in parallel and choose between (default 1; more gives the critic, or you, a choice)")
     ap.add_argument("--target", type=float, default=8.0, help="stop early at this critic score (default 8)")
