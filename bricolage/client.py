@@ -12,7 +12,36 @@ import os
 import json
 import hashlib
 import pathlib
+
+
+def _env(name, default, cast=float):
+    """A fat-fingered env var must not take the module down with it: pipeline.py
+    imports this unconditionally, DEMO_SAFE=1 included."""
+    try:
+        return cast(os.environ[name])
+    except (KeyError, ValueError, TypeError):
+        return default
+
+
 MODEL = "claude-opus-5"     # behind the adapter; swap to gpt for OpenAI prize
+
+# The latency knob. On claude-opus-5 thinking is ON when you omit `thinking`,
+# and output_config.effort defaults to "high" -- so an unconfigured call runs
+# the second-most-expensive setting available. This workload is a pick from an
+# 8-entry catalog with a ~170-token answer, so the deep exploration is bought
+# and not used. `low` is the panic setting: it is documented to skip thinking
+# on inputs it judges simple, and bin-fit arg choice is exactly that judgement.
+EFFORT = os.environ.get("BRICOLAGE_EFFORT", "medium")   # low|medium|high|xhigh|max
+
+# Invariant #8: every loop has a budget and a degradation path. The SDK default
+# is a 600 s read timeout with 2 retries -- ~30 minutes of stage silence on a
+# stalled connection. We stream, so READ_TIMEOUT bounds SILENCE between events
+# rather than total generation (a slow-but-healthy answer is never discarded),
+# and DEADLINE is the hard wall-clock ceiling. max_retries=0: a retry re-runs
+# the generation that just proved too slow, and the fallback is instant.
+LLM_READ_TIMEOUT = _env("BRICOLAGE_LLM_TIMEOUT", 20.0)
+LLM_DEADLINE = _env("BRICOLAGE_LLM_DEADLINE", 45.0)
+_SDK = None     # one client per process; keeps the connection pool for the server
 
 SYSTEM = """You are the DESIGNER in a LEGO build system. You decide WHAT to
 build. You never place a brick. You emit a composition: a tree of generator
@@ -110,6 +139,9 @@ class LLMClient:
     def __init__(self, tape=None):
         self.tape = tape
         self.calls = 0
+        self.degraded = False    # True once a provider fell back to the mock
+        self.last_error = None
+        self.last_usage = None   # the SDK Usage of the last real call, for the tape
 
     def propose_compose(self, prompt, inv_summary, noun, size, seed):
         """Ask the designer for a composition, memoised on disk.
@@ -124,7 +156,11 @@ class LLMClient:
         recorded op, never the model.
         """
         p = provider()
-        key = _cache_key(p, MODEL, prompt, inv_summary, noun, size, seed)
+        self.degraded = False
+        self.last_usage = None
+        # EFFORT is part of the answer, so it must be part of the key -- otherwise
+        # an effort sweep silently re-serves the previous setting's build.
+        key = _cache_key(p, MODEL, EFFORT, prompt, inv_summary, noun, size, seed)
         hit = _cache_get(key)
         if hit is not None:
             return hit
@@ -141,25 +177,103 @@ class LLMClient:
 
         # Only cache a real answer. The mock fallback is cheap to recompute and caching it would
         # pin a degraded result in place long after the network came back.
-        if comp is not None:
+        if comp is not None and not self.degraded:
             _cache_put(key, comp)
         return comp
 
     # ---- real providers (wired, inert without a key) -------------------
     def _anthropic(self, prompt, inv_summary, noun, size, seed):  # pragma: no cover
-        import anthropic  # noqa
-        client = anthropic.Anthropic()
-        msg = client.messages.create(
-            model=MODEL, max_tokens=16000,
-            system=[{"type": "text", "text": SYSTEM + "\n" + _CATALOG,
-                     "cache_control": {"type": "ephemeral"}}],
-            tools=[PROPOSE_TOOL], tool_choice={"type": "tool", "name": "propose_build"},
-            messages=[{"role": "user",
-                       "content": f"Bin: {inv_summary}\nBuild: {prompt}"}])
-        for block in msg.content:
-            if block.type == "tool_use":
-                return block.input
-        raise RuntimeError("model did not call propose_build")
+        """One SDK call, bounded, and it never raises.
+
+        Streamed on purpose: for a non-streaming call the read timeout is a
+        budget for the WHOLE generation, so a tight one throws away slow-but-
+        good answers. Streamed, the same number bounds silence between events,
+        which is what a stalled conference AP actually looks like. DEADLINE is
+        the separate hard ceiling, because pings can keep a stream alive
+        forever. Forced tool_choice is documented-legal with adaptive thinking
+        on claude-opus-5 (the ban applies to MANUAL thinking, and to the
+        fable/mythos family) -- do not "fix" it to auto.
+
+        Invariant #4 is untouched: the schema carries gen/args/attach, never a
+        coordinate.
+        """
+        import time
+        global _SDK
+        try:
+            # Imported here, not at module scope: `anthropic` reaches the demo
+            # laptop through requirements.txt, and DEMO_SAFE=1 must still run
+            # on a machine that never installed it.
+            import anthropic
+            if _SDK is None:
+                _SDK = anthropic.Anthropic(
+                    timeout=anthropic.Timeout(LLM_READ_TIMEOUT, connect=5.0),
+                    max_retries=0)
+            deadline = time.monotonic() + LLM_DEADLINE
+            with _SDK.messages.stream(
+                    model=MODEL, max_tokens=16000,
+                    thinking={"type": "adaptive"},      # the opus-5 default; explicit
+                                                        # so a swap to opus-4-8, where
+                                                        # omitting it means NO thinking,
+                                                        # cannot change behaviour silently
+                    output_config={"effort": EFFORT},
+                    system=[{"type": "text", "text": SYSTEM + "\n" + _CATALOG,
+                             "cache_control": {"type": "ephemeral"}}],
+                    tools=[PROPOSE_TOOL],
+                    tool_choice={"type": "tool", "name": "propose_build"},
+                    messages=[{"role": "user",
+                               "content": f"Bin: {inv_summary}\nBuild: {prompt}"}]) as stream:
+                for _ in stream:
+                    if time.monotonic() > deadline:
+                        raise TimeoutError(
+                            f"designer exceeded {LLM_DEADLINE:g}s wall clock")
+                msg = stream.get_final_message()
+            self.last_usage = getattr(msg, "usage", None)
+            if os.environ.get("BRICOLAGE_LLM_STATS"):
+                self._log_usage(msg)
+            # opus-5 safety classifiers can decline with HTTP 200 and
+            # stop_reason "refusal"; there is no tool_use block in that turn.
+            if msg.stop_reason != "refusal":
+                for block in msg.content:
+                    if block.type == "tool_use":
+                        return block.input
+            self.last_error = f"no proposal (stop_reason={msg.stop_reason})"
+        except Exception as e:
+            # ImportError, no key (a bare TypeError, NOT an AnthropicError),
+            # timeout, dead wifi, 429, 500 -- one answer on stage: take the
+            # deterministic build and keep moving.
+            self.last_error = f"{type(e).__name__}: {e}"
+        return self._degrade(prompt, inv_summary, noun, size, seed)
+
+    def _degrade(self, prompt, inv_summary, noun, size, seed):
+        """Fall back to the offline designer, loudly. Marked degraded so
+        propose_compose does not pin this answer on disk long after the
+        network came back."""
+        import sys
+        self.degraded = True
+        print(f"[llm] falling back to the offline designer: {self.last_error}",
+              file=sys.stderr)
+        if self.tape is not None:
+            self.tape.emit("designer", "degrade",
+                           f"designer unreachable ({self.last_error}); using the "
+                           f"known-good template", status="warn", ms=1)
+        return self._mock(prompt, inv_summary, noun, size, seed)
+
+    @staticmethod
+    def _log_usage(msg):
+        """BRICOLAGE_LLM_STATS=1 prints the two numbers that settle the open
+        questions: thinking_tokens (is effort the bottleneck?) and the cache
+        counters (is the ~1.5 KB prefix over opus-5's 512-token minimum?)."""
+        import sys
+        try:
+            u = msg.usage
+            d = getattr(u, "output_tokens_details", None)
+            print(f"[llm] effort={EFFORT} out={u.output_tokens} "
+                  f"thinking={getattr(d, 'thinking_tokens', '?')} "
+                  f"cache_write={getattr(u, 'cache_creation_input_tokens', 0)} "
+                  f"cache_read={getattr(u, 'cache_read_input_tokens', 0)} "
+                  f"fresh_in={u.input_tokens}", file=sys.stderr)
+        except Exception:
+            pass
 
     def _openai(self, prompt, inv_summary, noun, size, seed):  # pragma: no cover
         raise NotImplementedError("flip PROVIDER=openai after wiring the SDK")
@@ -187,9 +301,12 @@ class LLMClient:
             if comp and "root" in comp and "gen" in comp.get("root", {}):
                 comp.setdefault("name", noun.title())
                 return comp
-        except Exception:
-            pass
-        return self._mock(prompt, inv_summary, noun, size, seed)
+        except Exception as e:
+            self.last_error = f"{type(e).__name__}: {e}"
+        # Same cache-poisoning bug lived here: a mock IS a dict, so without the
+        # flag propose_compose pinned it on disk under a real-provider key.
+        self.last_error = self.last_error or "CLI returned no usable JSON"
+        return self._degrade(prompt, inv_summary, noun, size, seed)
 
     # ---- deterministic mock (stands in for Opus; identical output shape) --
     def _mock(self, prompt, inv_summary, noun, size, seed):
@@ -200,10 +317,20 @@ class LLMClient:
         """For open-ended shapes: the designer imagines a voxel field for ANY
         noun. Mock is procedural; claude_cli asks the real model for layer masks
         (a CHOICE of shape — the solver still legalises + verifies it)."""
-        if provider() in ("claude_cli", "claude-cli", "cli"):
+        p = provider()
+        if p in ("claude_cli", "claude-cli", "cli"):
             v = self._claude_shape(prompt, noun)
             if v:
                 return v
+        elif p != "mock":
+            # There is no SDK path here. Say so, rather than let the "sketching…"
+            # line above imply we asked the model and got this back.
+            msg = (f"no {p} path for open-ended shapes — using the procedural "
+                   f"'{noun}' shape")
+            if self.tape is not None:
+                self.tape.emit("designer", "degrade", msg, status="warn", ms=1)
+            else:
+                print(f"[llm:propose_shape] {msg}")
         from proposer import voxel_shape
         return voxel_shape(noun, size)
 
