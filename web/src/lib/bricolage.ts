@@ -113,21 +113,45 @@ export const bricolage = {
   redo: () => post("/redo"),
   setInventory: (items: { part: string; color: number; count: number }[]) => request<{ ok: boolean; elements: number }>("/inventory", { method: "POST", body: JSON.stringify({ items }) }),
 
-  /** Live build: tape events arrive as they fire; resolves with the final payload. */
-  stream(prompt: string, onEvent: (e: TapeEvent) => void): Promise<Payload> {
+  /** Live build: tape events arrive as they fire; resolves with the final payload.
+   *
+   *  stallMs is a watchdog, not a deadline: it re-arms on every event, so a slow
+   *  build that is still emitting tape lines is never cut off. EventSource.onerror
+   *  only fires on a CLOSED connection, never on an OPEN-but-silent one, so without
+   *  this a server stuck mid-request leaves "Designing…" on screen forever and
+   *  designBuild's fixture fallback is unreachable — the one case it exists for.
+   *  Sits above the server's own ceiling (45 s deadline) so the server's honest
+   *  degrade-to-template wins the race and this stays a last resort. */
+  stream(prompt: string, onEvent: (e: TapeEvent) => void, stallMs = 60000): Promise<Payload> {
     return new Promise((resolve, reject) => {
       const es = new EventSource(`${BASE}/build_stream?prompt=${encodeURIComponent(prompt)}`);
       let settled = false;
+      let watchdog: ReturnType<typeof setTimeout> | undefined;
       const done = (fn: () => void) => {
         if (settled) return;
         settled = true;
+        clearTimeout(watchdog);
         es.close();
         fn();
       };
+      const arm = () => {
+        clearTimeout(watchdog);
+        watchdog = setTimeout(
+          () => done(() => reject(new ApiError("The builder stopped responding"))),
+          stallMs,
+        );
+      };
+      arm();
       es.onmessage = (m) => {
-        const data = JSON.parse(m.data);
+        arm();
+        let data: Payload & { event?: string };
+        try {
+          data = JSON.parse(m.data);
+        } catch {
+          return; // a torn frame is not a stall; the watchdog is already re-armed
+        }
         if (data.event === "done") done(() => resolve(data as Payload));
-        else onEvent(data as TapeEvent);
+        else onEvent(data as unknown as TapeEvent);
       };
       es.onerror = () => done(() => reject(new ApiError("Lost connection to the builder")));
     });
