@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, ArrowUp, BookOpen, Filter, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowUp, BookOpen, Filter, Sparkles, Star, X } from "lucide-react";
 import { TabBar } from "@/components/ui/chrome";
-import { BrickChip, IconTile, YellowBucket } from "@/components/ui/controls";
+import { BrickChip, ChunkyButton, IconTile, YellowBucket } from "@/components/ui/controls";
 import { IsoBrick } from "@/components/ui/IsoBrick";
 import { ModelSnapshot } from "@/components/three/Snapshots";
 import { BUILDS, THEMES } from "@/lib/data";
@@ -33,7 +33,9 @@ function Builds() {
   const [filter, setFilter] = useState<string | null>(theme && theme !== "Anything" ? theme : null);
 
   const list = useMemo(() => BUILDS.filter((b) => !filter || b.theme === filter), [filter]);
-  const saved = useLibrary();
+  const library = useLibrary();
+  const saved = library.models;
+  const kept = saved.filter((m) => m.kept).length;
 
   const hero = current.build ?? list[0] ?? BUILDS[0];
 
@@ -96,12 +98,27 @@ function Builds() {
       {saved.length > 0 && (
         <section className="mt-9">
           <h2 className="text-center text-[30px] font-[800] tracking-[-0.02em] text-ink">Your builds</h2>
-          <p className="mx-auto mt-1 max-w-[320px] text-center text-[15px] text-ink-soft">Everything you have designed, newest first.</p>
+          <p className="mx-auto mt-1 max-w-[330px] text-center text-[15px] text-ink-soft">
+            {kept ? `${kept} kept of ${saved.length}. Clearing the rest leaves those alone.` : "Everything you have designed, newest first."}
+          </p>
           <div className="mt-6 grid grid-cols-2 gap-x-4 gap-y-7 px-[18px]">
             {saved.map((m) => (
-              <SavedCard key={m.id} model={m} onOpen={() => openSaved(m.id).then(() => router.push(`/build/${LIVE_ID}`))} />
+              <SavedCard
+                key={m.id}
+                model={m}
+                onOpen={() => openSaved(m.id).then(() => router.push(`/build/${LIVE_ID}`))}
+                onKeep={() => library.keep(m.id, !m.kept)}
+                onRemove={() => library.remove(m.id)}
+              />
             ))}
           </div>
+          {kept > 0 && kept < saved.length && (
+            <div className="mt-6 flex justify-center">
+              <ChunkyButton variant="white" className="!w-auto !px-6 !text-[16px]" onClick={library.clearRest}>
+                Clear the other {saved.length - kept}
+              </ChunkyButton>
+            </div>
+          )}
         </section>
       )}
 
@@ -171,6 +188,7 @@ function FloatingStuds() {
  *  reload, a restart and every new design after them. */
 function useLibrary() {
   const [models, setModels] = useState<SavedModel[]>([]);
+  const [reload, setReload] = useState(0);
   useEffect(() => {
     let alive = true;
     bricolage
@@ -180,26 +198,55 @@ function useLibrary() {
     return () => {
       alive = false;
     };
-  }, []);
-  return models;
+  }, [reload]);
+  const again = () => setReload((n) => n + 1);
+  return {
+    models,
+    remove: (id: string) => bricolage.removeModel(id).then(again).catch(() => {}),
+    keep: (id: string, on: boolean) => bricolage.keepModel(id, on).then(again).catch(() => {}),
+    clearRest: () => bricolage.clearUnkept().then(again).catch(() => {}),
+  };
 }
 
-/** One saved model: its own render, not a live canvas (taste rule 15). */
-function SavedCard({ model, onOpen }: { model: SavedModel; onOpen: () => void }) {
+/** One saved model: its own render, not a live canvas (taste rule 15). Keep
+ *  marks it to survive a clear; remove sends it to runs/removed/, so a mis-tap
+ *  costs nothing, which is why it goes without a confirmation step. */
+function SavedCard({ model, onOpen, onKeep, onRemove }: { model: SavedModel; onOpen: () => void; onKeep: () => void; onRemove: () => void }) {
   return (
-    <button onClick={onOpen} className="group flex flex-col items-center text-center transition-transform active:scale-[0.97]">
-      <div className="h-[140px] w-full overflow-hidden rounded-[18px] bg-[#cfe3f5]">
-        {model.thumb ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={bricolage.thumb(model.id)} alt={model.name} className="h-full w-full object-cover" />
-        ) : (
-          <div className="grid h-full w-full place-items-center">
-            <IsoBrick w={2} d={2} h={3} color="#9aa7b5" size={56} />
-          </div>
-        )}
+    <div className="group relative flex flex-col items-center text-center">
+      <button onClick={onOpen} className="w-full transition-transform active:scale-[0.97]">
+        <div className="h-[140px] w-full overflow-hidden rounded-[18px] bg-[#cfe3f5]" style={model.kept ? { outline: "3px solid #e3000b", outlineOffset: 2 } : undefined}>
+          {model.thumb ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={bricolage.thumb(model.id)} alt={model.name} className="h-full w-full object-cover" />
+          ) : (
+            <div className="grid h-full w-full place-items-center">
+              <IsoBrick w={2} d={2} h={3} color="#9aa7b5" size={56} />
+            </div>
+          )}
+        </div>
+        <span className="mt-2 block text-[17px] font-[800] leading-tight text-ink">{model.name}</span>
+        <span className="text-[16px] text-ink">{model.parts ?? "?"} pieces</span>
+      </button>
+      <div className="absolute right-2 top-2 flex gap-1.5">
+        <button
+          onClick={onKeep}
+          aria-label={model.kept ? `Stop keeping ${model.name}` : `Keep ${model.name}`}
+          title={model.kept ? "Kept" : "Keep this one"}
+          className="grid h-8 w-8 place-items-center rounded-[8px] shadow-[0_2px_0_rgba(0,0,0,0.15)] active:scale-95"
+          style={{ background: model.kept ? "#e3000b" : "rgba(255,255,255,0.92)" }}
+        >
+          <Star size={16} strokeWidth={2.6} color={model.kept ? "#ffffff" : "#1a1a1a"} fill={model.kept ? "#ffffff" : "none"} />
+        </button>
+        <button
+          onClick={onRemove}
+          aria-label={`Remove ${model.name}`}
+          title="Remove from your builds"
+          className="grid h-8 w-8 place-items-center rounded-[8px] bg-white/92 shadow-[0_2px_0_rgba(0,0,0,0.15)] active:scale-95"
+        >
+          <X size={16} strokeWidth={2.8} color="#1a1a1a" />
+        </button>
       </div>
-      <span className="mt-2 text-[17px] font-[800] leading-tight text-ink">{model.name}</span>
-      <span className="text-[16px] text-ink">{model.parts ?? "?"} pieces</span>
-    </button>
+    </div>
   );
 }

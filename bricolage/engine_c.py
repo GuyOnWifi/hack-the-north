@@ -153,11 +153,16 @@ def _yaw(m) -> float:
     return math.degrees(math.atan2(-m[2, 0], m[0, 0]))
 
 
+TRASH = "removed"  # where a deleted run goes: recoverable, not shredded
+
+
 def library() -> list[dict]:
     """Every model this machine has designed, newest first. Runs write
     themselves to disk as they go, so the library is just what is there."""
     out = []
     for d in sorted(c.RUNS.glob("*/"), reverse=True):
+        if d.name.startswith(".") or d.name == TRASH:
+            continue
         f = d / "result.json"
         if not f.exists():
             continue
@@ -169,8 +174,40 @@ def library() -> list[dict]:
             continue
         out.append({"id": d.name, "name": _title(r.get("idea") or d.name),
                     "idea": r.get("idea"), "parts": r.get("parts"), "score": r.get("score"),
-                    "stands": r.get("stands"), "made": d.name[:13], "thumb": bool(_thumb_path(d, r))})
+                    "stands": r.get("stands"), "made": d.name[:13], "kept": bool(r.get("kept")),
+                    "thumb": bool(_thumb_path(d, r))})
     return out
+
+
+def remove(run_id: str) -> bool:
+    """Take a model out of the library. It moves to runs/removed/, so a mis-tap
+    costs nothing: the folder is still there to drag back."""
+    d = c.RUNS / run_id
+    if not d.is_dir() or run_id.startswith(".") or run_id == TRASH:
+        return False
+    bin_ = c.RUNS / TRASH
+    bin_.mkdir(exist_ok=True)
+    dest = bin_ / run_id
+    if dest.exists():
+        dest = bin_ / f"{run_id}-{int(time.time())}"
+    d.rename(dest)
+    return True
+
+
+def keep(run_id: str, kept: bool = True) -> bool:
+    """Mark a model as one to keep, so clearing the rest leaves it alone."""
+    f = c.RUNS / run_id / "result.json"
+    if not f.exists():
+        return False
+    r = json.loads(f.read_text())
+    r["kept"] = kept
+    f.write_text(json.dumps(r, indent=1))
+    return True
+
+
+def clear_unkept() -> int:
+    """Everything you haven't marked to keep goes to runs/removed/."""
+    return sum(1 for m in library() if not m["kept"] and remove(m["id"]))
 
 
 def _title(idea: str) -> str:

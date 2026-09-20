@@ -184,6 +184,8 @@ export interface Choice {
 export interface SavedModel {
   id: string;
   name: string;
+  /** Marked to survive "clear the rest". */
+  kept?: boolean;
   idea?: string;
   parts?: number;
   score?: number | null;
@@ -264,6 +266,12 @@ export const bricolage = {
   thumb: (id: string) => `${BASE}/library/thumb?id=${encodeURIComponent(id)}`,
   /** Make a saved model the current one, so every build screen works on it. */
   open: (id: string) => post("/open", { id }, DESIGN_TIMEOUT),
+  /** Take one out of the library (it moves to runs/removed/, not the void). */
+  removeModel: (id: string) => request<{ ok: boolean }>("/library/remove", { method: "POST", body: JSON.stringify({ id }) }),
+  /** Mark one to survive a clear. */
+  keepModel: (id: string, keep: boolean) => request<{ ok: boolean }>("/library/keep", { method: "POST", body: JSON.stringify({ id, keep }) }),
+  /** Remove everything not marked kept. */
+  clearUnkept: () => request<{ ok: boolean; removed: number }>("/library/clear", { method: "POST", body: "{}" }),
   ldr: (version?: string) => request<string>(`/ldr${version ? `?version=${encodeURIComponent(version)}` : ""}`),
   build: (prompt: string) => post("/build", { prompt }),
   /** Natural language. The router decides between the instant path and a rebuild. */

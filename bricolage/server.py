@@ -11,6 +11,9 @@ stdlib only, so it runs under DEMO_SAFE with wifi off.
   GET  /api/library                    -> {models:[...]}  every model designed here
   GET  /api/library/thumb?id=           -> png of that model
   POST /api/open         {id}           -> make a saved model the current one
+  POST /api/library/remove {id}         -> move it to runs/removed/
+  POST /api/library/keep {id, keep}     -> mark it to survive a clear
+  POST /api/library/clear {}            -> remove everything not marked kept
   GET  /api/state                      -> current build/report/steps
   GET  /api/parts                      -> the editable part table (docs/EDITING.md D.2)
   GET  /api/ldr?version=                -> that version's model (default: current) as LDraw
@@ -258,6 +261,12 @@ class H(BaseHTTPRequestHandler):
             extra = None
             if self.path == "/api/build":
                 SESSION.build(body.get("prompt", "build a rover"))
+            elif self.path == "/api/library/remove":
+                return self._send(200, {"ok": engine_c.remove(body.get("id", ""))})
+            elif self.path == "/api/library/keep":
+                return self._send(200, {"ok": engine_c.keep(body.get("id", ""), bool(body.get("keep", True)))})
+            elif self.path == "/api/library/clear":
+                return self._send(200, {"ok": True, "removed": engine_c.clear_unkept()})
             elif self.path == "/api/open":
                 # bring a saved model back as the current one
                 b = engine_c.open_run(body.get("id", ""))
