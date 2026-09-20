@@ -121,10 +121,19 @@ def parse_plan(text):
     return bands
 
 
-def plan(prompt):
-    txt = _claude(PLANNER_PROMPT.format(prompt=prompt), model=PLANNER_MODEL, timeout=150)
+def plan(prompt, sketch=None):
+    p = PLANNER_PROMPT.format(prompt=prompt)
+    if sketch and os.path.exists(sketch):
+        # multimodal: the user's sketch is the shape reference; the planner reads
+        # it (claude -p @image) and slices THAT silhouette into bands.
+        p = (f"@{sketch}\nThe image above is the user's rough SKETCH of what they want. "
+             f"Design the LEGO model so its silhouette matches that sketch (they also call it "
+             f"\"{prompt}\"). Match the sketch's overall proportions — where it's wide, tall, "
+             f"narrow.\n\n{p}")
+    txt = _claude(p, model=PLANNER_MODEL, timeout=150)
     bands = parse_plan(txt)
-    _log(f"planner: {len(bands)} bands -> {[b['name'] for b in bands]}")
+    _log(f"planner: {len(bands)} bands -> {[b['name'] for b in bands]}"
+         f"{' (from sketch)' if sketch else ''}")
     if not bands:
         _log(f"planner produced no bands. head: {txt[:200]!r}")
     return bands
@@ -294,9 +303,10 @@ def _fixup_note(issues):
 
 
 # --------------------------------------------------------------- ASSEMBLE -----
-def build(prompt, name=None, tape=None, seed=0):
+def build(prompt, name=None, tape=None, seed=0, sketch=None):
     """Plan -> build each band (with per-band inspect + one repair) -> stream ->
-    assemble. Returns a Lane-B Build. Loud errors, no canned fallback."""
+    assemble. Returns a Lane-B Build. Loud errors, no canned fallback.
+    `sketch` (optional image path) is a visual reference the planner builds toward."""
     from tape import Tape
     tape = tape or Tape()
 
@@ -305,9 +315,11 @@ def build(prompt, name=None, tape=None, seed=0):
         return bricks.to_build(items, name=name or prompt.title(),
                                color=harness._color_for(prompt))
 
-    tape.emit("planner", "plan", f"planning the layer-by-layer build for '{prompt}'…",
+    tape.emit("planner", "plan",
+              f"planning the layer-by-layer build for '{prompt}'"
+              f"{' from your sketch' if sketch else ''}…",
               status="running", ms=1200, tokens=700)
-    bands = plan(prompt)
+    bands = plan(prompt, sketch)
     if not bands:
         tape.emit("planner", "plan", "planner returned no plan — no fallback", status="fail", ms=5)
         raise HarnessError(f"the planner produced no plan for “{prompt}”. Try again.")

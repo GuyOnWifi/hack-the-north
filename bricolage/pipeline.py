@@ -14,10 +14,11 @@ from tape import Tape
 from validate import validate
 
 
-def build_from_prompt(prompt, inventory, seed=0, tape=None, recipe=None):
+def build_from_prompt(prompt, inventory, seed=0, tape=None, recipe=None, sketch=None):
     """ONE path: the LEGO LLM harness. Every prompt is designed by the LLM in the
     3D brick grammar, then lint + force/torque physics checked. No hardcoded
-    template designs, no canned fallbacks — it's real model output or nothing."""
+    template designs, no canned fallbacks — it's real model output or nothing.
+    `sketch` (optional image path) is a visual reference the planner builds toward."""
     tape = tape or Tape()
     import agents
 
@@ -30,7 +31,7 @@ def build_from_prompt(prompt, inventory, seed=0, tape=None, recipe=None):
 
     _, noun, _, reason = router.route(prompt)
     tape.emit("router", "route", f"{reason}  (backend=sculpt)", ms=2)
-    build = agents.build(prompt, name=noun.title(), tape=tape, seed=seed)
+    build = agents.build(prompt, name=noun.title(), tape=tape, seed=seed, sketch=sketch)
     recipe = {"backend": "harness", "name": build.name,
               "color": build.parts[0].color if build.parts else 71,
               "bricks": build.provenance.get("bricks", [])}

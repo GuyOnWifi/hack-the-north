@@ -28,14 +28,15 @@ const EXPECTED_EVENTS = 6;
 function Create() {
   const params = useSearchParams();
   const prompt = params.get("prompt")?.trim() || "build a rover";
+  const fromSketch = params.get("sketch") === "1";
   const live = useLive();
   const started = useRef<string | null>(null);
 
   useEffect(() => {
     if (started.current === prompt) return;
     started.current = prompt;
-    designBuild(prompt);
-  }, [prompt]);
+    designBuild(prompt, { sketch: fromSketch });
+  }, [prompt, fromSketch]);
 
   const valid = live.payload?.report?.ok !== false;       // renderable / openable
   const stable = live.payload?.physics?.stable !== false;  // physically stands?

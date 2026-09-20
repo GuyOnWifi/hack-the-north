@@ -66,9 +66,14 @@ async function run(prompt: string | null, op: () => Promise<Payload>) {
 let steers: string[] = [];
 export const getSteers = () => steers;
 
-/** Designs a new build, streaming the agent tape. Falls back to the fixtures offline. */
-export async function designBuild(prompt: string) {
+/** Whether the current session's builds reference the uploaded sketch. */
+let useSketch = false;
+
+/** Designs a new build, streaming the agent tape. `opts.sketch` builds toward
+ * the sketch the user uploaded (via bricolage.uploadSketch). */
+export async function designBuild(prompt: string, opts?: { sketch?: boolean }) {
   steers = []; // a fresh request clears prior corrections
+  useSketch = !!opts?.sketch;
   return streamDesign(prompt, prompt);
 }
 
@@ -96,7 +101,7 @@ async function streamDesign(displayPrompt: string, fullPrompt: string) {
         return;
       }
       set({ tape: [...state.tape, e] });
-    });
+    }, { sketch: useSketch });
     await adopt(payload, "live");
   } catch (e) {
     // NO canned fallback. If the live builder fails, say so — never show a

@@ -4,7 +4,8 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
-import { QrCode, Search } from "lucide-react";
+import { QrCode, Search, Pencil } from "lucide-react";
+import { SketchPad } from "@/components/SketchPad";
 import { TabBar } from "@/components/ui/chrome";
 import { YellowBucket } from "@/components/ui/controls";
 import { LogoTile } from "@/components/ui/Logo";
@@ -19,6 +20,7 @@ const HeroBrick = dynamic(() => import("@/components/three/HeroBrick").then((m) 
 export default function Home() {
   const router = useRouter();
   const [query, setQuery] = useState("");
+  const [sketching, setSketching] = useState(false);
 
   return (
     <main className="relative mx-auto min-h-dvh max-w-[520px] pb-36" style={{ background: "linear-gradient(180deg,#90aac5 0%,#b9cde2 40%,#d3e1ef 70%,#e6eef7 100%)" }}>
@@ -37,11 +39,15 @@ export default function Home() {
           <Search size={26} strokeWidth={2.6} color="#1a1a1a" />
           <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Build me a rover" aria-label="Describe a build" className="h-full min-w-0 flex-1 bg-transparent text-[19px] text-ink outline-none placeholder:text-[#949494]" />
           <span className="h-9 w-px bg-[#d9d9d9]" />
+          <button type="button" onClick={() => setSketching(true)} aria-label="Sketch a build" className="grid h-11 w-11 place-items-center">
+            <Pencil size={26} strokeWidth={2.2} color="#1a1a1a" />
+          </button>
           <Link href="/scan" aria-label="Scan bricks" className="grid h-11 w-11 place-items-center">
             <QrCode size={28} strokeWidth={2.2} color="#1a1a1a" />
           </Link>
         </form>
       </YellowBucket>
+      {sketching && <SketchPad onClose={() => setSketching(false)} />}
 
       <Carousel />
 
