@@ -226,6 +226,13 @@ judged the same way.
       dev`: half the download and a quarter of the server memory.
 
 
+## Running it
+
+16. **Never `npm run build` while `./run.sh` is serving.** The build replaces
+    the chunks the running server is handing out, so every screen falls over
+    with "Something came apart" until it restarts. `./run.sh` already rebuilds
+    when the source has changed: stop it, run it again.
+
 ## Beyond the UI
 
 - **brickify/** is the app's designer (pipeline C: idea -> distill -> concept
