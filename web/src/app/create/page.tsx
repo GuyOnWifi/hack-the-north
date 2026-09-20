@@ -93,6 +93,7 @@ function Create() {
             url={modelUrl}
             mode={isDraft || !assembling ? "display" : "timeline"}
             step={astep}
+            landed={isDraft ? live.partialLanded : 0}
             spin={isDraft || !assembling ? 0.15 : 0}
             shadow
             onLoaded={(m) => !isDraft && assembly.start(m.stepCount)}

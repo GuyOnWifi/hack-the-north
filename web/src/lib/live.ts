@@ -18,6 +18,9 @@ export interface LiveState {
   modelUrl: string | null;
   /** A speculative-draft model shown WHILE the real build streams in. */
   partialUrl: string | null;
+  /** How many pieces of that draft were already on screen before this update,
+   *  so the viewer drops in the new ones instead of rebuilding the lot. */
+  partialLanded: number;
   /** The concept art the designer is working from, as it arrives. */
   art: { role: string; image: string }[];
   /** Candidate designs waiting to be picked (empty once chosen). */
@@ -28,7 +31,7 @@ export interface LiveState {
   error: string | null;
 }
 
-const initial: LiveState = { status: "idle", prompt: null, payload: null, modelUrl: null, partialUrl: null, art: [], choices: [], tape: [], source: null, error: null };
+const initial: LiveState = { status: "idle", prompt: null, payload: null, modelUrl: null, partialUrl: null, partialLanded: 0, art: [], choices: [], tape: [], source: null, error: null };
 let state = initial;
 const listeners = new Set<() => void>();
 
@@ -72,16 +75,24 @@ export async function designBuild(prompt: string) {
   return streamDesign(prompt, prompt);
 }
 
+/** The LDraw text of the draft currently on screen, to diff the next one against. */
+let lastDraft = "";
+const countParts = (ldr: string) => (ldr ? ldr.split("\n").filter((l) => l.startsWith("1 ")).length : 0);
+
 async function streamDesign(displayPrompt: string, fullPrompt: string) {
-  set({ status: "working", prompt: displayPrompt, tape: [], partialUrl: null, art: [], choices: [], error: null });
+  lastDraft = "";
+  set({ status: "working", prompt: displayPrompt, tape: [], partialUrl: null, partialLanded: 0, art: [], choices: [], error: null });
   try {
     const payload = await bricolage.stream(fullPrompt, (e) => {
       // a "geometry" event carries an LDraw blob (the speculative draft, or a
       // partial). Render it immediately instead of showing it as a tape row.
-      const g = e as TapeEvent & { kind?: string; ldr?: string; image?: string; role?: string; choices?: Choice[] };
+      const g = e as TapeEvent & { kind?: string; ldr?: string; draft?: boolean; image?: string; role?: string; choices?: Choice[] };
       if (g.kind === "geometry" && g.ldr) {
         const url = registerModelText(`partial-${state.tape.length}-${g.ldr.length}`, g.ldr);
-        set({ partialUrl: url, choices: [] });
+        // a draft grows as the design is written: keep what is already standing
+        const landed = g.draft && state.partialUrl ? countParts(lastDraft) : 0;
+        lastDraft = g.draft ? g.ldr : "";
+        set({ partialUrl: url, partialLanded: landed, choices: [] });
         return;
       }
       // the concept art, and the designs waiting to be picked, aren't tape rows

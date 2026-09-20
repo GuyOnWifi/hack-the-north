@@ -34,6 +34,10 @@ type Props = {
   yaw?: number;
   /** false pauses animation (one still frame stays up), for previews scrolled out of view. */
   active?: boolean;
+  /** Parts already on screen from the previous version of a model that is still
+   *  being written: everything after them drops in, and the camera eases to the
+   *  new size instead of snapping to it. */
+  landed?: number;
   onLoaded?: (model: PreparedModel) => void;
   onError?: (err: unknown) => void;
   className?: string;
@@ -81,6 +85,7 @@ class Rig {
   private readonly lifts = new Map<THREE.Object3D, THREE.Vector3>();
   private drop = { start: 0, parts: [] as PreparedModel["parts"] };
   private goal = { target: new THREE.Vector3(), dist: 10, snap: true };
+  private landed = 0;
   private dragging = false;
   private resumeAt = 0;
 
@@ -135,6 +140,12 @@ class Rig {
   }
 
   /** Returns how many parts drop in (for the landing sound). */
+  /** How much of this model was already on screen a moment ago (a growing draft). */
+  setLanded(n: number) {
+    this.landed = n;
+    if (n > 0) this.goal.snap = false; // ease to the new framing, never cut to it
+  }
+
   apply(mode: ViewMode, step: number) {
     const fresh: PreparedModel["parts"] = [];
     this.selection.length = 0;
@@ -155,6 +166,8 @@ class Rig {
         const ghosted = mode === "timeline" && future;
         this.setGhost(p.object, ghosted);
         placed = !ghosted;
+        // a draft that just grew: the pieces it gained drop into place
+        if (this.landed > 0 && i >= this.landed) fresh.push(p);
       }
       const marker = this.markers[i];
       if (marker) {
@@ -273,7 +286,7 @@ type SceneProps = Props & {
   rig: React.RefObject<Rig | null>;
 };
 
-function Scene({ url, mode, step = 0, spin = 0.15, joints = false, broken, shadow, zoom = 1, yaw, active = true, onLoaded, onError, controls, rig }: SceneProps) {
+function Scene({ url, mode, step = 0, spin = 0.15, joints = false, broken, shadow, zoom = 1, yaw, active = true, landed = 0, onLoaded, onError, controls, rig }: SceneProps) {
   const [loaded, setLoaded] = useState<{ turntable: THREE.Group; shadowScale: number } | null>(null);
   const camera = useThree((s) => s.camera) as THREE.PerspectiveCamera;
   const invalidate = useThree((s) => s.invalidate);
@@ -305,6 +318,7 @@ function Scene({ url, mode, step = 0, spin = 0.15, joints = false, broken, shado
     const r = rig.current;
     if (!r) return;
     if (yaw !== undefined) r.setYaw(yaw);
+    r.setLanded(landed);
     r.setJoints(joints, brokenKey ? brokenKey.split(",").map(Number) : []);
     const landing = r.apply(mode, step);
     r.frame(mode, step, camera, zoom);
@@ -314,7 +328,7 @@ function Scene({ url, mode, step = 0, spin = 0.15, joints = false, broken, shado
     // The new parts snap home as the drop-in finishes: one soft click per step.
     const t = setTimeout(() => play("connect", { volume: 0.45 }), DROP_MS * 0.85);
     return () => clearTimeout(t);
-  }, [loaded, mode, step, camera, rig, zoom, yaw, invalidate, joints, brokenKey]);
+  }, [loaded, mode, step, camera, rig, zoom, yaw, invalidate, joints, brokenKey, landed]);
 
   useEffect(() => {
     const r = rig.current;
