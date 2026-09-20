@@ -17,6 +17,8 @@ from pathlib import Path
 import base64
 import io
 import threading
+import time
+from uuid import uuid4
 
 from model import Build, Part, SubAssembly
 
@@ -34,15 +36,21 @@ def is_c(build) -> bool:
     return build is not None and build.provenance.get("backend") == BACKEND
 
 
-# The run waits here while someone picks a design; POST /api/choose answers it.
-CHOICE = {"event": threading.Event(), "answer": None, "open": False}
+# Runs waiting for someone to pick, by id. One slot per run: a shared one meant
+# answering on one screen released a different run's review.
+PENDING: dict[str, dict] = {}
 
 
-def choose(index: int | None, note: str = ""):
+def choose(index: int | None, note: str = "", ask: str = ""):
     """The answer from the app: which design, and anything to change about it
-    (index None = let the critic decide)."""
-    CHOICE["answer"] = {"index": index, "note": note}
-    CHOICE["event"].set()
+    (index None = let the critic decide). `ask` names the run being answered;
+    without it, the newest waiting run gets the answer."""
+    slot = PENDING.get(ask) or (max(PENDING.values(), key=lambda s: s["at"]) if PENDING else None)
+    if not slot:
+        return False
+    slot["answer"] = {"index": index, "note": note}
+    slot["event"].set()
+    return True
 
 
 def _thumb(path: str, side: int = 460) -> str | None:
@@ -78,19 +86,20 @@ def _listeners(tape):
 
     def on_choice(candidates):
         """Show the designs and wait. The critic takes over if nobody answers."""
-        CHOICE["event"].clear()
-        CHOICE["answer"], CHOICE["open"] = None, True
+        ask = uuid4().hex[:8]
+        slot = {"event": threading.Event(), "answer": None, "at": time.time()}
+        PENDING[ask] = slot
         tape.emit("critic", "choices",
                   "your design is ready: keep it or say what to change" if len(candidates) == 1
-                  else f"{len(candidates)} designs to choose from", status="running",
+                  else f"{len(candidates)} designs to choose from", status="running", ask=ask,
                   choices=[{"n": i + 1, "style": c.get("style", ""), "stands": c["stands"],
                             "preferred": bool(c.get("preferred")), "parts": c.get("parts"),
                             "image": _thumb(c["front"]), "ldr": c["ldr"]} for i, c in enumerate(candidates)])
-        answered = CHOICE["event"].wait(timeout=CHOICE_WAIT)
-        CHOICE["open"] = False
+        answered = slot["event"].wait(timeout=CHOICE_WAIT)
+        PENDING.pop(ask, None)
         if not answered:
             tape.emit("critic", "choices", "nobody picked, so the critic will", status="ok")
-        return CHOICE["answer"] if answered else None
+        return slot["answer"] if answered else None
 
     return on_event, on_model, on_image, on_choice
 

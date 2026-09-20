@@ -817,9 +817,12 @@ def _new_run(idea: str, on_event: Listener | None, on_model: Listener | None, ec
     return Run(idea, slug, run_dir, Tape(run_dir / "tape.jsonl", (on_event,) if on_event else (), echo), on_model)
 
 
-def _finish(run: Run, best: dict) -> dict:
-    best.pop("report_obj", None)  # working state, not part of the record
-    best.update(
+def _save(run: Run, best: dict) -> dict:
+    """Write the run's record. Called after every built round, not just at the
+    end: a model that exists should be in your library even if the run is
+    abandoned halfway, or the browser closed, or a later stage falls over."""
+    record = {k: v for k, v in best.items() if k != "report_obj"}
+    record.update(
         idea=run.idea,
         run=str(run.dir),
         distilled=run.distilled.get("concept"),
@@ -827,12 +830,19 @@ def _finish(run: Run, best: dict) -> dict:
         views={k: str(v) for k, v in run.views.items()},
         seconds=round(time.time() - run.tape.t0),
     )
-    if best.get("round") is not None:
-        label = best.get("label") or f"r{best['round']}"
-        best["ldr"] = str(run.dir / f"{label}.ldr")
-        best["brief"] = str(run.dir / f"brief-{label}.json")
-    (run.dir / "result.json").write_text(json.dumps(best, indent=1))
-    return best
+    if record.get("round") is not None:
+        label = record.get("label") or f"r{record['round']}"
+        record["ldr"] = str(run.dir / f"{label}.ldr")
+        record["brief"] = str(run.dir / f"brief-{label}.json")
+    (run.dir / "result.json").write_text(json.dumps(record, indent=1))
+    return record
+
+
+def _finish(run: Run, best: dict) -> dict:
+    best.pop("report_obj", None)  # working state, not part of the record
+    record = _save(run, best)
+    best.update(record)
+    return record
 
 
 def _remember(best: dict, rnd: int, score: float | None, issues: list[str], report: dict, problems: list[str], label: str = ""):
@@ -853,6 +863,9 @@ def _first_round(run: Run, briefs: list[tuple[dict, str]], best: dict) -> tuple[
             label = f"r0{'abcdefg'[i] if len(briefs) > 1 else ''}"
             publish(run, label, b, parts, report)
             built.append((label, b, report, problems, style))
+            if best.get("round") is None:  # something to open, from the first build on
+                _remember(best, 0, None, [], report, problems, label)
+                _save(run, best)
     if not built:
         return briefs[0], None, [], None
     renders = render(run, *[label for label, *_ in built])
@@ -863,6 +876,7 @@ def _first_round(run: Run, briefs: list[tuple[dict, str]], best: dict) -> tuple[
     label, brief, report, problems, _ = built[i]
     _remember(best, 0, score, issues, report, problems, label)
     best["report_obj"] = report
+    _save(run, best)
     return brief, score, issues, renders[i]
 
 
@@ -895,6 +909,7 @@ def review(run: Run, rounds_built: list[dict], best: dict):
     if report is not None:
         best["clean"] = False  # your word beats the score: this is the one to ship
         _remember(best, chosen["round"] + 1, None, [note], report, problems, changed)
+    _save(run, best)
 
 
 def _apply_note(run: Run, brief: dict, note: str, problems: list[str], shots: Path):
@@ -974,6 +989,7 @@ def design(
             run.tape.emit("critic", "error", f"couldn't judge that round, keeping the best so far: {e}", "fail")
             break
         _remember(best, rnd, score, issues, report, problems, f"r{rnd}")
+        _save(run, best)
         rounds_built.append({"label": f"r{rnd}", "style": "After the critic's notes", "brief": brief, "shots": shots,
                              "report": report, "score": score, "issues": issues, "problems": problems, "round": rnd})
 

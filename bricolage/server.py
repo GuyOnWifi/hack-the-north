@@ -10,7 +10,7 @@ stdlib only, so it runs under DEMO_SAFE with wifi off.
   GET  /api/library/thumb?id=           -> png of that model
   POST /api/open         {id}           -> make a saved model the current one
   GET  /api/state                      -> current build/report/steps
-  GET  /api/ldr                        -> current model as text/plain LDraw
+  GET  /api/ldr?version=                -> that version's model (default: current) as LDraw
   GET  /                               -> a tiny self-contained dev console
 
 Run:  python bricolage/server.py   (then open http://localhost:8017)
@@ -93,7 +93,10 @@ class H(BaseHTTPRequestHandler):
         if u.path == "/api/state":
             return self._send(200, _payload())
         if u.path == "/api/ldr":
-            v = SESSION.versions.get(SESSION.head)
+            # a version may be named: two designs racing must not hand back
+            # each other's model
+            want = parse_qs(u.query).get("version", [None])[0]
+            v = SESSION.versions.get(want or SESSION.head)
             if v and engine_c.is_c(v.build):  # pipeline C writes its own LDraw, steps included
                 return self._send(200, v.build.provenance["ldr"], "text/plain")
             # Include the sequenced 0 STEP markers (HANDOFF: "LDrawLoader reads steps natively").
@@ -199,7 +202,7 @@ class H(BaseHTTPRequestHandler):
                                 b, engine_c.report(b))
             elif self.path == "/api/choose":
                 # which of the candidate designs to keep (null = let the critic)
-                engine_c.choose(body.get("index"), body.get("note", ""))
+                engine_c.choose(body.get("index"), body.get("note", ""), body.get("ask", ""))
                 return self._send(200, {"ok": True})
             elif self.path == "/api/try_another":
                 SESSION.try_another()
