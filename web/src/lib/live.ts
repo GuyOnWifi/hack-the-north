@@ -110,6 +110,9 @@ export async function chooseDesign(index: number | null, note = "") {
   await bricolage.choose(index, note);
 }
 
+/** Reopen something from the library as the current build. */
+export const openSaved = (id: string) => run(null, () => bricolage.open(id));
+
 export const editBuild = (text: string) => run(null, () => bricolage.edit(text));
 export const tryAnother = () => run(null, bricolage.tryAnother);
 export const undo = () => run(null, bricolage.undo);

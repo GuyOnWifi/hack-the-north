@@ -135,6 +135,59 @@ def _yaw(m) -> float:
     return math.degrees(math.atan2(-m[2, 0], m[0, 0]))
 
 
+def library() -> list[dict]:
+    """Every model this machine has designed, newest first. Runs write
+    themselves to disk as they go, so the library is just what is there."""
+    out = []
+    for d in sorted(c.RUNS.glob("*/"), reverse=True):
+        f = d / "result.json"
+        if not f.exists():
+            continue
+        try:
+            r = json.loads(f.read_text())
+        except ValueError:
+            continue
+        if not r.get("ldr") or not Path(r["ldr"]).exists():
+            continue
+        out.append({"id": d.name, "name": _title(r.get("idea") or d.name),
+                    "idea": r.get("idea"), "parts": r.get("parts"), "score": r.get("score"),
+                    "stands": r.get("stands"), "made": d.name[:13], "thumb": bool(_thumb_path(d, r))})
+    return out
+
+
+def _title(idea: str) -> str:
+    """A short name from the idea it was designed from."""
+    return (idea.split(".")[0].strip()[:40] or "Model").title()
+
+
+def _thumb_path(d: Path, result: dict) -> Path | None:
+    """The front render of the model that won, or any render this run made."""
+    label = result.get("label") or f"r{result.get('round', 0)}"
+    first = d / f"views-{label}" / "front.png"
+    if first.exists():
+        return first
+    others = sorted(d.glob("views-*/front.png"))
+    return others[-1] if others else None
+
+
+def thumb(run_id: str) -> Path | None:
+    d = c.RUNS / run_id
+    f = d / "result.json"
+    if not f.exists():
+        return None
+    return _thumb_path(d, json.loads(f.read_text()))
+
+
+def open_run(run_id: str) -> Build:
+    """A saved run, rebuilt into a Build so every build screen works on it."""
+    d = c.RUNS / run_id
+    result = json.loads((d / "result.json").read_text())
+    result["run"] = str(d)  # runs move between machines; trust where it is now
+    for key in ("ldr", "brief"):
+        result[key] = str(d / Path(result[key]).name)
+    return from_result(result, _title(result.get("idea") or run_id))
+
+
 def recipe(build: Build) -> dict:
     """What replay needs to rebuild this version without calling any model."""
     return {"backend": BACKEND, "run": build.provenance["run"], "round": build.provenance["round"],

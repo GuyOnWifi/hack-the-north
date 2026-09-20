@@ -6,6 +6,9 @@ stdlib only, so it runs under DEMO_SAFE with wifi off.
   POST /api/choose       {index|null, note?} -> {ok}   (pick a candidate design mid-run)
   POST /api/try_another  {}            -> {version, report, tree}
   POST /api/undo|redo    {}            -> {version, report, tree}
+  GET  /api/library                    -> {models:[...]}  every model designed here
+  GET  /api/library/thumb?id=           -> png of that model
+  POST /api/open         {id}           -> make a saved model the current one
   GET  /api/state                      -> current build/report/steps
   GET  /api/ldr                        -> current model as text/plain LDraw
   GET  /                               -> a tiny self-contained dev console
@@ -95,6 +98,20 @@ class H(BaseHTTPRequestHandler):
                 return self._send(200, v.build.provenance["ldr"], "text/plain")
             # Include the sequenced 0 STEP markers (HANDOFF: "LDrawLoader reads steps natively").
             return self._send(200, to_ldr(v.build, _payload()["steps"]) if v else "", "text/plain")
+        if u.path == "/api/library":
+            return self._send(200, {"models": engine_c.library()})
+        if u.path == "/api/library/thumb":
+            f = engine_c.thumb(parse_qs(u.query).get("id", [""])[0])
+            if not f:
+                return self._send(404, {"error": "no picture for that one"})
+            data = f.read_bytes()
+            self.send_response(200)
+            self.send_header("Content-Type", "image/png")
+            self.send_header("Cache-Control", "public, max-age=31536000, immutable")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            return self.wfile.write(data)
         if u.path == "/api/build_stream":
             prompt = parse_qs(u.query).get("prompt", ["build a rover"])[0]
             return self._stream_build(prompt)
@@ -175,6 +192,11 @@ class H(BaseHTTPRequestHandler):
                 SESSION.build(body.get("prompt", "build a rover"))
             elif self.path == "/api/edit":
                 SESSION.edit(body.get("text", ""))
+            elif self.path == "/api/open":
+                # bring a saved model back as the current one
+                b = engine_c.open_run(body.get("id", ""))
+                SESSION._commit(None, {"kind": "build", "prompt": b.name, "seed": 0, "recipe": engine_c.recipe(b)},
+                                b, engine_c.report(b))
             elif self.path == "/api/choose":
                 # which of the candidate designs to keep (null = let the critic)
                 engine_c.choose(body.get("index"), body.get("note", ""))

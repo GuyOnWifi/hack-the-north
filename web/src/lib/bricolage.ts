@@ -87,6 +87,18 @@ export interface Choice {
   ldr: string;
 }
 
+/** A model designed on this machine, kept on disk between sessions. */
+export interface SavedModel {
+  id: string;
+  name: string;
+  idea?: string;
+  parts?: number;
+  score?: number | null;
+  stands?: boolean;
+  made?: string;
+  thumb?: boolean;
+}
+
 export interface Payload {
   version: string | null;
   name?: string;
@@ -144,6 +156,12 @@ const DESIGN_TIMEOUT = 15 * 60 * 1000;
 
 export const bricolage = {
   state: () => request<Payload>("/state"),
+  /** Everything designed here, newest first. */
+  library: () => request<{ models: SavedModel[] }>("/library"),
+  /** A saved model's picture (its front render). */
+  thumb: (id: string) => `${BASE}/library/thumb?id=${encodeURIComponent(id)}`,
+  /** Make a saved model the current one, so every build screen works on it. */
+  open: (id: string) => post("/open", { id }, DESIGN_TIMEOUT),
   ldr: () => request<string>("/ldr"),
   build: (prompt: string) => post("/build", { prompt }),
   edit: (text: string) => post("/edit", { text }, DESIGN_TIMEOUT),
