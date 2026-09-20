@@ -929,6 +929,118 @@ def _apply_note(run: Run, brief: dict, note: str, problems: list[str], shots: Pa
     return brief, report, problems, label
 
 
+REPLAY_SECONDS = float(os.environ.get("BRICKIFY_REPLAY_SECONDS", 20))
+REPLAY_GAP = 2.2  # no single step of a replay drags longer than this
+
+
+def cached(idea: str) -> tuple[Path, dict] | None:
+    """The newest finished run of the same idea, if there is one."""
+    want = slugify(idea)
+    found = None
+    for d in sorted(RUNS.glob("*")):
+        f = d / "result.json"
+        if not f.exists():
+            continue
+        try:
+            r = json.loads(f.read_text())
+        except ValueError:
+            continue
+        if slugify(r.get("idea") or "") == want and r.get("ldr") and Path(r["ldr"]).exists():
+            found = (d, r)
+    return found
+
+
+def _chunks(ldr: str, n: int = 5) -> list[str]:
+    """The model in n growing pieces, cut on its build steps, so a replay can
+    put it together on screen the way the first run did."""
+    head = [l for l in ldr.splitlines() if not l.startswith("1 ") and l.strip() != "0 STEP"]
+    groups, cur = [], []
+    for line in ldr.splitlines():
+        if line.strip() == "0 STEP":
+            if cur:
+                groups.append(cur)
+                cur = []
+        elif line.startswith("1 "):
+            cur.append(line)
+    if cur:
+        groups.append(cur)
+    if not groups:
+        return [ldr]
+    step = max(1, len(groups) // n)
+    out, sofar = [], []
+    for i in range(0, len(groups), step):
+        sofar += [line for g in groups[i : i + step] for line in g]
+        out.append("\n".join(head + sofar + ["0 STEP"]) + "\n")
+    return out
+
+
+def replay(idea: str, run_dir: Path, result: dict, on_event: Listener | None, on_model: Listener | None,
+           on_image: Listener | None, on_choice=None, echo: bool = True) -> dict:
+    """Play a run you already have, at speed. Everything shown really happened:
+    the same steps, the same concept art, the same model going together. It
+    just doesn't wait on models that already answered."""
+    events = [json.loads(l) for l in (run_dir / "tape.jsonl").read_text().splitlines() if l.strip()]
+    tape = Tape(run_dir / "replay.jsonl", (on_event,) if on_event else (), echo)
+    span = max((e["t"] for e in events), default=1) or 1
+    rate = min(1.0, REPLAY_SECONDS * 1000 / span)
+
+    ldr = Path(result["ldr"]).read_text()
+    pieces = _chunks(ldr)
+    art = {"concept": run_dir / "concept.png", **{k: run_dir / f"concept-{k}.png" for k in VIEW_ANGLES}}
+
+    tape.emit("router", "route", f"'{idea}': you have built this before, so here it is again")
+    last = 0
+    for e in events:
+        time.sleep(min((e["t"] - last) * rate / 1000, REPLAY_GAP))
+        last = e["t"]
+        if e["kind"] in ("route", "choices", "pick", "done", "steer", "error"):
+            continue
+        tape.emit(e["actor"], e["kind"], e["text"], e.get("status", "ok"))
+        if e["kind"] == "concept" and "ready" in e["text"] and on_image and art["concept"].exists():
+            on_image({"role": "concept", "path": str(art["concept"])})
+        if e["kind"] == "views" and on_image:
+            for role, f in art.items():
+                if role != "concept" and f.exists():
+                    on_image({"role": role, "path": str(f)})
+        if e["kind"] == "brief" and on_model and pieces:  # the model goes together as it did
+            for piece in pieces:
+                time.sleep(min(REPLAY_SECONDS / 12, REPLAY_GAP))
+                on_model({"round": "draft", "draft": True, "parts": piece.count("\n1 "), "stands": True, "ldr": piece})
+    if on_model:
+        on_model({"round": result.get("label", "r0"), "parts": result.get("parts", 0),
+                  "stands": result.get("stands", True), "ldr": ldr})
+
+    best = dict(result)
+    if on_choice:
+        run = Run(idea, slugify(idea), run_dir, tape)
+        run.concept = art["concept"] if art["concept"].exists() else None
+        run.views = {k: v for k, v in art.items() if k != "concept" and v.exists()}
+        run.on_choice = on_choice
+        rounds_built = _rounds_on_disk(run_dir, best)
+        review(run, rounds_built, best)
+        best = _save(run, best)
+    tape.emit("scribe", "done", f"built from the one you made earlier ({best.get('parts')} parts)")
+    return best
+
+
+def _rounds_on_disk(run_dir: Path, best: dict) -> list[dict]:
+    """Every version a finished run left behind, for the review."""
+    out = []
+    for ldr in sorted(run_dir.glob("r*.ldr")):
+        label = ldr.stem
+        brief = run_dir / f"brief-{label}.json"
+        shots = run_dir / f"views-{label}"
+        if not brief.exists() or not (shots / "front.png").exists():
+            continue
+        parts = sum(1 for line in ldr.read_text().splitlines() if line.startswith("1 "))
+        out.append({"label": label, "style": "First build" if label.endswith("0") else "After the critic's notes",
+                    "brief": json.loads(brief.read_text()), "shots": shots, "round": int(label[1]) if label[1:2].isdigit() else 0,
+                    "report": {"parts": parts, "collisions": 0, "stands": {"stable": best.get("stands", True)}},
+                    "score": best.get("score") if label == best.get("label") else None,
+                    "issues": [], "problems": []})
+    return out
+
+
 def design(
     idea: str,
     concept_path: Path | None = None,
@@ -941,9 +1053,14 @@ def design(
     on_model: Listener | None = None,
     on_image: Listener | None = None,
     on_choice: Callable[[list[dict]], int | None] | None = None,
+    fresh: bool = False,
     echo: bool = True,
 ) -> dict:
     """The full loop. Raises on anything that leaves no model (no silent fallbacks)."""
+    if not fresh and not concept_path:
+        seen = cached(idea)
+        if seen:
+            return replay(idea, *seen, on_event, on_model, on_image, on_choice, echo)
     preflight(need_codex=concept_path is None or multiview)
     run = _new_run(idea, on_event, on_model, echo)
     run.on_image, run.on_choice = on_image, on_choice
@@ -1042,6 +1159,7 @@ def main():
     ap.add_argument("--rounds", type=int, default=0, help="rounds of critic notes after the first build. Default 0: "
                     "measured over four runs, revising the winner scored worse every time (5->3, 5->3, 5->2, 5->2), "
                     "so the pipeline ships the best of --fan candidates instead")
+    ap.add_argument("--fresh", action="store_true", help="design it again instead of replaying one you already made")
     ap.add_argument("--fan", type=int, default=1, help="candidate designs to write in parallel and choose between (default 1; more gives the critic, or you, a choice)")
     ap.add_argument("--target", type=float, default=8.0, help="stop early at this critic score (default 8)")
     ap.add_argument("--single-view", action="store_true", help="skip the side/back concept views")
@@ -1053,7 +1171,8 @@ def main():
     if a.edit:
         result = edit(a.edit, a.idea)
     else:
-        result = design(a.idea, a.concept, a.rounds, a.target, fan=a.fan, multiview=not a.single_view, do_distill=not a.no_distill)
+        result = design(a.idea, a.concept, a.rounds, a.target, fan=a.fan, multiview=not a.single_view,
+                        do_distill=not a.no_distill, fresh=a.fresh)
     # the CLI also publishes the model for the dev lab page (/lab?m=<slug>)
     lab = WEB / "public/lab" / f"{slugify(result['idea'])}.ldr"
     shutil.copy(result["ldr"], lab)

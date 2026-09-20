@@ -89,6 +89,15 @@ Rules that follow, and the rest of what made a run 6x faster:
     and low art is blockier, which is closer to what this kit can build. The
     default is `high` because the art is on screen for the whole run.
 
+16. **Runs are the cache.** A second ask for the same idea replays the run on
+    disk (`cached`, `replay`): the real tape, the real concept art, the real
+    model going together, timed to about 20s (`BRICKIFY_REPLAY_SECONDS`).
+    Nothing is invented for a replay - if it is on screen, it happened - and a
+    note in the review still costs a real model call. `--fresh` skips it.
+17. **A record is written after every built round** (`_save`), not at the end.
+    17 of 47 runs once had finished models and no record, so they were
+    invisible to the library; anything that exists should be openable.
+
 ## Lineage
 
 This is pipeline C: B's kernel-first loop plus the best of A (the layer

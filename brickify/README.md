@@ -26,6 +26,10 @@ idea ─► distill ─► concept ─► 3 briefs at once ─► build+check �
 | render | code | Four fixed angles of every candidate, one browser, through the web app's `/lab` page. |
 | pick | Claude (design) | Compares the candidates with the concept and keeps the one that reads best. `--rounds N` adds critic notes on top. |
 
+Ask for something you have built before and it replays that run instead:
+the same steps, art and model, at about 14 seconds. `--fresh` designs it
+again from scratch.
+
 Typical run: about 3 minutes, 80-250 parts. Almost all of it is model calls;
 building and checking take milliseconds. The dial that matters is how hard the
 models think (`BRICKIFY_EFFORT`): see the speed table in `AGENTS.md` before
@@ -71,7 +75,8 @@ parallel: `tape.jsonl` (step log), `distilled.json`, `concept*.png`,
 `brief-N.json`, `rN.ldr`, `views-rN/*.png`, `result.json`. The CLI also copies
 the winner to `web/public/lab/<name>.ldr` and prints its `/lab?m=<name>` URL.
 
-Options: `--fan N` (candidate designs, default 3), `--rounds N` (critic notes
+Options: `--fresh` (ignore what is cached and design it again), `--fan N`
+(candidate designs, default 1), `--rounds N` (critic notes
 after the first build, default 0 - revising the winner scored worse in every
 run we measured), `--target 8` (stop early at this score), `--single-view`
 (skip side/back views), `--no-distill` (send the idea as-is), `--concept
