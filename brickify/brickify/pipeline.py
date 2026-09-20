@@ -855,35 +855,32 @@ def _first_round(run: Run, briefs: list[tuple[dict, str]], best: dict) -> tuple[
     if not built:
         return briefs[0], None, [], None
     renders = render(run, *[label for label, *_ in built])
-    score, issues = None, []
-    i, note = None, ""
-    if run.on_choice:  # the person watching gets first say: keep it, or change it
-        answer = run.on_choice([
-            {"label": label, "style": style, "parts": report["parts"], "stands": report["stands"]["stable"],
-             "front": str(renders[n] / "front.png"), "ldr": (run.dir / f"{label}.ldr").read_text()}
-            for n, (label, _, report, _, style) in enumerate(built)
-        ])
-        if isinstance(answer, dict):
-            i, note = answer.get("index"), (answer.get("note") or "").strip()
-        else:
-            i = answer
-    if i is None:  # nobody there, or they passed: the critic decides
-        if len(built) == 1:
-            i, (score, issues) = 0, judge(run, renders[0], built[0][3])
-        else:
-            i, score, issues = pick(run, renders)
+    if len(built) == 1:
+        i, (score, issues) = 0, judge(run, renders[0], built[0][3])
     else:
-        i = max(0, min(len(built) - 1, i))
-        if len(built) > 1:
-            run.tape.emit("critic", "pick", f"you picked design {i + 1} of {len(built)}")
+        i, score, issues = pick(run, renders)
     label, brief, report, problems, _ = built[i]
-    if note:  # "that one, but with bigger ears"
-        brief, report2, problems, label2 = _apply_note(run, brief, note, problems, renders[i])
-        if report2 is not None:
-            _remember(best, 0, None, [note], report2, problems, label2)
-            return brief, None, [], render(run, label2)[0]
     _remember(best, 0, score, issues, report, problems, label)
     return brief, score, issues, renders[i]
+
+
+def review(run: Run, brief: dict, shots: Path | None, best: dict):
+    """The last word is yours: the finished model, and a box to say what to
+    change. Runs after the critic has had its pass, so you are steering
+    something it has already tried to fix."""
+    if not run.on_choice or not shots or not best.get("label"):
+        return
+    label = best["label"]
+    answer = run.on_choice([{
+        "label": label, "style": "", "parts": best.get("parts", 0), "stands": best.get("stands", True),
+        "front": str(shots / "front.png"), "ldr": (run.dir / f"{label}.ldr").read_text(),
+    }])
+    note = (answer.get("note") or "").strip() if isinstance(answer, dict) else ""
+    if not note:
+        return
+    brief, report, problems, changed = _apply_note(run, brief, note, best.get("issues_kernel", []), shots)
+    if report is not None:
+        _remember(best, best.get("round", 0) + 1, None, [note], report, problems, changed)
 
 
 def _apply_note(run: Run, brief: dict, note: str, problems: list[str], shots: Path):
@@ -906,7 +903,7 @@ def _apply_note(run: Run, brief: dict, note: str, problems: list[str], shots: Pa
 def design(
     idea: str,
     concept_path: Path | None = None,
-    rounds: int = 0,
+    rounds: int = 1,
     target: float = 8.0,
     fan: int = 1,
     multiview: bool = True,
@@ -942,6 +939,8 @@ def design(
         pool.shutdown()
     best: dict = {"score": None, "round": None}
     brief, score, issues, shots = _first_round(run, briefs, best)
+    # what to show you at the end is the round that won, not the last one tried
+    kept: dict[str, tuple[dict, Path | None]] = {best.get("label", "r0"): (brief, shots)}
     for rnd in range(1, rounds + 1):
         if best["score"] is not None and best["score"] >= target:
             break
@@ -958,6 +957,9 @@ def design(
             run.tape.emit("critic", "error", f"couldn't judge that round, keeping the best so far: {e}", "fail")
             break
         _remember(best, rnd, score, issues, report, problems, f"r{rnd}")
+        kept[f"r{rnd}"] = (brief, shots)
+
+    review(run, *kept.get(best.get("label", ""), (brief, shots)), best)
 
     if best["round"] is None:
         run.tape.emit("scribe", "done", "no buildable model came out of this run", "fail")

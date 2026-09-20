@@ -65,25 +65,11 @@ async function run(prompt: string | null, op: () => Promise<Payload>) {
   }
 }
 
-/** The steering corrections layered on top of the base prompt this session. */
-let steers: string[] = [];
-export const getSteers = () => steers;
-
-/** Designs a new build, streaming the agent tape. Falls back to the fixtures offline. */
+/** Designs a new build, streaming the agent tape. Falls back to the fixtures
+ *  offline. Corrections happen mid-run instead: the designer stops with the
+ *  model on screen and takes a note (see chooseDesign). */
 export async function designBuild(prompt: string) {
-  steers = []; // a fresh request clears prior corrections
   return streamDesign(prompt, prompt);
-}
-
-/** Stop-and-steer: re-run the SAME request with a natural-language correction
- * layered on ("oi, not a 2d flower — a 3d one"). The display prompt stays put;
- * only the instruction the harness sees changes. Corrections accumulate. */
-export async function steer(instruction: string) {
-  const base = state.prompt;
-  if (!base || !instruction.trim()) return;
-  steers = [...steers, instruction.trim()];
-  const full = `${base}. Corrections from the user (apply all): ${steers.join("; ")}. Rebuild it as a real 3D model that addresses every correction.`;
-  return streamDesign(base, full);
 }
 
 async function streamDesign(displayPrompt: string, fullPrompt: string) {

@@ -10,7 +10,7 @@ import { BrickGlyph } from "@/components/ui/IsoBrick";
 import { AgentTape } from "@/components/AgentTape";
 import { StepBell } from "@/components/StepBell";
 import { BrickLoader, LogoLockup } from "@/components/ui/Logo";
-import { chooseDesign, designBuild, getSteers, steer, tryAnother, useLive } from "@/lib/live";
+import { chooseDesign, designBuild, tryAnother, useLive } from "@/lib/live";
 import { LIVE_ID } from "@/lib/useBuild";
 import { useAssembly } from "@/lib/useAssembly";
 import { useLandscape } from "@/lib/useOrientation";
@@ -63,17 +63,6 @@ function Create() {
 
   const assembly = useAssembly(modelUrl);
   const { steps: mSteps, step: astep, assembling } = assembly;
-
-  // stop-and-steer: correct the build in plain language while it streams
-  const [steerText, setSteerText] = useState("");
-  const [steers, setSteers] = useState<string[]>([]);
-  const submitSteer = () => {
-    const t = steerText.trim();
-    if (!t) return;
-    steer(t);
-    setSteers(getSteers());
-    setSteerText("");
-  };
 
   return (
     <main className="fixed inset-0 select-none overflow-hidden" style={{ background: "#e4f1fc" }}>
@@ -205,15 +194,6 @@ function Create() {
         </div>
 
         <div className="shrink-0 border-t-2 border-[#9cc5ec] px-5 pb-4 pt-3" style={{ paddingBottom: landscape ? "calc(var(--safe-bottom) + 16px)" : "calc(var(--safe-bottom) + 12px)" }}>
-          {steers.length > 0 && (
-            <div className="mb-2 flex flex-wrap gap-1.5">
-              {steers.map((s, i) => (
-                <BrickChip key={i} size="sm" bg="#e3000b" ink="#ffffff">
-                  {s}
-                </BrickChip>
-              ))}
-            </div>
-          )}
           {failed ? null : done && valid ? (
             <div className="flex gap-3">
               <ChunkyButton variant="white" className="!text-[16px]" onClick={() => tryAnother().catch(() => {})}>
@@ -224,18 +204,7 @@ function Create() {
               </ChunkyButton>
             </div>
           ) : (
-            <div className="flex items-center gap-2 rounded-[16px] bg-white p-1.5 pl-4 ring-2 ring-ai/40">
-              <input
-                value={steerText}
-                onChange={(e) => setSteerText(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && submitSteer()}
-                placeholder="Steer it: “make the ears floppier”"
-                className="min-w-0 flex-1 bg-transparent text-[15px] font-semibold text-ink outline-none placeholder:text-ink-soft/70"
-              />
-              <button onClick={submitSteer} disabled={!steerText.trim()} className="shrink-0 rounded-[12px] bg-ai px-4 py-2 text-[15px] font-[800] text-white active:scale-95 disabled:opacity-40">
-                Steer
-              </button>
-            </div>
+            <p className="text-center text-[14px] font-semibold text-ink-soft">You get to change it once the design is ready.</p>
           )}
           {done && !valid && (
             <ul className="mt-2 flex flex-col gap-1.5">
