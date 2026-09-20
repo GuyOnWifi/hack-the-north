@@ -929,6 +929,11 @@ def _apply_note(run: Run, brief: dict, note: str, problems: list[str], shots: Pa
     return brief, report, problems, label
 
 
+# Side and back views: two more drawings of the concept, for depth. They cost
+# no wall clock (drawn while the brief is written) but they are more pictures
+# in every prompt that follows. Off by default while we see whether they earn
+# their place; BRICKIFY_VIEWS=1 or --views turns them back on.
+VIEWS_ON = os.environ.get("BRICKIFY_VIEWS", "0") == "1"
 REPLAY_SECONDS = float(os.environ.get("BRICKIFY_REPLAY_SECONDS", 20))
 REPLAY_GAP = 2.2  # no single step of a replay drags longer than this
 
@@ -1047,7 +1052,7 @@ def design(
     rounds: int = 1,
     target: float = 8.0,
     fan: int = 1,
-    multiview: bool = True,
+    multiview: bool = VIEWS_ON,
     do_distill: bool = True,
     on_event: Listener | None = None,
     on_model: Listener | None = None,
@@ -1162,7 +1167,8 @@ def main():
     ap.add_argument("--fresh", action="store_true", help="design it again instead of replaying one you already made")
     ap.add_argument("--fan", type=int, default=1, help="candidate designs to write in parallel and choose between (default 1; more gives the critic, or you, a choice)")
     ap.add_argument("--target", type=float, default=8.0, help="stop early at this critic score (default 8)")
-    ap.add_argument("--single-view", action="store_true", help="skip the side/back concept views")
+    ap.add_argument("--views", action="store_true", help="also draw the concept from the side and back (off by default)")
+    ap.add_argument("--single-view", action="store_true", help="skip the side/back concept views (the default)")
     ap.add_argument("--no-distill", action="store_true", help="send the idea to the image model as-is")
     ap.add_argument("--edit", type=Path, metavar="RUN_DIR", help="change a finished run: the positional argument is the change")
     a = ap.parse_args()
@@ -1171,7 +1177,8 @@ def main():
     if a.edit:
         result = edit(a.edit, a.idea)
     else:
-        result = design(a.idea, a.concept, a.rounds, a.target, fan=a.fan, multiview=not a.single_view,
+        result = design(a.idea, a.concept, a.rounds, a.target, fan=a.fan,
+                        multiview=a.views and not a.single_view,
                         do_distill=not a.no_distill, fresh=a.fresh)
     # the CLI also publishes the model for the dev lab page (/lab?m=<slug>)
     lab = WEB / "public/lab" / f"{slugify(result['idea'])}.ldr"
