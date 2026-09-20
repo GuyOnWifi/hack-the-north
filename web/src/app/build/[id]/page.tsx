@@ -7,6 +7,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ArrowLeft, Layers, ListOrdered, Play, Plus, Sparkles, Users } from "lucide-react";
 import { ChunkyButton, IconTile } from "@/components/ui/controls";
+import { BuyBricks } from "@/components/BuyBricks";
 import { FloatingBricks } from "@/components/ui/chrome";
 import { BrickGlyph } from "@/components/ui/IsoBrick";
 import { coverage } from "@/lib/data";
@@ -127,7 +128,7 @@ export default function BuildDetail() {
           <Stat icon={<Layers size={26} strokeWidth={2} />} label="Pieces" value={String(build.pieces)} />
           <Stat icon={<ListOrdered size={26} strokeWidth={2} />} label="Steps" value={steps === null ? "…" : String(steps)} />
           {live ? (
-            <Stat icon={<Users size={26} strokeWidth={2} />} label="Left over" value={report ? String(report.stats.inventory_remaining) : "-"} />
+            <Stat icon={<Users size={26} strokeWidth={2} />} label="Left over" value={report?.stats?.inventory_remaining != null ? String(report.stats.inventory_remaining) : "∞"} />
           ) : (
             <Stat icon={<Users size={26} strokeWidth={2} />} label="Your bricks" value={session.inventory.length ? `${Math.round((cov.used / cov.total) * 100)}%` : "-"} />
           )}
@@ -135,6 +136,8 @@ export default function BuildDetail() {
         <ChunkyButton variant="white" href={`/build/${build.id}/parts`} className="mt-8 !text-[17px]" icon={<Layers size={22} />}>
           See all pieces
         </ChunkyButton>
+        {/* the closer: buy the exact bricks and build it for real */}
+        <BuyBricks parts={build.parts} />
       </div>
     </main>
   );

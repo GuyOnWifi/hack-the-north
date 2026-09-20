@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { forwardRef } from "react";
 
-type Variant = "yellow" | "blue" | "purple" | "white";
+type Variant = "yellow" | "blue" | "purple" | "white" | "green";
 
 const VARIANTS: Record<Variant, { bg: string; rim: string; ink: string }> = {
   yellow: { bg: "#ffd502", rim: "#ccaa02", ink: "#1a1a1a" },
   blue: { bg: "#005ad2", rim: "#034aa9", ink: "#ffffff" },
   purple: { bg: "#6e13bc", rim: "#5c109d", ink: "#ffffff" },
   white: { bg: "#ffffff", rim: "#cccccc", ink: "#1a1a1a" },
+  green: { bg: "#2fa84a", rim: "#227a37", ink: "#ffffff" },
 };
 
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
