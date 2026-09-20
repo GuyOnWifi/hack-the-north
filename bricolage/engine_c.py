@@ -170,13 +170,38 @@ def library() -> list[dict]:
             r = json.loads(f.read_text())
         except ValueError:
             continue
-        if not r.get("ldr") or not Path(r["ldr"]).exists():
+        r = _normalise(d, r)
+        if not r:
             continue
         out.append({"id": d.name, "name": _title(r.get("idea") or d.name),
                     "idea": r.get("idea"), "parts": r.get("parts"), "score": r.get("score"),
                     "stands": r.get("stands"), "made": d.name[:13], "kept": bool(r.get("kept")),
                     "thumb": bool(_thumb_path(d, r))})
     return out
+
+
+def _normalise(d: Path, r: dict) -> dict | None:
+    """Fill in what an older or half-finished record is missing, from what is
+    on disk. Early runs named their models `<idea>-rN.ldr` and wrote no `label`
+    or `ldr` at all; a run that crashed wrote no record until its files were
+    already there. Either way the model exists, so it belongs in the library."""
+    if r.get("ldr") and Path(r["ldr"]).exists():
+        return r
+    label = r.get("label") or r.get("lab")
+    ldr = (d / f"{label}.ldr") if label else None
+    if not (ldr and ldr.exists()):
+        found = sorted(d.glob("*.ldr"))
+        if not found:
+            return None
+        ldr = found[-1]
+        label = ldr.stem
+    rnd = r.get("round", int(label[-1]) if label[-1].isdigit() else 0)
+    brief = next((b for b in (d / f"brief-{label}.json", d / f"brief-{rnd}.json") if b.exists()), None)
+    if not brief:
+        return None
+    return {**r, "label": label, "round": rnd, "ldr": str(ldr), "brief": str(brief),
+            "idea": r.get("idea") or d.name.replace("-", " "),
+            "parts": r.get("parts") or sum(1 for line in ldr.read_text().splitlines() if line.startswith("1 "))}
 
 
 def remove(run_id: str) -> bool:
@@ -217,7 +242,7 @@ def _title(idea: str) -> str:
 
 def _thumb_path(d: Path, result: dict) -> Path | None:
     """The front render of the model that won, or any render this run made."""
-    label = result.get("label") or f"r{result.get('round', 0)}"
+    label = result.get("label") or result.get("lab") or f"r{result.get('round', 0)}"
     first = d / f"views-{label}" / "front.png"
     if first.exists():
         return first
@@ -236,7 +261,9 @@ def thumb(run_id: str) -> Path | None:
 def open_run(run_id: str) -> Build:
     """A saved run, rebuilt into a Build so every build screen works on it."""
     d = c.RUNS / run_id
-    result = json.loads((d / "result.json").read_text())
+    result = _normalise(d, json.loads((d / "result.json").read_text()))
+    if not result:
+        raise FileNotFoundError(f"no model saved under {run_id}")
     result["run"] = str(d)  # runs move between machines; trust where it is now
     for key in ("ldr", "brief"):
         result[key] = str(d / Path(result[key]).name)
