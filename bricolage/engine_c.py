@@ -84,6 +84,7 @@ def _listeners(tape):
                   "your design is ready: keep it or say what to change" if len(candidates) == 1
                   else f"{len(candidates)} designs to choose from", status="running",
                   choices=[{"n": i + 1, "style": c.get("style", ""), "stands": c["stands"],
+                            "preferred": bool(c.get("preferred")), "parts": c.get("parts"),
                             "image": _thumb(c["front"]), "ldr": c["ldr"]} for i, c in enumerate(candidates)])
         answered = CHOICE["event"].wait(timeout=CHOICE_WAIT)
         CHOICE["open"] = False

@@ -818,6 +818,7 @@ def _new_run(idea: str, on_event: Listener | None, on_model: Listener | None, ec
 
 
 def _finish(run: Run, best: dict) -> dict:
+    best.pop("report_obj", None)  # working state, not part of the record
     best.update(
         idea=run.idea,
         run=str(run.dir),
@@ -861,26 +862,39 @@ def _first_round(run: Run, briefs: list[tuple[dict, str]], best: dict) -> tuple[
         i, score, issues = pick(run, renders)
     label, brief, report, problems, _ = built[i]
     _remember(best, 0, score, issues, report, problems, label)
+    best["report_obj"] = report
     return brief, score, issues, renders[i]
 
 
-def review(run: Run, brief: dict, shots: Path | None, best: dict):
-    """The last word is yours: the finished model, and a box to say what to
-    change. Runs after the critic has had its pass, so you are steering
-    something it has already tried to fix."""
-    if not run.on_choice or not shots or not best.get("label"):
+def review(run: Run, rounds_built: list[dict], best: dict):
+    """The last word is yours. Every version built this run is offered, the
+    critic's favourite marked, with a box to say what to change. Showing only
+    the critic's pick meant watching it improve a model and then being handed
+    the older one."""
+    usable = [r for r in rounds_built if r.get("shots")]
+    if not run.on_choice or not usable:
         return
-    label = best["label"]
     answer = run.on_choice([{
-        "label": label, "style": "", "parts": best.get("parts", 0), "stands": best.get("stands", True),
-        "front": str(shots / "front.png"), "ldr": (run.dir / f"{label}.ldr").read_text(),
-    }])
-    note = (answer.get("note") or "").strip() if isinstance(answer, dict) else ""
+        "label": r["label"], "style": r["style"], "parts": r["report"]["parts"],
+        "stands": r["report"]["stands"]["stable"], "preferred": r["label"] == best.get("label"),
+        "front": str(r["shots"] / "front.png"), "ldr": (run.dir / f"{r['label']}.ldr").read_text(),
+    } for r in usable])
+    if not isinstance(answer, dict):
+        return  # they left it to the critic
+    i, note = answer.get("index"), (answer.get("note") or "").strip()
+    chosen = usable[max(0, min(len(usable) - 1, i))] if i is not None else next((r for r in usable if r["label"] == best.get("label")), usable[-1])
+    if i is not None and chosen["label"] != best.get("label"):
+        run.tape.emit("critic", "pick", f"you kept {chosen['style'].lower()}")
+        best.update(score=chosen["score"], round=chosen["round"], label=chosen["label"], parts=chosen["report"]["parts"],
+                    stands=chosen["report"]["stands"]["stable"], collisions=chosen["report"]["collisions"],
+                    clean=not chosen["report"]["collisions"] and chosen["report"]["stands"]["stable"],
+                    issues=chosen["issues"], issues_kernel=chosen["problems"])
     if not note:
         return
-    brief, report, problems, changed = _apply_note(run, brief, note, best.get("issues_kernel", []), shots)
+    brief, report, problems, changed = _apply_note(run, chosen["brief"], note, chosen["problems"], chosen["shots"])
     if report is not None:
-        _remember(best, best.get("round", 0) + 1, None, [note], report, problems, changed)
+        best["clean"] = False  # your word beats the score: this is the one to ship
+        _remember(best, chosen["round"] + 1, None, [note], report, problems, changed)
 
 
 def _apply_note(run: Run, brief: dict, note: str, problems: list[str], shots: Path):
@@ -939,8 +953,11 @@ def design(
         pool.shutdown()
     best: dict = {"score": None, "round": None}
     brief, score, issues, shots = _first_round(run, briefs, best)
-    # what to show you at the end is the round that won, not the last one tried
-    kept: dict[str, tuple[dict, Path | None]] = {best.get("label", "r0"): (brief, shots)}
+    # every version built this run, so you can be offered the choice at the end
+    rounds_built = [{"label": best.get("label", "r0"), "style": "First build", "brief": brief, "shots": shots,
+                     "report": best.get("report_obj", {"parts": best.get("parts", 0), "collisions": best.get("collisions", 0),
+                                                       "stands": {"stable": best.get("stands", True)}}),
+                     "score": score, "issues": issues, "problems": best.get("issues_kernel", []), "round": 0}]
     for rnd in range(1, rounds + 1):
         if best["score"] is not None and best["score"] >= target:
             break
@@ -957,9 +974,10 @@ def design(
             run.tape.emit("critic", "error", f"couldn't judge that round, keeping the best so far: {e}", "fail")
             break
         _remember(best, rnd, score, issues, report, problems, f"r{rnd}")
-        kept[f"r{rnd}"] = (brief, shots)
+        rounds_built.append({"label": f"r{rnd}", "style": "After the critic's notes", "brief": brief, "shots": shots,
+                             "report": report, "score": score, "issues": issues, "problems": problems, "round": rnd})
 
-    review(run, *kept.get(best.get("label", ""), (brief, shots)), best)
+    review(run, rounds_built, best)
 
     if best["round"] is None:
         run.tape.emit("scribe", "done", "no buildable model came out of this run", "fail")

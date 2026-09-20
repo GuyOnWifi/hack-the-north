@@ -80,9 +80,12 @@ export interface Physics {
 /** One of the candidate designs, while the run waits for someone to pick. */
 export interface Choice {
   n: number;
-  /** How this design was asked to differ from the others. */
+  /** Where this version came from: the first build, or after the critic's notes. */
   style: string;
   stands: boolean;
+  /** The one the critic scored highest. */
+  preferred?: boolean;
+  parts?: number;
   image?: string;
   ldr: string;
 }

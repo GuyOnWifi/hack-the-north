@@ -223,36 +223,40 @@ function Create() {
   );
 }
 
-/** Your say on what was built: keep it, or say what to change. With more than
- *  one design it is also the pick. Renders, not live 3D, so the screen keeps
- *  one canvas. */
-function Chooser({ choices }: { choices: { n: number; style: string; stands: boolean; image?: string; ldr: string }[] }) {
+/** Your say on what was built: every version this run made, the critic's
+ *  favourite marked, and a box to say what to change. Renders, not live 3D,
+ *  so the screen keeps one canvas. */
+function Chooser({ choices }: { choices: { n: number; style: string; stands: boolean; preferred?: boolean; parts?: number; image?: string; ldr: string }[] }) {
   const [note, setNote] = useState("");
   const one = choices.length === 1;
   return (
     <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 overflow-y-auto px-5 py-6" style={{ background: "rgba(228,241,252,0.94)" }}>
-      <p className="text-[22px] font-[900] tracking-[-0.02em] text-ink">{one ? "How does that look?" : "Which one?"}</p>
+      <p className="text-[22px] font-[900] tracking-[-0.02em] text-ink">{one ? "How does that look?" : "Keep which one?"}</p>
       <div className="flex flex-wrap items-stretch justify-center gap-3">
         {choices.map((c, i) => (
           <button
             key={c.n}
             onClick={() => chooseDesign(i, note)}
             className="chunky flex flex-col items-center gap-2 rounded-[20px] bg-white p-3 transition-transform active:scale-95"
-            style={{ ["--rim" as string]: "#9cc5ec", ["--lift" as string]: "5px", width: one ? "min(82vw, 560px)" : 250 }}
+            style={{ ["--rim" as string]: c.preferred && !one ? "#e3000b" : "#9cc5ec", ["--lift" as string]: "5px", width: one ? "min(82vw, 560px)" : "min(44vw, 330px)" }}
           >
             {c.image ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={c.image}
-                alt={c.style || `Design ${c.n}`}
+                alt={c.style || `Version ${c.n}`}
                 className="w-full rounded-[14px] object-contain"
-                style={{ height: one ? "min(52vh, 420px)" : 200 }}
+                style={{ height: one ? "min(52vh, 420px)" : "min(34vh, 260px)" }}
               />
             ) : (
-              <div className="w-full rounded-[14px] bg-[#e4f1fc]" style={{ height: one ? 420 : 200 }} />
+              <div className="w-full rounded-[14px] bg-[#e4f1fc]" style={{ height: one ? 420 : 260 }} />
             )}
-            <span className="text-[15px] font-[800] leading-tight text-ink">{one ? "Build this one" : c.style || `Design ${c.n}`}</span>
-            {!c.stands && <span className="text-[12px] font-[800] text-ai">tips over</span>}
+            <span className="text-[15px] font-[800] leading-tight text-ink">{one ? "Build this one" : c.style || `Version ${c.n}`}</span>
+            <span className="flex items-center gap-2 text-[13px] font-[800] text-ink-soft">
+              {c.parts ? `${c.parts} bricks` : ""}
+              {c.preferred && !one && <span className="rounded-[4px] bg-ai px-1.5 py-0.5 text-white">critic&apos;s pick</span>}
+              {!c.stands && <span className="text-ai">tips over</span>}
+            </span>
           </button>
         ))}
       </div>
@@ -265,7 +269,7 @@ function Chooser({ choices }: { choices: { n: number; style: string; stands: boo
         />
       </div>
       <button onClick={() => chooseDesign(null, note)} className="text-[15px] font-[800] text-ink-soft underline-offset-4 hover:underline">
-        {one ? "Let the critic look instead" : "Let the critic choose"}
+        {one ? "Let the critic decide" : "Go with the critic's pick"}
       </button>
     </div>
   );
