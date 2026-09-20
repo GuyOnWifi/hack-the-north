@@ -19,12 +19,16 @@ idea ─► distill ─► concept ─► 3 briefs at once ─► build+check �
 | Stage | Who | What it does |
 |---|---|---|
 | distill | Claude (fast) | Rewrites the idea into something buildable: calm pose, chunky shapes, props simplified. "dog holding an umbrella" becomes "sitting dog wearing an umbrella hat". Rules in `DISTILL.md`. |
-| concept | OpenAI images | Draws it as an official LEGO set photo. Low quality on purpose: 8s, and blockier art is closer to what the kit can build. |
+| concept | OpenAI images | Draws it as an official LEGO set photo (`gpt-image-1`). `BRICKIFY_IMAGE_QUALITY=low` trades 23s of the run for blockier art that is closer to what the kit can build. |
 | views | OpenAI images | The same model from the side and the back, drawn while the briefs are written, so the critic sees every angle for free. |
 | briefs | Claude (design) | `--fan` designs at once: small stacked grids per sub-assembly, LEGO colours, connectors (hinges, side studs). Never 3D coordinates. Format in `BRIEF.md`. |
 | build | code | Real parts: merge layout (every piece connected), curved-slope surfacing, connector geometry verified against the LDraw library, collision check, and a stability check. Trims the slivers where one sub-assembly reaches into another instead of asking a model. |
 | render | code | Four fixed angles of every candidate, one browser, through the web app's `/lab` page. |
 | pick | Claude (design) | Compares the candidates with the concept and keeps the one that reads best. `--rounds N` adds critic notes on top. |
+
+Ask for something you have built before and it replays that run instead:
+the same steps, art and model, at about 14 seconds. `--fresh` designs it
+again from scratch.
 
 Typical run: about 3 minutes, 80-250 parts. Almost all of it is model calls;
 building and checking take milliseconds. The dial that matters is how hard the
@@ -71,7 +75,8 @@ parallel: `tape.jsonl` (step log), `distilled.json`, `concept*.png`,
 `brief-N.json`, `rN.ldr`, `views-rN/*.png`, `result.json`. The CLI also copies
 the winner to `web/public/lab/<name>.ldr` and prints its `/lab?m=<name>` URL.
 
-Options: `--fan N` (candidate designs, default 3), `--rounds N` (critic notes
+Options: `--fresh` (ignore what is cached and design it again), `--fan N`
+(candidate designs, default 1), `--rounds N` (critic notes
 after the first build, default 0 - revising the winner scored worse in every
 run we measured), `--target 8` (stop early at this score), `--single-view`
 (skip side/back views), `--no-distill` (send the idea as-is), `--concept
@@ -79,7 +84,7 @@ img.png` (skip image generation), `--edit RUN_DIR` (change a finished model in
 plain language).
 Env: `BRICKIFY_EFFORT` (thinking for briefs, default `medium`),
 `BRICKIFY_JUDGE_EFFORT` (thinking for the critic, default `medium`),
-`BRICKIFY_IMAGE_QUALITY` (`low`, `medium`, `high`; default `low`),
+`BRICKIFY_IMAGE_QUALITY` (`low` 8s, `medium` 13s, `high` 31s; default `high`),
 `ANTHROPIC_API_KEY` (use the API instead of the `claude` CLI),
 `BRICKIFY_MODEL` (design model, default `claude-opus-5`), `BRICKIFY_FAST`
 (distill and repair, default `claude-sonnet-5`), `BRICKIFY_WEB` (web app URL,

@@ -71,6 +71,14 @@ G["41769"] = Geom(-20, 20, -40, 40, 1, "top", True, "Wedge Plate 4x2 Right")
 G["41770"] = Geom(-20, 20, -40, 40, 1, "top", True, "Wedge Plate 4x2 Left")
 # Bar (4L), native axis +Y from its origin.
 G["30374"] = Geom(-4, 4, -4, 4, 0, "top", False, "Bar 4L")
+# Wheels. A 2x2 plate carries two pins along X at y=5 (measured: the plate is a
+# normal 2x2, the pins reach x=+-34). The rim and tyre are discs whose native
+# axis is +Z, so they turn onto the pin and sit just outside the plate's side.
+G["4600"] = Geom(-20, 20, -20, 20, 1, "top", True, "Plate 2x2 with Wheel Pins")
+G["4624"] = Geom(-10, 10, -8, 8, 0, "top", False, "Wheel Rim 6.4 x 8")
+G["3641"] = Geom(-18, 18, -8, 8, 0, "top", False, "Tyre 6/50 x 8")
+WHEEL_PIN = np.array([28.0, 5.0, 0.0])  # centre of a mounted wheel, in 4600's frame
+WHEEL_RADIUS = 18.0
 
 
 def rot_y(quarters: int) -> np.ndarray:

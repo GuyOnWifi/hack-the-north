@@ -3,10 +3,14 @@ stdlib only, so it runs under DEMO_SAFE with wifi off.
 
   POST /api/build        {prompt}      -> {version, report, steps, tape, tree}
   POST /api/edit         {text}        -> {version, report, tape?, tree}
+  POST /api/choose       {index|null, note?} -> {ok}   (pick a candidate design mid-run)
   POST /api/try_another  {}            -> {version, report, tree}
   POST /api/undo|redo    {}            -> {version, report, tree}
+  GET  /api/library                    -> {models:[...]}  every model designed here
+  GET  /api/library/thumb?id=           -> png of that model
+  POST /api/open         {id}           -> make a saved model the current one
   GET  /api/state                      -> current build/report/steps
-  GET  /api/ldr                        -> current model as text/plain LDraw
+  GET  /api/ldr?version=                -> that version's model (default: current) as LDraw
   GET  /                               -> a tiny self-contained dev console
 
 Run:  python bricolage/server.py   (then open http://localhost:8017)
@@ -92,11 +96,28 @@ class H(BaseHTTPRequestHandler):
         if u.path == "/api/state":
             return self._send(200, _payload())
         if u.path == "/api/ldr":
-            v = SESSION.versions.get(SESSION.head)
+            # a version may be named: two designs racing must not hand back
+            # each other's model
+            want = parse_qs(u.query).get("version", [None])[0]
+            v = SESSION.versions.get(want or SESSION.head)
             if v and engine_c.is_c(v.build):  # pipeline C writes its own LDraw, steps included
                 return self._send(200, v.build.provenance["ldr"], "text/plain")
             # Include the sequenced 0 STEP markers (HANDOFF: "LDrawLoader reads steps natively").
             return self._send(200, to_ldr(v.build, _payload()["steps"]) if v else "", "text/plain")
+        if u.path == "/api/library":
+            return self._send(200, {"models": engine_c.library()})
+        if u.path == "/api/library/thumb":
+            f = engine_c.thumb(parse_qs(u.query).get("id", [""])[0])
+            if not f:
+                return self._send(404, {"error": "no picture for that one"})
+            data = f.read_bytes()
+            self.send_response(200)
+            self.send_header("Content-Type", "image/png")
+            self.send_header("Cache-Control", "public, max-age=31536000, immutable")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            return self.wfile.write(data)
         if u.path == "/api/build_stream":
             q = parse_qs(u.query)
             prompt = q.get("prompt", ["build a rover"])[0]
@@ -180,6 +201,15 @@ class H(BaseHTTPRequestHandler):
                 SESSION.build(body.get("prompt", "build a rover"))
             elif self.path == "/api/edit":
                 SESSION.edit(body.get("text", ""))
+            elif self.path == "/api/open":
+                # bring a saved model back as the current one
+                b = engine_c.open_run(body.get("id", ""))
+                SESSION._commit(None, {"kind": "build", "prompt": b.name, "seed": 0, "recipe": engine_c.recipe(b)},
+                                b, engine_c.report(b))
+            elif self.path == "/api/choose":
+                # which of the candidate designs to keep (null = let the critic)
+                engine_c.choose(body.get("index"), body.get("note", ""), body.get("ask", ""))
+                return self._send(200, {"ok": True})
             elif self.path == "/api/try_another":
                 SESSION.try_another()
             elif self.path == "/api/undo":

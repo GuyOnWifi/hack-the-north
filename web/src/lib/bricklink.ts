@@ -71,7 +71,10 @@ export const isBuyable = (ldraw: string) => !PART_SKIP.has(ldraw);
 export function buyableSummary(parts: BuildPart[]): { buyable: number; skipped: number } {
   let buyable = 0;
   let skipped = 0;
-  for (const p of parts) (isBuyable(p.part) ? (buyable += p.count) : (skipped += p.count));
+  for (const p of parts) {
+    if (isBuyable(p.part)) buyable += p.count;
+    else skipped += p.count;
+  }
   return { buyable, skipped };
 }
 

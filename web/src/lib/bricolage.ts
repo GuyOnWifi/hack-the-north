@@ -77,6 +77,31 @@ export interface Physics {
   failures: { code: string; human: string }[];
 }
 
+/** One of the candidate designs, while the run waits for someone to pick. */
+export interface Choice {
+  n: number;
+  /** Where this version came from: the first build, or after the critic's notes. */
+  style: string;
+  stands: boolean;
+  /** The one the critic scored highest. */
+  preferred?: boolean;
+  parts?: number;
+  image?: string;
+  ldr: string;
+}
+
+/** A model designed on this machine, kept on disk between sessions. */
+export interface SavedModel {
+  id: string;
+  name: string;
+  idea?: string;
+  parts?: number;
+  score?: number | null;
+  stands?: boolean;
+  made?: string;
+  thumb?: boolean;
+}
+
 export interface Payload {
   version: string | null;
   name?: string;
@@ -134,9 +159,17 @@ const DESIGN_TIMEOUT = 15 * 60 * 1000;
 
 export const bricolage = {
   state: () => request<Payload>("/state"),
-  ldr: () => request<string>("/ldr"),
+  /** Everything designed here, newest first. */
+  library: () => request<{ models: SavedModel[] }>("/library"),
+  /** A saved model's picture (its front render). */
+  thumb: (id: string) => `${BASE}/library/thumb?id=${encodeURIComponent(id)}`,
+  /** Make a saved model the current one, so every build screen works on it. */
+  open: (id: string) => post("/open", { id }, DESIGN_TIMEOUT),
+  ldr: (version?: string) => request<string>(`/ldr${version ? `?version=${encodeURIComponent(version)}` : ""}`),
   build: (prompt: string) => post("/build", { prompt }),
   edit: (text: string) => post("/edit", { text }, DESIGN_TIMEOUT),
+  /** Pick a candidate design mid-run; null hands it back to the critic. */
+  choose: (index: number | null, note = "", ask = "") => request<{ ok: boolean }>("/choose", { method: "POST", body: JSON.stringify({ index, note, ask }) }),
   tryAnother: () => post("/try_another", {}, DESIGN_TIMEOUT),
   undo: () => post("/undo"),
   redo: () => post("/redo"),
@@ -144,9 +177,11 @@ export const bricolage = {
   /** Upload a reference sketch (data URL) for the next sketch-guided build. */
   uploadSketch: (image: string) => request<{ ok: boolean }>("/sketch", { method: "POST", body: JSON.stringify({ image }) }),
 
-  /** Live build: tape events arrive as they fire; resolves with the final payload.
-   * `opts.sketch` makes the designer build toward the previously-uploaded sketch. */
-  stream(prompt: string, onEvent: (e: TapeEvent) => void, opts?: { sketch?: boolean }): Promise<Payload> {
+  /** Live build: tape events arrive as they fire; resolves with the final
+   *  payload. `opts.sketch` makes the designer build toward the uploaded
+   *  sketch; `opts.onOpen` hands back a stop function, so starting another
+   *  design can end this one instead of running both into the same screen. */
+  stream(prompt: string, onEvent: (e: TapeEvent) => void, opts?: { sketch?: boolean; onOpen?: (stop: () => void) => void }): Promise<Payload> {
     return new Promise((resolve, reject) => {
       // Connect the SSE stream DIRECTLY to the backend, bypassing the Next dev
       // proxy — that proxy buffers streaming responses for the browser, so live
@@ -167,6 +202,7 @@ export const bricolage = {
         else onEvent(data as TapeEvent);
       };
       es.onerror = () => done(() => reject(new ApiError("Lost connection to the builder")));
+      opts?.onOpen?.(() => done(() => reject(new ApiError("Replaced by a newer design"))));
     });
   },
 };
