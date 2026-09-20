@@ -376,8 +376,12 @@ class Allocator:
                 plen = max(m.w, m.d)
                 if plen > need:
                     continue
-                if first and offset_parity and plen == need and plen > 1 and need > 1:
-                    continue  # force a seam offset on odd layers
+                # Stagger the seam on odd courses by refusing a single part that fills the whole
+                # row -- but only when the row is long enough for staggering to mean anything.
+                # A 2-stud row has nothing to stagger against, and skipping its only 1x2 made the
+                # row unfillable whenever 1x1s were out of stock (which is most real bins).
+                if first and offset_parity and plen == need and need > 2:
+                    continue
                 c = self.take_color(part, color,
                                     policy=None if allow_other_colors else "exact")
                 if c is None:
@@ -431,7 +435,8 @@ class Allocator:
                 plen = max(m.w, m.d)
                 if min(m.w, m.d) != 2 or plen > need:
                     continue
-                if first and offset_parity and plen == need and plen > 2 and need > 2:
+                # Same rule as fill_row: only stagger when the band is long enough to matter.
+                if first and offset_parity and plen == need and need > 2:
                     continue
                 c = self.take_color(part, color)
                 if c is None:

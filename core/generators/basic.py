@@ -135,33 +135,87 @@ def chassis(length: int = 10, width: int = 4, style: str = "flat", *, alloc, col
 @generator("vehicle")
 def cabin(length: int = 4, width: int = 4, height: int = 6, style: str = "open",
           *, alloc, color, sub) -> SubResult | None:
-    """A hollow box with walls and an optional roof -- a cab, cockpit or room."""
+    """A hollow box with walls and an optional roof -- a cab, cockpit or room.
+
+    Courses ALTERNATE WHICH WALLS OWN THE CORNERS, which is how a real LEGO box is bound
+    together. A single course is a flat ring: its bricks sit beside each other, and bricks beside
+    each other are not connected -- only a stud into an anti-stud is. Stack two identical courses
+    and every brick links to exactly the one beneath it, so the ring is still four loose walls,
+    which is precisely what the validator kept reporting.
+
+    Swapping corner ownership each course makes the brick above straddle two bricks below at
+    every corner, tying the ring into one piece. It is also just how you would lay real bricks.
+    """
     parts: list[Placed] = []
     y = 0
-    parity = 0
+    course_no = 0
     while y < height:
-        for dz in (0, width - 1):
-            row = _row_best(alloc, length, color, BRICK_ROW, parity)
-            if row is None:
-                break
-            parts += [Placed(_pid(), t.part, t.color, (t.dx, y, dz), t.rot, sub) for t in row]
-        for dx in (0, length - 1):
-            for dz in range(1, width - 1):
-                for part in ("3005", "3004"):
-                    cs = alloc.best_colors(part, color)
-                    if cs and alloc.take(part, cs[0]):
-                        parts.append(Placed(_pid(), part, cs[0], (dx, y, dz), 0, sub))
-                        break
+        course: list[Placed] = []
+        long_owns_corners = course_no % 2 == 0
+
+        if long_owns_corners:
+            x0, xlen = 0, length
+            z0, zlen = 1, width - 2
+        else:
+            x0, xlen = 1, length - 2
+            z0, zlen = 0, width
+
+        ok = True
+        # walls running along X, at the two extremes of Z
+        if xlen > 0:
+            for dz in (0, width - 1):
+                row = _row_best(alloc, xlen, color, BRICK_ROW, course_no % 2)
+                if row is None:
+                    ok = False
+                    break
+                course += [Placed(_pid(), t.part, t.color, (x0 + t.dx, y, dz), t.rot, sub)
+                           for t in row]
+
+        # walls running along Z, at the two extremes of X. A 1x2 here must be ROTATED to run
+        # along z: brick 1x2 is w=2,d=1, so unrotated it would poke out past the end wall.
+        if ok and zlen > 0:
+            for dx in (0, length - 1):
+                dz = z0
+                while dz < z0 + zlen:
+                    remaining = z0 + zlen - dz
+                    placed = False
+                    if remaining >= 2:
+                        cs = alloc.best_colors("3004", color)
+                        if cs and alloc.take("3004", cs[0]):
+                            course.append(Placed(_pid(), "3004", cs[0], (dx, y, dz), 90, sub))
+                            dz += 2
+                            placed = True
+                    if not placed:
+                        cs = alloc.best_colors("3005", color)
+                        if cs and alloc.take("3005", cs[0]):
+                            course.append(Placed(_pid(), "3005", cs[0], (dx, y, dz), 0, sub))
+                            dz += 1
+                        else:
+                            ok = False
+                            break
+                if not ok:
+                    break
+
+        if not ok or not course:
+            # A half-built course leaves bricks with nothing beside or above them. Stop at the
+            # last whole course rather than shipping a ring with a hole in it.
+            break
+        parts += course
         y += 3
-        parity ^= 1
+        course_no += 1
+
+    if len(parts) == 0:
+        return None
+    if course_no < 2:
+        # One course is a flat ring and cannot be connected. Say so rather than return it.
+        return None
+
     if style == "closed":
         roof = _lay(alloc, length, width, y, color, PLATE_ROW, sub, 0)
         if roof is not None:
             parts += roof
             y += 1
-    if not parts:
-        return None
-    return SubResult(parts, _top_attach(parts), f"{style} cabin {length}x{width}")
+    return SubResult(parts, _top_attach(parts), f"{style} cabin {length}x{width}, {course_no} courses")
 
 
 @generator("building")
