@@ -50,8 +50,8 @@ class Session:
         return v
 
     # ---- operations ----------------------------------------------------
-    def build(self, prompt, seed=0, tape=None, recipe=None):
-        res = build_from_prompt(prompt, self.inv, seed, tape=tape, recipe=recipe)
+    def build(self, prompt, seed=0, tape=None, recipe=None, sketch=None):
+        res = build_from_prompt(prompt, self.inv, seed, tape=tape, recipe=recipe, sketch=sketch)
         # record the resolved LLM proposal so replay reproduces it without the model
         return self._commit(None, {"kind": "build", "prompt": prompt, "seed": seed,
                                    "recipe": res["recipe"]},

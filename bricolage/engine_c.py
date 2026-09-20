@@ -43,9 +43,12 @@ def _listeners(tape):
     return on_event, on_model
 
 
-def build(prompt: str, name: str, tape) -> Build:
+def build(prompt: str, name: str, tape, sketch=None) -> Build:
     on_event, on_model = _listeners(tape)
-    result = c.design(prompt, on_event=on_event, on_model=on_model, echo=False)
+    # a user sketch becomes brickify's CONCEPT image: it designs toward the
+    # drawing (and skips generating its own concept) — the sketch-as-reference.
+    result = c.design(prompt, concept_path=Path(sketch) if sketch else None,
+                      on_event=on_event, on_model=on_model, echo=False)
     return from_result(result, name)
 
 
