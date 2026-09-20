@@ -111,7 +111,7 @@ export default function BuildDetail() {
           See all pieces
         </ChunkyButton>
         {/* the closer: buy the exact bricks and build it for real */}
-        <BuyBricks parts={build.parts} />
+        <BuyBricks parts={build.parts} name={build.name} />
       </div>
     </main>
   );

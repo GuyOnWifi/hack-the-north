@@ -42,7 +42,7 @@ const blColour = (ldraw: number) => LDRAW_TO_BL[ldraw] ?? BL_FALLBACK;
 
 /** Rough per-part price (USD) so we can show a ballpark total. Not live pricing —
  * a small base plus a little per stud of footprint. Labelled "est." in the UI. */
-function estimatePart(part: BuildPart): number {
+export function estimatePart(part: BuildPart): number {
   const studs = STUDS[part.part] ?? 2;
   return part.count * (0.06 + 0.025 * studs);
 }
